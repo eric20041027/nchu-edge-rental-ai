@@ -141,10 +141,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="card-price">NT$ ${house.price_str}</div>
                     <h4 class="card-title">${house.title}</h4>
                     <div style="font-size: 0.8rem; color: #aaa; margin: 0.5rem 0;" class="match-details">
-                        <i class="fa-solid fa-check"></i> ${house.match_details.split(',').slice(0, 3).join(', ')}...
+                        <i class="fa-solid fa-check"></i> 系統加分紀錄：${house.match_details}
                     </div>
-                    <div class="card-details">
-                        <a href="${house.url}" target="_blank" style="color: #64ffda; text-decoration: none; font-size: 0.9rem; margin-top: 10px; display: inline-block;">
+                    <div class="card-details" style="display: flex; gap: 10px; font-size: 0.85rem; color: #ccc; margin-bottom: 5px;">
+                        <span><i class="fa-solid fa-vector-square"></i> ${house.size}</span>
+                        <span><i class="fa-solid fa-building"></i> ${house.floor}</span>
+                    </div>
+                    <div style="font-size: 0.8rem; color: #ccc; margin-bottom: 10px;">
+                        <i class="fa-solid fa-couch"></i> ${house.furniture.length > 30 ? house.furniture.substring(0, 30) + '...' : house.furniture}
+                    </div>
+                    <div class="card-link">
+                        <a href="${house.url}" target="_blank" style="color: #64ffda; text-decoration: none; font-size: 0.9rem; display: inline-block;">
                             <i class="fa-solid fa-link"></i> 前往查看物件
                         </a>
                     </div>

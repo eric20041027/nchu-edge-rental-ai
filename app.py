@@ -77,6 +77,15 @@ def recommend_api():
                 img_url = row.get('圖片網址', "")
                 if pd.isna(img_url):
                     img_url = ""
+                    
+                size = str(row.get('室內坪數', ""))
+                if size == "nan": size = "坪數未提供"
+                
+                floor = str(row.get('樓層', ""))
+                if floor == "nan": floor = "樓層未提供"
+                
+                furniture = str(row.get('家具設施', ""))
+                if furniture == "nan": furniture = "無提家具設備"
                 
                 # 組裝給前端的物件
                 item = {
@@ -85,7 +94,10 @@ def recommend_api():
                     "title": title,
                     "score": int(score),
                     "imgUrl": str(img_url),
-                    "match_details": str(row['Match_Details']) if not pd.isna(row['Match_Details']) else ""
+                    "match_details": str(row['Match_Details']) if not pd.isna(row['Match_Details']) else "",
+                    "size": size,
+                    "floor": floor,
+                    "furniture": furniture
                 }
                 results.append(item)
                 

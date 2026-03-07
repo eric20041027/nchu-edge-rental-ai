@@ -52,32 +52,41 @@ class RentalRecommender:
         result_df['Score'] = 0.0
         result_df['Match_Details'] = "" # 紀錄加分/雷區原因
 
-        # 計算最高可能加分 (做為分母)
-        # 假設: 地點(20) + 房型(20) + 建築(15) + (每個家俱5分*預期3個) + (每個安全設施5分*預期2個) = 大約 80 分
-        # 預算符合(+10)，這是一個大概的估值，你可以依據需求調整演算法上限
-        MAX_THEORETICAL_SCORE = 80.0
+        user_budget = cbf_vector.get("search_budget")
+        target_region = cbf_vector.get("search_region")
+        target_room = cbf_vector.get("search_room_type")
+        target_building = cbf_vector.get("search_building_type")
+        req_furnitures = cbf_vector.get("required_furniture", [])
+        req_security = cbf_vector.get("required_security", [])
+        user_gender = cbf_vector.get("gender_preference")
+        pet_friendly = cbf_vector.get("is_pet_friendly", -1)
+
+        # 計算最大可能達到的分數 (做為分母)
+        MAX_THEORETICAL_SCORE = 0.0
+        if user_budget:
+            MAX_THEORETICAL_SCORE += 20.0
+        if target_region:
+            MAX_THEORETICAL_SCORE += 20.0
+        if target_room:
+            MAX_THEORETICAL_SCORE += 20.0
+        if target_building:
+            MAX_THEORETICAL_SCORE += 15.0
+        
+        MAX_THEORETICAL_SCORE += (len(req_furnitures) * 5.0)
+        MAX_THEORETICAL_SCORE += (len(req_security) * 5.0)
+        
+        # 為了避免完全沒輸入條件時分母為0，給個底限
+        if MAX_THEORETICAL_SCORE == 0:
+            MAX_THEORETICAL_SCORE = 1.0
 
         for index, row in result_df.iterrows():
             score = 0.0
             details = []
 
             # --- 1. 硬性約束 (Hard Constraints) ---
-            
-            # (A) 預算 (Budget): 只要超出預算就算不符合 (或倒扣大量分數)
-            user_budget = cbf_vector.get("search_budget")
-            if user_budget:
-                if row['Rent_Num'] > user_budget:
-                    # 預算超過，設定分數極低，標示為不推薦
-                    score -= 1000.0
-                    details.append("預算超標")
-                else:
-                    # 預算內，可以給一點基礎分數
-                    score += 10.0
-                    details.append("符合預算")
-
-            # (B) 性別限制 (Gender Restriction)
-            user_gender = cbf_vector.get("gender_preference")
             notes = row['Note_List']
+
+            # (A) 性別限制 (Gender Restriction)
             if user_gender == "限女生" and "限男生" in notes:
                 score -= 1000.0
                 details.append("性別不符(限男)")
@@ -85,8 +94,7 @@ class RentalRecommender:
                 score -= 1000.0
                 details.append("性別不符(限女)")
 
-            # (C) 寵物 (Pets)
-            pet_friendly = cbf_vector.get("is_pet_friendly", -1)
+            # (B) 寵物 (Pets)
             # 1 代表必須可以養寵物
             if pet_friendly == 1 and "禁養寵物" in notes:
                 score -= 1000.0
@@ -99,26 +107,36 @@ class RentalRecommender:
 
             # --- 2. 軟性物件配對 (Soft Scoring) ---
             
-            # (A) 區域 (Region)
-            target_region = cbf_vector.get("search_region")
+            # (A) 預算梯形配分法 (Proximity Budget Scoring)
+            if user_budget:
+                diff = abs(row['Rent_Num'] - user_budget)
+                if diff <= 500:
+                    score += 20.0
+                    details.append("預算完美符合")
+                else:
+                    # 每超過 200 扣 1 分
+                    deduction = (diff - 500) / 200.0
+                    awarded = max(0.0, 20.0 - deduction)
+                    score += awarded
+                    if awarded >= 10:
+                        details.append("符合預算")
+
+            # (B) 區域 (Region)
             if target_region and isinstance(row['地址'], str) and target_region in row['地址']:
                 score += 20.0
                 details.append(f"位於{target_region}")
 
-            # (B) 房型 (Room Type)
-            target_room = cbf_vector.get("search_room_type")
+            # (C) 房型 (Room Type)
             if target_room and isinstance(row['格局'], str) and target_room in row['格局']:
                 score += 20.0
                 details.append(f"房型相符({target_room})")
 
-            # (C) 建築類型 (Building Type)
-            target_building = cbf_vector.get("search_building_type")
+            # (D) 建築類型 (Building Type)
             if target_building and isinstance(row['類型'], str) and target_building in row['類型']:
                 score += 15.0
                 details.append(f"建築相符({target_building})")
 
-            # (D) 家具與設施交集 (Jaccard-like matching)
-            req_furnitures = cbf_vector.get("required_furniture", [])
+            # (E) 家具與設施交集 (Jaccard-like matching)
             for f in req_furnitures:
                 # 這裡做一個簡單字串包含比對，例如使用者要"網路"，CSV裡有"寬頻網路"也算中
                 matched = any(f in item for item in row['Furniture_List'])
@@ -126,8 +144,7 @@ class RentalRecommender:
                     score += 5.0
                     details.append(f"有{f}")
 
-            # (E) 其他額外需求 (安全、租金包含等)
-            req_security = cbf_vector.get("required_security", [])
+            # (F) 其他額外需求 (安全、租金包含等)
             for s in req_security:
                 matched = any(s in item for item in row['Security_List'])
                 if matched:
@@ -145,7 +162,7 @@ class RentalRecommender:
             percentage_score = min(max(percentage_score, 0), 100)
 
             # 儲存分數計算結果
-            result_df.at[index, 'Score'] = percentage_score
+            result_df.at[index, 'Score'] = round(percentage_score)
             result_df.at[index, 'Match_Details'] = ", ".join(details)
 
         # 過濾掉那些嚴重觸犯硬性條件的 (分數歸零代表被扣分扣爆)
