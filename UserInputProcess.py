@@ -5,28 +5,20 @@ def load_ws_model():
     載入 CKIP ALBERT Tiny 中文斷詞模型
     """
     print("正在載入 CKIP ALBERT Tiny 斷詞模型...")
-    # ckiplab 的斷詞模型 (Word Segmentation) 後綴為 -ws
     model_name = 'ckiplab/albert-tiny-chinese-ws'
     
-    # 載入 Tokenizer 與 Model
     tokenizer = BertTokenizerFast.from_pretrained(model_name)
     model = AlbertForTokenClassification.from_pretrained(model_name)
     
-    # 建立 Token Classification Pipeline
     ws_pipeline = pipeline('token-classification', model=model, tokenizer=tokenizer)
     print("模型載入完成！")
     return ws_pipeline
 
 def segment_text(ws_pipeline, text):
-    """
-    實作斷詞邏輯：將 token 標籤 (B, I) 轉為實際的斷詞字串列表
-    - B (Begin): 詞彙的開頭
-    - I (Inside): 詞彙的內部
-    """
+
     if not text:
         return []
 
-    # 取得模型的 token 預測結果
     result = ws_pipeline(text)
     
     words = []
@@ -36,20 +28,16 @@ def segment_text(ws_pipeline, text):
         label = token['entity']
         char = token['word']
         
-        # 濾除特殊字元或是未知的 token (例如 [CLS], [SEP])
         if char.startswith('['):
             continue
             
-        if label == 'B':  # CKIP output is plain 'B', not 'B-'
-            # 遇到新的詞彙開頭，若前一個詞彙有內容則存入 lists
+        if label == 'B':  
             if current_word:
                 words.append(current_word)
             current_word = char
-        elif label == 'I': # CKIP output is plain 'I', not 'I-'
-            # 詞彙的中間字元，直接接在 current_word 後面
+        elif label == 'I': 
             current_word += char
             
-    # 把最後一個詞也加入
     if current_word:
         words.append(current_word)
         
@@ -158,8 +146,8 @@ if __name__ == "__main__":
         extracted_features = tag_features(custom_result)
         
         print("\n--- 分析結果 ---")
-        print(f"斷詞結果: {' | '.join(custom_result)}")
-        print(f"萃取特徵:")
+        #print(f"斷詞結果: {' | '.join(custom_result)}")
+        print(f"房屋特徵:")
         for key, value in extracted_features.items():
             if value:
                 print(f"  - [{key}]: {value}")

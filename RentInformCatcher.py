@@ -32,7 +32,6 @@ def scrape_rent():
                     full_url = urljoin(base_house_url, href)
                     #print(full_url)
                     detail_urls.append(full_url)
-
         print(f"找到 {len(detail_urls)} 筆租屋資訊，準備開始爬取詳細內容...")
         
 scrape_rent()
