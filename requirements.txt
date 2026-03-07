@@ -1,0 +1,6 @@
+flask==3.0.0
+flask-cors==4.0.0
+pandas==2.1.0
+transformers==4.33.2
+optimum[onnxruntime]==1.13.2
+onnxruntime==1.16.1

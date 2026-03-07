@@ -1,7 +1,7 @@
 from transformers import BertTokenizerFast, pipeline
 from optimum.onnxruntime import ORTModelForTokenClassification
 import os
-from Recommender import RentalRecommender
+from recommender import RentalRecommender
 
 def load_ws_model():
     
@@ -55,6 +55,7 @@ def tag_features(words):
         "格局(房型)": None,
         "類型(建築)": None,
         "預算": None,
+        "預算限制": None,
         "家具設施": [],
         "租金包含": [],
         "安全管理與消防": [],
@@ -80,6 +81,11 @@ def tag_features(words):
                 features["預算"] = int(word) * multiplier
             elif int(word) > 1000: # 假設大於1000的數字很可能是預算
                 features["預算"] = int(word)
+
+        if "以上" in word:
+            features["預算限制"] = "above"
+        if "以下" in word or "以內" in word:
+            features["預算限制"] = "below"
 
         # 2. 地區判斷 (例如南區、西區、大里等)
         if word in ["南區", "西區", "東區", "北區", "中區", "大里", "大里區", "烏日", "市區", "校區", "學校"]:
@@ -143,6 +149,7 @@ def format_for_cbf(features):
 
     cbf_input = {
         "search_budget": features.get("預算"),          # Integer or None
+        "budget_limit": features.get("預算限制"),       # 'above', 'below', or None
         "search_region": features.get("地址(區域)"),    # String or None
         "search_room_type": features.get("格局(房型)"), # String or None
         "search_building_type": features.get("類型(建築)"), # String or None

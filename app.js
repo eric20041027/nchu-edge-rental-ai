@@ -56,16 +56,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 設定 600ms 後使用者如果沒繼續打字，才執行尋找
         debounceTimer = setTimeout(() => {
-            // 隱藏運算動畫
-            processingStatus.style.display = 'none';
-
-            // 模擬更新結果
-            updateMockResults(text);
-
-            // 恢復透明度
-            recommendationList.style.opacity = '1';
-
+            // 執行真正的 API 請求
+            fetchRecommendations(text).then(() => {
+                // 下載完成後隱藏運算動畫，恢復透明度
+                processingStatus.style.display = 'none';
+                recommendationList.style.opacity = '1';
+            });
         }, 600);
+    });
+
+    // 支援按下 Enter 送出
+    userRequirement.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault(); // 避免換行
+            clearTimeout(debounceTimer); // 取消輸入延遲防抖
+            const text = userRequirement.value.trim();
+            if (text) {
+                // 立即觸發 API 更新
+                processingStatus.style.display = 'flex';
+                recommendationList.style.opacity = '0.4';
+                fetchRecommendations(text).then(() => {
+                    processingStatus.style.display = 'none';
+                    recommendationList.style.opacity = '1';
+                });
+            }
+        }
     });
 
     // 點擊建議標籤快速輸入
@@ -132,6 +147,21 @@ document.addEventListener('DOMContentLoaded', () => {
             // 使用後端傳來的真實圖片網址，如果沒有就給個預設圖片
             const imgUrl = house.imgUrl ? house.imgUrl : "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=600&q=80";
 
+            let commuteHtml = '';
+            if (house.distance > 0) {
+                // 如果距離 <= 0.42 km (約 5 min 步行，時速 5 km/h)
+                if (house.distance <= 0.42) {
+                    let walkMins = Math.ceil(house.distance / 0.083);
+                    commuteHtml = `<i class="fa-solid fa-person-walking"></i> 走路約 ${walkMins} 分鐘 (${house.distance} 公里)`;
+                } else {
+                    // 大於 0.42 km 使用機車計算，市區均速約 30 km/h (0.5 km/min)
+                    let scooterMins = Math.ceil(house.distance / 0.5);
+                    commuteHtml = `<i class="fa-solid fa-motorcycle"></i> 機車約 ${scooterMins} 分鐘 (${house.distance} 公里)`;
+                }
+            } else {
+                commuteHtml = `<i class="fa-solid fa-location-dot"></i> 距離未提供`;
+            }
+
             card.innerHTML = `
                 <div class="card-image">
                     <img src="${imgUrl}" alt="房間照片">
@@ -147,8 +177,26 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span><i class="fa-solid fa-vector-square"></i> ${house.size}</span>
                         <span><i class="fa-solid fa-building"></i> ${house.floor}</span>
                     </div>
-                    <div style="font-size: 0.8rem; color: #ccc; margin-bottom: 10px;">
-                        <i class="fa-solid fa-couch"></i> ${house.furniture.length > 30 ? house.furniture.substring(0, 30) + '...' : house.furniture}
+                    
+                    <details style="font-size: 0.8rem; color: #ccc; margin-bottom: 10px; cursor: pointer; background: rgba(15,23,42,0.4); padding: 5px 8px; border-radius: 6px;">
+                        <summary style="outline: none; font-weight: 500;"><i class="fa-solid fa-couch"></i> 查看附屬家具設施</summary>
+                        <div style="margin-top: 5px; line-height: 1.4; padding-left: 18px;">
+                            ${house.furniture.split('/').join(', ')}
+                        </div>
+                    </details>
+                    
+                    <div style="font-size: 0.85rem; color: #64ffda; margin-bottom: 10px; font-weight: 500;">
+                        ${commuteHtml}
+                    </div>
+                    <div class="map-container" style="margin-bottom: 15px; border-radius: 8px; overflow: hidden; height: 120px;">
+                        <iframe 
+                            width="100%" 
+                            height="100%" 
+                            frameborder="0" 
+                            style="border:0" 
+                            src="https://maps.google.com/maps?q=${encodeURIComponent(house.address)}&output=embed" 
+                            allowfullscreen>
+                        </iframe>
                     </div>
                     <div class="card-link">
                         <a href="${house.url}" target="_blank" style="color: #64ffda; text-decoration: none; font-size: 0.9rem; display: inline-block;">

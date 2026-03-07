@@ -5,20 +5,20 @@ import traceback
 import math
 
 # 載入我們的自家模組
-from UserInputProcess import load_ws_model, segment_text, tag_features, format_for_cbf
-from Recommender import RentalRecommender
+from user_input_process import load_ws_model, segment_text, tag_features, format_for_cbf
+from recommender import RentalRecommender
 
 app = Flask(__name__, static_folder=".", static_url_path="")
 CORS(app)  # 允許跨域請求 (如果是前後端分離開發需要)
 
-print("🚀 啟動 Flask 伺服器...")
-print("📦 正在背景載入 ONNX AI 模型與 Recommender 引擎 (這可能需要幾秒鐘)...")
+print(" 啟動 Flask 伺服器...")
+print("載入 ONNX模型與 Recommender 引擎")
 
 # 全域變數預先載入，避免每次 API 請求都重新讀取
 ws_pipeline = load_ws_model()
 recommender = RentalRecommender("nchu_rental_info.csv")
 
-print("✅ 模型載入完畢，伺服器準備就緒！")
+print("模型載入完畢")
 
 @app.route("/")
 def index():
@@ -87,6 +87,8 @@ def recommend_api():
                 furniture = str(row.get('家具設施', ""))
                 if furniture == "nan": furniture = "無提家具設備"
                 
+                distance = row.get('距離(km)', -1.0)
+                
                 # 組裝給前端的物件
                 item = {
                     "url": str(row['網址']) if not pd.isna(row['網址']) else "#",
@@ -97,7 +99,9 @@ def recommend_api():
                     "match_details": str(row['Match_Details']) if not pd.isna(row['Match_Details']) else "",
                     "size": size,
                     "floor": floor,
-                    "furniture": furniture
+                    "furniture": furniture,
+                    "distance": float(distance) if not pd.isna(distance) else -1.0,
+                    "address": str(row['地址']) if not pd.isna(row['地址']) else ""
                 }
                 results.append(item)
                 
@@ -114,4 +118,4 @@ def recommend_api():
         return jsonify({"success": False, "error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5001)
+    app.run(debug=True, port=5002)
