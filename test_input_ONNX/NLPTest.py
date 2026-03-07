@@ -1,5 +1,6 @@
 from transformers import BertTokenizerFast, pipeline
 from optimum.onnxruntime import ORTModelForTokenClassification
+import os
 
 def load_ws_model():
     """
@@ -7,8 +8,11 @@ def load_ws_model():
     """
     print("正在載入 CKIP ALBERT Tiny 斷詞模型 (ONNX 版)...")
     
-    # 指向剛剛用 optimum 匯出的本地資料夾
+    # 判斷執行目錄來決定模型路徑
     model_dir = './onnx_model_dir'
+    if not os.path.exists(model_dir):
+        # 如果是在 test_input_ONNX 資料夾內執行，則模型在上一層
+        model_dir = '../onnx_model_dir'
     
     # 載入 Tokenizer (從本地或線上皆可，這裡直接從剛剛匯出的資料夾載入)
     tokenizer = BertTokenizerFast.from_pretrained(model_dir)
