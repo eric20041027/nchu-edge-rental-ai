@@ -136,6 +136,35 @@ def tag_features(words):
 
     return features
 
+def format_for_cbf(features):
+    """
+    將 NLP 萃取出來的特徵字典，轉換成 Content-Based Filtering (CBF) 推薦模型
+    容易處理的格式 (扁平化特徵、數值化特定欄位等)。
+    """
+    # 判斷寵物是否友善 (-1 代表未提及/不拘, 1 代表可養, 0 代表禁養)
+    pet_friendly = -1
+    if features.get("寵物") == "可養寵物":
+        pet_friendly = 1
+    elif features.get("寵物") == "禁養寵物":
+        pet_friendly = 0
+
+    cbf_input = {
+        "search_budget": features.get("預算"),          # Integer or None
+        "search_region": features.get("地址(區域)"),    # String or None
+        "search_room_type": features.get("格局(房型)"), # String or None
+        "search_building_type": features.get("類型(建築)"), # String or None
+        
+        # 將串列直接保留，方便後續用 Pandas 的 .apply() 或 Set Intersection 算分
+        "required_furniture": features.get("家具設施", []),
+        "required_included_fees": features.get("租金包含", []),
+        "required_security": features.get("安全管理與消防", []),
+        
+        "is_pet_friendly": pet_friendly,
+        "gender_preference": features.get("性別限制")   # String or None
+    }
+    
+    return cbf_input
+
 
 if __name__ == "__main__":
     # 1. 載入模型
@@ -152,12 +181,20 @@ if __name__ == "__main__":
         # 進行斷詞
         custom_result = segment_text(ws_pipeline, user_input)
         
-        # 進行特徵標記
+        # 進行特徵標記 (給人類或前端看的原始結構)
         extracted_features = tag_features(custom_result)
         
+        # 轉換成 CBF 推薦模型用的格式 (機器學習/相似度計算用)
+        cbf_features = format_for_cbf(extracted_features)
+        
         print("\n--- 分析結果 ---")
-        #print(f"斷詞結果: {' | '.join(custom_result)}")
-        print(f"房屋特徵:")
+        print(f"原始房屋特徵 (Human Readable):")
         for key, value in extracted_features.items():
             if value:
                 print(f"  - [{key}]: {value}")
+                
+        print(f"\n推薦模型輸入向量 (CBF Input Vector):")
+        for key, value in cbf_features.items():
+            # 為了讓畫面乾淨，過濾掉空的 list 或 None (如果想要全印可以把這個 if 拿掉)
+            if value is not None and value != [] and value != -1:
+                print(f"  - {key}: {value}")
