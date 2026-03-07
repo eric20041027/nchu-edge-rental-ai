@@ -30,7 +30,7 @@ def scrape_rent():
                 if a_tag:
                     href = a_tag.get('href')
                     full_url = urljoin(base_house_url, href)
-                    print(full_url)
+                    #print(full_url)
                     detail_urls.append(full_url)
 
         print(f"找到 {len(detail_urls)} 筆租屋資訊，準備開始爬取詳細內容...")
@@ -49,10 +49,9 @@ import pandas as pd
 
 def scrape_rent():
     base_index_url = 'https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/index.php'
-    # 這是為了處理相對路徑轉絕對路徑
     base_house_url = "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/"
     
-    all_house_data = [] # 用來存儲所有物件的詳細資訊
+    all_house_data = [] #存儲所有物件的詳細資訊
     detail_urls = []
     
     # 1. 取得所有物件的詳細頁面 URL
@@ -60,7 +59,6 @@ def scrape_rent():
     print(f"正在獲取前 {PAGE_NUM} 頁的連結...")
     
     for i in range(PAGE_NUM):
-        # 第一頁 start=0, 第二頁 start=20, 依此類推
         page_to_use = f"{base_index_url}?start={i * 20}"
         try:
             resp = requests.get(page_to_use, timeout=10)
@@ -76,7 +74,7 @@ def scrape_rent():
                     detail_urls.append(full_url)
             
             print(f"已完成第 {i+1} 頁連結收集")
-            time.sleep(0.5) # 微調間隔
+            time.sleep(0.5) 
         except Exception as e:
             print(f"讀取分頁 {i+1} 失敗: {e}")
 
@@ -92,20 +90,16 @@ def scrape_rent():
             
             item_info = {"網址": url} # 每一筆資料先存入 URL
             
-            # 抓取表格中的所有欄位
             rows = soup.find_all('tr')
             for row in rows:
-                # 取得標籤(th)與內容(td)
                 cols = row.find_all(['th', 'td'])
-                if len(cols) >= 2:
-                    key = cols[0].get_text(strip=True).replace('：', '').replace(':', '')
-                    value = cols[1].get_text(strip=True)
-                    if key: # 確保鍵值不為空
+                for i in range(0, len(cols) - 1, 2):
+                    key = cols[i].get_text(strip=True).replace('：', '').replace(':', '')
+                    value = cols[i+1].get_text(strip=True)
+                    if key:
                         item_info[key] = value
             
             all_house_data.append(item_info)
-            
-            # 每抓取 5 筆休息一下，保護網站也保護你的 IP
             if (index + 1) % 5 == 0:
                 time.sleep(1)
                 
@@ -120,8 +114,8 @@ def scrape_rent():
         cols = ['網址'] + [c for c in df.columns if c != '網址']
         df = df[cols]
         
-        filename = "nchu_rental_info.xlsx"
-        df.to_excel(filename, index=False)
+        filename = "nchu_rental_info.csv"
+        df.to_csv(filename, index=False, encoding='utf-8-sig') # 使用 utf-8-sig 避免 Excel 打開亂碼
         print(f"\n--- 抓取完成 ---")
         print(f"總共抓取 {len(all_house_data)} 筆資料")
         print(f"檔案已儲存至: {filename}")
