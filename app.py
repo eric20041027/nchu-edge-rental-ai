@@ -50,7 +50,7 @@ def recommend_api():
         cbf_features = format_for_cbf(extracted_features)
         
         # 4. 取得推薦結果 (DataFrame)
-        recommendations_df = recommender.recommend(cbf_features, top_k=3)
+        recommendations_df = recommender.recommend(cbf_features, top_k=5)
         
         results = []
         if not recommendations_df.empty:
@@ -73,13 +73,18 @@ def recommend_api():
                     room_type = ""
                 
                 title = f"{address_raw} ({room_type})" if room_type else address_raw
+
+                img_url = row.get('圖片網址', "")
+                if pd.isna(img_url):
+                    img_url = ""
                 
                 # 組裝給前端的物件
                 item = {
                     "url": str(row['網址']) if not pd.isna(row['網址']) else "#",
                     "price_str": str(rent_price_raw),
                     "title": title,
-                    "score": float(score),
+                    "score": int(score),
+                    "imgUrl": str(img_url),
                     "match_details": str(row['Match_Details']) if not pd.isna(row['Match_Details']) else ""
                 }
                 results.append(item)

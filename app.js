@@ -121,28 +121,21 @@ document.addEventListener('DOMContentLoaded', () => {
             card.className = 'property-card';
 
             let badgeClass = '';
-            let isTopMatch = '';
-            // 對應前面 Recommender 給定的權重 (滿分可能會破百，這裡隨機抓個大致上 80分以上算 premium)
-            // 你可以後續根據配對演算法設計去標準化 0~100% 分數
-            let displayScore = Math.min(Math.max(house.score, 0), 100);
+            // 由於已經在後端轉化為 0~100 的數字，直接取用
+            let displayScore = Math.round(house.score);
 
             if (index === 0) {
                 card.classList.add('top-match');
                 badgeClass = 'premium';
             }
 
-            // 預設圖片 (之後如果爬蟲有爬圖片網址，可以替換過來)
-            const defaultImages = [
-                "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=600&q=80",
-                "https://images.unsplash.com/photo-1502672260266-1c1de2d9d00c?auto=format&fit=crop&w=600&q=80",
-                "https://images.unsplash.com/photo-1536376072261-38c75010e6c9?auto=format&fit=crop&w=600&q=80"
-            ];
-            const imgUrl = defaultImages[index % defaultImages.length];
+            // 使用後端傳來的真實圖片網址，如果沒有就給個預設圖片
+            const imgUrl = house.imgUrl ? house.imgUrl : "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=600&q=80";
 
             card.innerHTML = `
                 <div class="card-image">
                     <img src="${imgUrl}" alt="房間照片">
-                    <span class="badge ${badgeClass}">配對相符度 高</span>
+                    <span class="badge ${badgeClass}">配對相符度 ${displayScore}%</span>
                 </div>
                 <div class="card-content">
                     <div class="card-price">NT$ ${house.price_str}</div>

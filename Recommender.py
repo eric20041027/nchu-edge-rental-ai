@@ -52,6 +52,11 @@ class RentalRecommender:
         result_df['Score'] = 0.0
         result_df['Match_Details'] = "" # 紀錄加分/雷區原因
 
+        # 計算最高可能加分 (做為分母)
+        # 假設: 地點(20) + 房型(20) + 建築(15) + (每個家俱5分*預期3個) + (每個安全設施5分*預期2個) = 大約 80 分
+        # 預算符合(+10)，這是一個大概的估值，你可以依據需求調整演算法上限
+        MAX_THEORETICAL_SCORE = 80.0
+
         for index, row in result_df.iterrows():
             score = 0.0
             details = []
@@ -129,12 +134,22 @@ class RentalRecommender:
                     score += 5.0
                     details.append(f"有{s}")
 
+            # 將原始分數轉化為百分比 (Percentage)
+            # 確保不會低於 0，也不會超過 100 (如果原分數 < 0 就代表有踩到雷區，等等會被過濾)
+            percentage_score = (score / MAX_THEORETICAL_SCORE) * 100
+            
+            # 基礎分 (至少給個 40% 起跳如果沒踩雷，讓畫面好看一點)
+            if score >= 0:
+                percentage_score = 40 + (percentage_score * 0.6)
+                
+            percentage_score = min(max(percentage_score, 0), 100)
+
             # 儲存分數計算結果
-            result_df.at[index, 'Score'] = score
+            result_df.at[index, 'Score'] = percentage_score
             result_df.at[index, 'Match_Details'] = ", ".join(details)
 
-        # 過濾掉那些嚴重觸犯硬性條件的 (Score < -100)
-        filtered_df = result_df[result_df['Score'] > -100]
+        # 過濾掉那些嚴重觸犯硬性條件的 (分數歸零代表被扣分扣爆)
+        filtered_df = result_df[result_df['Score'] > 0]
 
         # 按照分數由高到低排序，如果分數一樣，租金便宜的優先
         sorted_df = filtered_df.sort_values(by=['Score', 'Rent_Num'], ascending=[False, True])

@@ -98,6 +98,15 @@ def scrape_rent():
                     if key:
                         item_info[key] = value
             
+            # 從 fancybox 中尋找第一張房屋圖片
+            img_tag = soup.find('a', {'class': 'fancybox'})
+            if img_tag and img_tag.get('href'):
+                # href 是不完整的網址，但似乎在此系統裡可以直接連 (或需要加上 base_index_url 的 domain)
+                img_url = urljoin(base_house_url, img_tag.get('href'))
+                item_info['圖片網址'] = img_url
+            else:
+                item_info['圖片網址'] = ""
+
             all_house_data.append(item_info)
             if (index + 1) % 5 == 0:
                 time.sleep(1)
