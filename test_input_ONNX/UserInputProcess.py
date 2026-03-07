@@ -1,17 +1,27 @@
-from transformers import BertTokenizerFast, AlbertForTokenClassification, pipeline
+from transformers import BertTokenizerFast, pipeline
+from optimum.onnxruntime import ORTModelForTokenClassification
+import os
 
 def load_ws_model():
     """
-    載入 CKIP ALBERT Tiny 中文斷詞模型
+    載入已轉換為 ONNX 格式的 CKIP ALBERT Tiny 中文斷詞模型
     """
-    print("正在載入 CKIP ALBERT Tiny 斷詞模型...")
-    model_name = 'ckiplab/albert-tiny-chinese-ws'
+    print("正在載入 CKIP ALBERT Tiny 斷詞模型 (ONNX 版)...")
     
-    tokenizer = BertTokenizerFast.from_pretrained(model_name)
-    model = AlbertForTokenClassification.from_pretrained(model_name)
+    # 指向剛剛用 optimum 匯出的本地資料夾 (因為這支檔案晚點也要被搬去 test_input_ONNX)
+    model_dir = './onnx_model_dir'
+    
+    # 如果檔案還在外面，就先指向裡面
+    if not os.path.exists(model_dir):
+        model_dir = './test_input_ONNX/onnx_model_dir'
+        
+    # 載入 Tokenizer (從本地載入)
+    tokenizer = BertTokenizerFast.from_pretrained(model_dir)
+    # 使用 Optimum 提供的 ONNX Runtime Model Loader
+    model = ORTModelForTokenClassification.from_pretrained(model_dir)
     
     ws_pipeline = pipeline('token-classification', model=model, tokenizer=tokenizer)
-    print("模型載入完成！")
+    print("ONNX 模型載入完成！")
     return ws_pipeline
 
 def segment_text(ws_pipeline, text):
