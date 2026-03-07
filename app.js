@@ -79,32 +79,84 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // 動態變更推薦結果
-    function updateMockResults(inputText) {
-        // 從現有 DOM 抓取卡片來模擬打亂順序
-        const cards = Array.from(recommendationList.querySelectorAll('.property-card'));
+    async function fetchRecommendations(inputText) {
+        try {
+            const response = await fetch('/api/recommend', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ text: inputText })
+            });
 
-        for (let i = cards.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [cards[i], cards[j]] = [cards[j], cards[i]];
+            if (!response.ok) {
+                throw new Error(`伺服器錯誤: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            if (data.success && data.data) {
+                renderCards(data.data);
+            } else {
+                throw new Error(data.error || "回傳格式不正確");
+            }
+        } catch (error) {
+            console.error("Fetch Error:", error);
+            // 發生錯誤時顯示友善提示
+            recommendationList.innerHTML = `<div style="text-align: center; color: white; padding: 2rem;">無法取得推薦結果，請檢查伺服器是否運行中。</div>`;
+        }
+    }
+
+    // 將 API 傳回的資料轉譯為 HTML 卡片
+    function renderCards(houses) {
+        recommendationList.innerHTML = '';
+
+        if (houses.length === 0) {
+            recommendationList.innerHTML = `<div style="text-align: center; color: white; padding: 2rem;">找不到符合條件的房屋，試著放寬預算或是區域限制吧！</div>`;
+            return;
         }
 
-        recommendationList.innerHTML = '';
-        cards.forEach((card, index) => {
-            // Reset state
-            card.classList.remove('top-match');
-            const badge = card.querySelector('.badge');
+        houses.forEach((house, index) => {
+            const card = document.createElement('div');
+            card.className = 'property-card';
+
+            let badgeClass = '';
+            let isTopMatch = '';
+            // 對應前面 Recommender 給定的權重 (滿分可能會破百，這裡隨機抓個大致上 80分以上算 premium)
+            // 你可以後續根據配對演算法設計去標準化 0~100% 分數
+            let displayScore = Math.min(Math.max(house.score, 0), 100);
 
             if (index === 0) {
                 card.classList.add('top-match');
-                badge.classList.add('premium');
-                badge.textContent = `配對度 ${Math.floor(95 + Math.random() * 5)}%`;
-
-                // AI 推薦理由已移除
-            } else {
-                badge.classList.remove('premium');
-                badge.textContent = `配對度 ${Math.floor(80 + Math.random() * 14)}%`;
+                badgeClass = 'premium';
             }
 
+            // 預設圖片 (之後如果爬蟲有爬圖片網址，可以替換過來)
+            const defaultImages = [
+                "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=600&q=80",
+                "https://images.unsplash.com/photo-1502672260266-1c1de2d9d00c?auto=format&fit=crop&w=600&q=80",
+                "https://images.unsplash.com/photo-1536376072261-38c75010e6c9?auto=format&fit=crop&w=600&q=80"
+            ];
+            const imgUrl = defaultImages[index % defaultImages.length];
+
+            card.innerHTML = `
+                <div class="card-image">
+                    <img src="${imgUrl}" alt="房間照片">
+                    <span class="badge ${badgeClass}">配對相符度 高</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-price">NT$ ${house.price_str}</div>
+                    <h4 class="card-title">${house.title}</h4>
+                    <div style="font-size: 0.8rem; color: #aaa; margin: 0.5rem 0;" class="match-details">
+                        <i class="fa-solid fa-check"></i> ${house.match_details.split(',').slice(0, 3).join(', ')}...
+                    </div>
+                    <div class="card-details">
+                        <a href="${house.url}" target="_blank" style="color: #64ffda; text-decoration: none; font-size: 0.9rem; margin-top: 10px; display: inline-block;">
+                            <i class="fa-solid fa-link"></i> 前往查看物件
+                        </a>
+                    </div>
+                </div>
+            `;
             recommendationList.appendChild(card);
         });
     }
