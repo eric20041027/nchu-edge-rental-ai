@@ -167,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnAnalyze.addEventListener('click', () => {
             clearTimeout(debounceTimer);
             const text = userRequirement.value.trim();
-            if (text) updateMockResults(text);
+            if (text) fetchRecommendations(text);
             processingStatus.style.display = 'none';
             recommendationList.style.opacity = '1';
         });
