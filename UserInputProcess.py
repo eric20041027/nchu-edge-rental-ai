@@ -1,23 +1,18 @@
 from transformers import BertTokenizerFast, pipeline
 from optimum.onnxruntime import ORTModelForTokenClassification
 import os
+from Recommender import RentalRecommender
 
 def load_ws_model():
-    """
-    載入已轉換為 ONNX 格式的 CKIP ALBERT Tiny 中文斷詞模型
-    """
+    
     print("正在載入 CKIP ALBERT Tiny 斷詞模型 (ONNX 版)...")
     
-    # 指向剛剛用 optimum 匯出的本地資料夾 (因為這支檔案晚點也要被搬去 test_input_ONNX)
     model_dir = './onnx_model_dir'
     
-    # 如果檔案還在外面，就先指向裡面
     if not os.path.exists(model_dir):
         model_dir = './test_input_ONNX/onnx_model_dir'
         
-    # 載入 Tokenizer (從本地載入)
     tokenizer = BertTokenizerFast.from_pretrained(model_dir)
-    # 使用 Optimum 提供的 ONNX Runtime Model Loader
     model = ORTModelForTokenClassification.from_pretrained(model_dir)
     
     ws_pipeline = pipeline('token-classification', model=model, tokenizer=tokenizer)
@@ -54,9 +49,7 @@ def segment_text(ws_pipeline, text):
     return words
 
 def tag_features(words):
-    """
-    從斷詞結果中，標記出與 nchu_rental_info.csv 對應的所有特徵
-    """
+  
     features = {
         "地址(區域)": None,
         "格局(房型)": None,
@@ -167,6 +160,10 @@ def format_for_cbf(features):
 
 
 if __name__ == "__main__":
+    # 0. 載入推薦引擎 (讀取 CSV)
+    print("正在初始化房屋匹配引擎...")
+    recommender = RentalRecommender("nchu_rental_info.csv")
+
     # 1. 載入模型
     ws_pipeline = load_ws_model()
     
@@ -198,3 +195,18 @@ if __name__ == "__main__":
             # 為了讓畫面乾淨，過濾掉空的 list 或 None (如果想要全印可以把這個 if 拿掉)
             if value is not None and value != [] and value != -1:
                 print(f"  - {key}: {value}")
+
+        print(f"\n=================================")
+        print(f"🤖 正在為您搜尋最適合的房屋...")
+        recommendations = recommender.recommend(cbf_features, top_k=3)
+        
+        if recommendations.empty:
+            print("找不到符合硬性條件的房屋 (可能預算過嚴格或性別不符)。")
+        else:
+            for idx, row in recommendations.iterrows():
+                print(f"\n⭐ 推薦分數: {row['Score']}")
+                print(f"💰 租金: {row['租金']}")
+                print(f"📍 地址: {row['地址']} ({row['格局']})")
+                print(f"🔗 網址: {row['網址']}")
+                print(f"💡 推薦理由: {row['Match_Details']}")
+        print(f"=================================\n")
