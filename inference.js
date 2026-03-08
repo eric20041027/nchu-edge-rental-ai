@@ -164,21 +164,38 @@ function tagFeatures(words) {
     for (let i = 0; i < words.length; i++) {
         let word = words[i];
 
-        if (word === "預算" && i + 1 < words.length) {
-            if (!isNaN(parseInt(words[i + 1]))) {
-                features["預算"] = parseInt(words[i + 1]);
+        const parseBudget = (str) => {
+            let text = str.replace(/以[上下內]/g, '').replace(/內/g, '');
+            text = text.replace(/一/g, '1').replace(/二/g, '2').replace(/兩/g, '2').replace(/三/g, '3')
+                .replace(/四/g, '4').replace(/五/g, '5').replace(/六/g, '6').replace(/七/g, '7')
+                .replace(/八/g, '8').replace(/九/g, '9');
+            if (text.includes("萬")) {
+                let v = parseFloat(text.replace("萬", "."));
+                if (!isNaN(v)) return Math.floor(v * 10000);
             }
-        } else if (!isNaN(parseInt(word)) && !features["預算"]) {
-            if (i + 1 < words.length && ["元", "塊", "千", "萬"].includes(words[i + 1])) {
-                let multiplier = words[i + 1] === "千" ? 1000 : (words[i + 1] === "萬" ? 10000 : 1);
-                features["預算"] = parseInt(word) * multiplier;
-            } else if (parseInt(word) > 1000) {
-                features["預算"] = parseInt(word);
+            text = text.replace(/千/g, '000').replace(/[kK]/g, '000').replace(/百/g, '00');
+            const match = text.match(/\d+/);
+            if (match) return parseInt(match[0], 10);
+            return null;
+        };
+
+        if (word === "預算" && i + 1 < words.length) {
+            let pb = parseBudget(words[i + 1]);
+            if (pb) features["預算"] = pb < 100 ? pb * 1000 : pb;
+        } else if (!features["預算"]) {
+            let pb = parseBudget(word);
+            if (pb) {
+                if (i + 1 < words.length && ["元", "塊", "千", "萬", "k", "K"].includes(words[i + 1])) {
+                    let nextW = words[i + 1].toLowerCase();
+                    if (nextW === "千" || nextW === "k") pb *= 1000;
+                    if (nextW === "萬") pb *= 10000;
+                }
+                features["預算"] = pb < 100 ? pb * 1000 : pb;
             }
         }
 
-        if (word.includes("以上")) features["預算限制"] = "above";
-        if (word.includes("以下") || word.includes("以內")) features["預算限制"] = "below";
+        if (word.includes("以上") || word.includes("上")) features["預算限制"] = "above";
+        if (word.includes("以下") || word.includes("以內") || word.includes("內") || word.includes("下")) features["預算限制"] = "below";
 
         if (["南區", "西區", "東區", "北區", "中區", "大里", "大里區", "烏日", "市區", "校區", "學校"].includes(word)) {
             features["地址(區域)"] = word;
