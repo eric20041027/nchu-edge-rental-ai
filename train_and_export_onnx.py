@@ -17,55 +17,18 @@ label_list = ["O", "B-Target", "I-Target"]
 label_to_id = {label: i for i, label in enumerate(label_list)}
 id2label = {i: label for i, label in enumerate(label_list)} # Keep id2label for model config
 
-# 嘗試讀取生成的正式訓練集 (train.json / test.json)
-try:
-    with open("train.json", "r", encoding="utf-8") as f:
-        train_data = json.load(f)
-    print(f"✅ 成功載入 {len(train_data)} 筆『訓練資料』 (train.json)！")
-    
-    # 嘗試合併 10k 訓練集
-    try:
-        with open("train_10k.json", "r", encoding="utf-8") as f:
-            train_10k_data = json.load(f)
-            train_data.extend(train_10k_data)
-        print(f"✅ 成功合併 {len(train_10k_data)} 筆『額外訓練資料』 (train_10k.json)！現在總共有 {len(train_data)} 筆！")
-    except FileNotFoundError:
-        pass
+# 讀取訓練集與驗證集
+with open("train.json", "r", encoding="utf-8") as f:
+    train_data = json.load(f)
+print(f"✅ 成功載入 {len(train_data)} 筆『訓練資料』 (train.json)！")
 
-    with open("test.json", "r", encoding="utf-8") as f:
-        test_data = json.load(f)
-    print(f"✅ 成功載入 {len(test_data)} 筆『驗證資料』 (test.json)！")
-    
-    # 嘗試合併 10k 驗證集
-    try:
-        with open("test_10k.json", "r", encoding="utf-8") as f:
-            test_10k_data = json.load(f)
-            test_data.extend(test_10k_data)
-        print(f"✅ 成功合併 {len(test_10k_data)} 筆『額外驗證資料』 (test_10k.json)！現在總共有 {len(test_data)} 筆！")
-    except FileNotFoundError:
-        pass
-    
-    # 建立 Dataset
-    train_dataset_raw = Dataset.from_list(train_data)
-    eval_dataset_raw = Dataset.from_list(test_data)
-except FileNotFoundError:
-    print("⚠️ 找不到 train.json 或是 test.json，將嘗試讀取 nchu_rental_ner_500.json 並自動切分...")
-    try:
-        with open("nchu_rental_ner_500.json", "r", encoding="utf-8") as f:
-            dummy_data = json.load(f)
-        dataset = Dataset.from_list(dummy_data)
-    except FileNotFoundError:
-        print("⚠️ 找不到 nchu_rental_ner_500.json，將使用預設示範資料。")
-        dummy_data = [
-            {"text": ["預", "算", "六", "千", "內", "的", "套", "房"], "tags": ["O", "O", "B-Target", "I-Target", "I-Target", "O", "B-Target", "I-Target"]},
-            {"text": ["台", "水", "台", "電", "可", "養", "貓"], "tags": ["B-Target", "I-Target", "I-Target", "I-Target", "B-Target", "I-Target", "I-Target"]}
-        ]
-        dataset = Dataset.from_list(dummy_data)
-    
-    # 自動切分
-    split_datasets = dataset.train_test_split(test_size=0.2, seed=42)
-    train_dataset_raw = split_datasets["train"]
-    eval_dataset_raw = split_datasets["test"]
+with open("test.json", "r", encoding="utf-8") as f:
+    test_data = json.load(f)
+print(f"✅ 成功載入 {len(test_data)} 筆『驗證資料』 (test.json)！")
+
+# 建立 Dataset
+train_dataset_raw = Dataset.from_list(train_data)
+eval_dataset_raw = Dataset.from_list(test_data)
 
 # 將假資料轉換為 HuggingFace Dataset 格式 (Tokenization & Alignment)
 def tokenize_and_align_labels(examples):
