@@ -35,7 +35,4 @@ _agent/
 .vercel/
 
 # 訓練相關 (非網頁運行必要)
-train.json
-test.json
-train_and_export_onnx.py
 test_custom_model.html

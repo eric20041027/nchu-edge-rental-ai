@@ -173,17 +173,15 @@ The system will parse your input in real time and recommend the best-matching pr
 
 ## Model Training Guide
 
-> Training scripts (`train_and_export_onnx.py`) and datasets (`train.json`, `test.json`) are kept locally and not included in the repository.
-
 ### Training Data Format
 
-Each entry is a JSON object with `text` (character array) and `tags` (BIO label array):
+Training data (`train.json`) and validation data (`test.json`) are included in the repository. Each entry is a JSON object with `text` (character array) and `tags` (BIO label array):
 
 ```json
 [
   {
-    "text": ["b", "u", "d", "g", "e", "t", " ", "6", "K"],
-    "tags": ["O", "O", "O", "O", "O", "O", "O", "B-Target", "I-Target"]
+    "text": ["預", "算", "六", "千", "內", "的", "套", "房"],
+    "tags": ["O", "O", "B-Target", "I-Target", "I-Target", "O", "B-Target", "I-Target"]
   }
 ]
 ```
