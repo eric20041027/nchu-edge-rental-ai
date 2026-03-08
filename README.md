@@ -1,50 +1,88 @@
-# 興大 AI 租屋推薦系統
+# NCHU AI Rental Recommendation System (Frontend-Only ML Architecture)
 
-本專案是一個無伺服器 (Serverless/Frontend-Only) 的租屋推薦應用程式，專為尋找中興大學附近租屋的大學生所打造。透過 Web Machine Learning 技術，本系統將原本依賴 Python 後端的 Transformer 模型推論，完整移植至前端瀏覽器執行。
+This project is a **100% Serverless / Frontend-Only** rental recommendation web application designed for university students. By leveraging Web Machine Learning technologies, we successfully migrated a heavy Python-backend NLP Transformer model directly into the user's browser for offline inference.
 
-使用者能以自然語言輸入租屋需求，由瀏覽器即時下載並執行 ONNX 模型，分析語意特徵並計算分數，找出最佳租屋選項。
+Users can input their rental requirements in natural language (e.g., "Budget under 6000, near the main gate, suite with independent washing machine"), and the browser will instantly download and execute the ONNX model to analyze the semantic features and recommend the best properties.
 
-## 專題核心特色
+## 💡 Capstone Highlights
 
-- 100% 離線 AI 推論：採用 ONNXRuntime-Web 直接在瀏覽器解析 16MB 的 ALBERT 模型。
-- 免除後端成本與延遲：無需架設 Python 伺服器，使用者端實現零延遲的 CBF (Content-Based Filtering) 推薦。
-- 網路安全與隱私：語意分析在裝置端進行，保障使用者輸入需求隱私。
-- 無縫靜態部署：部署至 Vercel，提供快速且穩定的靜態網頁體驗。
+- **100% Offline AI Inference**: Utilizes `ONNXRuntime-Web` to execute a 16MB ALBERT model directly within the browser ecosystem.
+- **Zero Backend Costs & Latency**: Eliminates the need for Python servers. Achieves zero network latency for Content-Based Filtering (CBF) recommendations.
+- **Edge Computing Privacy**: Semantic analysis is performed entirely on the client's device, ensuring maximum privacy for user inputs.
+- **Seamless Static Deployment**: Capable of being deployed to static hosting platforms like Vercel or GitHub Pages in seconds.
 
-## 技術架構
+## 🛠 Tech Stack
 
-- 核心技術：HTML5, CSS3, JavaScript (ES6+)
-- 自然語言處理 (NLP)：
-  - Transformers.js (負責 Tokenization 斷詞與編碼)
-  - ONNX Runtime Web (負責 WebAssembly 張量矩陣運算)
-  - 模型：ALBERT (A Lite BERT) 轉換之 .onnx 格式
-- 資料庫：PapaParse 解析本機房屋 CSV 檔
+- **Core**: HTML5, CSS3, Vanilla JavaScript (ES6+)
+- **Natural Language Processing (NLP)**:
+  - [Transformers.js](https://huggingface.co/docs/transformers.js/index) (Tokenization)
+  - [ONNX Runtime Web](https://onnxruntime.ai/docs/api/javascript/api/interfaces/Session.html) (WebAssembly Tensor Matrix Operations)
+  - **Model**: ALBERT (A Lite BERT) exported to `.onnx` format
+- **Data Parsing**: [PapaParse](https://www.papaparse.com/) (Fast client-side CSV parsing)
+- **Deployment**: [Vercel](https://vercel.com) (Static Web Hosting)
 
-## 本機開發與執行
+## 🚀 Getting Started
 
-因瀏覽器的 CORS 跨網域存取限制，無法直接打開 index.html 載入本地端的 .onnx 模型與 .csv 資料檔，必須透過本地 HTTP 伺服器執行。
+Due to browser CORS (Cross-Origin Resource Sharing) security policies, you cannot load the local `.onnx` and `.csv` files simply by double-clicking the `index.html`. You must serve the application using a local HTTP server.
 
-1. 取得專案原始碼：
-   ```bash
-   git clone https://github.com/eric20041027/Renting-recommendation-ONNX.git
-   cd Renting-recommendation-ONNX
-   ```
+### 1. Clone the Repository
 
-2. 啟動本地 HTTP 伺服器：
-   ```bash
-   python3 -m http.server 5002
-   ```
+```bash
+git clone https://github.com/eric20041027/Renting-recommendation-ONNX.git
+cd Renting-recommendation-ONNX
+```
 
-3. 開啟網頁開始測試：
-   開啟瀏覽器前往 http://localhost:5002。首次載入會從背景下載 16MB 的模型檔案，完成後即可輸入條件進行本地推理。
+### 2. Start the Local Server
 
-## 系統資料流與 ONNX 張量解析
+You can use any local web server. Python's built-in `http.server` is commonly available:
 
-系統採用純前端架構，捨棄 Python 伺服器，資料處理流程如下：
+```bash
+# Start server on port 5002
+python3 -m http.server 5002
+```
 
-1. 模型初始化：載入網頁時，inference.js 非同步下載 csv 與 model.onnx。
-2. 斷詞編碼：使用者輸入字串後，Transformers.js 將字串轉換為 Token IDs。
-3. ONNX 推論：WebAssembly 將 Token 轉換為高精度記憶體連續張量 (Tensor)，輸入神經網路得出浮點數機率矩陣。
-4. 解碼與特徵擷取：利用 Argmax 解碼出實體標籤，取得具體特徵字串。
-5. 推薦演算法：將擷取的特徵送入 CBF 演算法，掃描所有房屋資料並計算推薦分數。
-6. 前端渲染：app.js 接收推薦結果並動態生成卡片渲染至畫面。
+### 3. Begin Inference
+
+Open your browser and navigate to:
+[http://localhost:5002](http://localhost:5002)
+
+Upon the first visit, the browser will asynchronously cache the 16MB `model.onnx` file and the property database in the background. Once loaded, you can input your requirements for instant offline predictions.
+
+## 🔬 Deep Dive: ONNX WebAssembly Tensor Conversions
+
+The most technically challenging aspect of migrating from a PyTorch backend to a frontend JavaScript architecture is handling high-precision multi-dimensional matrix operations in a loosely-typed language.
+
+Here is the precise workflow implemented in `inference.js`:
+
+### 1. Tokenization
+We utilize HuggingFace's open-source JS tools to load the vocabulary dictionary:
+```javascript
+const tokens = await tokenizer("Budget 6000 suite", { return_tensor: false });
+```
+This generates the required inputs for the neural network:
+*   **`input_ids`**: The integer IDs mapped from the vocabulary dictionary (e.g., `[101, 7521, 5050... 102]`).
+*   **`attention_mask`**: Identifies valid characters for gradient calculation (1 for valid, 0 for padding).
+*   **`token_type_ids`**: Differentiates sentence structures (all 0 for a single sentence).
+
+### 2. Casting Arrays to ONNX Tensors (Typed Memory Allocation)
+WebAssembly (WASM) cannot directly read standard JS arrays. We must manually allocate and cast the data into contiguous memory blocks (`BigInt64Array`) that C++ can understand:
+```javascript
+// Allocate 64-bit high-precision integer memory with shape [Batch Size=1, Sequence Length]
+const input_ids_tensor = new ort.Tensor(
+    'int64', 
+    BigInt64Array.from(tokens.input_ids.map(BigInt)), 
+    [1, tokens.input_ids.length]
+);
+```
+
+### 3. WASM Core Execution (Session Run)
+The encapsulated tensors are passed into the `feeds` object, and `onnxruntime-web` initiates the matrix multiplication operations:
+```javascript
+const results = await session.run(feeds);
+const logits = results.logits.data; // <- Float32Array
+```
+The output `logits` is an extremely flat, one-dimensional `Float32Array`. Its theoretical shape is `[1, sequence_length, 2]`, meaning every character in the sequence receives 2 hidden-layer probability values.
+
+### 4. Decision Boundaries & Argmax Decoding
+We iterate through all characters and compare their respective probability values.
+By calculating the maximum value (Argmax), if index 0 is higher, it is classified as `B (Begin)`. If index 1 is higher, it is classified as `I (Inside)`. We reconstruct the continuous B/I characters into tangible requirements (e.g., Target: 6000), which are then evaluated by our Content-Based Filtering (CBF) recommendation algorithm against the CSV.
