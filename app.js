@@ -1,4 +1,6 @@
-document.addEventListener('DOMContentLoaded', () => {
+import { initData, recommend } from './inference.js';
+
+document.addEventListener('DOMContentLoaded', async () => {
     const userRequirement = document.getElementById('userRequirement');
     const welcomeScreen = document.getElementById('welcomeScreen');
     const resultsScreen = document.getElementById('resultsScreen');
@@ -6,6 +8,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const recommendationList = document.getElementById('recommendationList');
     const mainContent = document.getElementById('mainContent');
     const chips = document.querySelectorAll('.chip');
+
+    // 初始化加載提示
+    const loadStatus = document.createElement('div');
+    loadStatus.style.padding = '10px';
+    loadStatus.style.color = '#64ffda';
+    loadStatus.style.textAlign = 'center';
+    loadStatus.style.fontSize = '0.9rem';
+    loadStatus.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 正在背景加載房屋資料...';
+    welcomeScreen.insertBefore(loadStatus, welcomeScreen.children[2]);
+
+    userRequirement.disabled = true;
+    userRequirement.placeholder = "請稍候，資料庫準備中...";
+
+    try {
+        await initData();
+        loadStatus.innerHTML = '<i class="fa-solid fa-check"></i> 系統準備就緒！';
+        setTimeout(() => loadStatus.style.display = 'none', 2000);
+        userRequirement.disabled = false;
+        userRequirement.placeholder = "輸入租屋需求，例如：預算 6000 以內、有冷氣...";
+    } catch (e) {
+        console.error("Initialization error:", e);
+        loadStatus.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="color: #ff6b6b"></i> 載入失敗，請刷新或確認網路。';
+        loadStatus.style.color = '#ff6b6b';
+    }
 
     // 初始化 textarea 高度
     userRequirement.style.height = "auto";
@@ -96,29 +122,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // 動態變更推薦結果
     async function fetchRecommendations(inputText) {
         try {
-            const response = await fetch('/api/recommend', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ text: inputText })
-            });
+            const data = await recommend(inputText, 5);
 
-            if (!response.ok) {
-                throw new Error(`伺服器錯誤: ${response.status}`);
-            }
-
-            const data = await response.json();
-
-            if (data.success && data.data) {
-                renderCards(data.data);
+            if (data && data.length >= 0) {
+                renderCards(data);
             } else {
-                throw new Error(data.error || "回傳格式不正確");
+                throw new Error("回傳格式不正確");
             }
         } catch (error) {
             console.error("Fetch Error:", error);
             // 發生錯誤時顯示友善提示
-            recommendationList.innerHTML = `<div style="text-align: center; color: white; padding: 2rem;">無法取得推薦結果，請檢查伺服器是否運行中。</div>`;
+            recommendationList.innerHTML = `<div style="text-align: center; color: white; padding: 2rem;">無法取得推薦結果，請檢查系統狀態。</div>`;
         }
     }
 
