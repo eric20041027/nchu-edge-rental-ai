@@ -39,9 +39,11 @@ export async function initData() {
 export async function initNLP(onProgress) {
     if (!tokenizer || !session) {
         env.allowLocalModels = false;
+        env.allowRemoteModels = true;
         env.useBrowserCache = true;
 
-        const modelUrl = window.location.origin + '/onnx_model_dir';
+        // Custom URL MUST contain a trailing slash for transformers.js
+        const modelUrl = window.location.origin + '/onnx_model_dir/';
 
         try {
             // 1. Load Tokenizer
@@ -53,7 +55,7 @@ export async function initNLP(onProgress) {
 
             // 3. Load ONNX model session
             if (onProgress) onProgress({ status: 'progress', file: 'model.onnx', loaded: 50, total: 100 });
-            session = await ort.InferenceSession.create(modelUrl + '/model.onnx');
+            session = await ort.InferenceSession.create(modelUrl + 'model.onnx');
             if (onProgress) onProgress({ status: 'progress', file: 'model.onnx', loaded: 100, total: 100 });
 
         } catch (e) {
