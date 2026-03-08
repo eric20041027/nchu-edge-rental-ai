@@ -1,4 +1,4 @@
-import { initData, recommend } from './inference.js';
+import { initData, initNLP, recommend } from './inference.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     const userRequirement = document.getElementById('userRequirement');
@@ -19,10 +19,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     welcomeScreen.insertBefore(loadStatus, welcomeScreen.children[2]);
 
     userRequirement.disabled = true;
-    userRequirement.placeholder = "請稍候，資料庫準備中...";
+    userRequirement.placeholder = "請稍候，資料庫與 AI 模型準備中...";
 
     try {
-        await initData();
+        await Promise.all([
+            initData(),
+            initNLP((progress) => {
+                if (progress.status === 'progress') {
+                    let percent = Math.round((progress.loaded / progress.total) * 100);
+                    loadStatus.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 正在下載 AI 模組與資料 (${percent}%)...`;
+                }
+            })
+        ]);
         loadStatus.innerHTML = '<i class="fa-solid fa-check"></i> 系統準備就緒！';
         setTimeout(() => loadStatus.style.display = 'none', 2000);
         userRequirement.disabled = false;
