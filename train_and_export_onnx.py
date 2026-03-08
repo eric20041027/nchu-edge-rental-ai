@@ -6,37 +6,43 @@ from datasets import Dataset
 # ==========================================
 # 步驟 1: 準備您的訓練資料 (線下建模 Data Prep)
 # ==========================================
-print("🚀 [Step 1] Initializing Tokenizer and Dummy Data...")
+print("[Step 1] Initializing Tokenizer and Dummy Data...")
 model_checkpoint = "clue/albert_chinese_tiny" # 使用輕量化中文 ALBERT 作為基底
 tokenizer = BertTokenizerFast.from_pretrained(model_checkpoint)
 
+import json
+
 # 定義標籤對應表 (B-Target: 特徵開頭, I-Target: 特徵內部, O: 無關字元)
 label_list = ["O", "B-Target", "I-Target"]
-id2label = {i: label for i, label in enumerate(label_list)}
-label2id = {label: i for i, label in enumerate(label_list)}
+label_to_id = {label: i for i, label in enumerate(label_list)}
+id2label = {i: label for i, label in enumerate(label_list)} # Keep id2label for model config
 
-# 為了示範，我們建立三筆簡單的微調假資料 (實際專題中這裡會是一個大型 JSON 或 CSV)
-# 句子1: "預算六千" -> O, O, B, I
-# 句子2: "獨洗套房" -> B, I, O, O
-dummy_data = [
-    {"tokens": ["預", "算", "六", "千"], "ner_tags": [0, 0, 1, 2]},
-    {"tokens": ["獨", "洗", "套", "房"], "ner_tags": [1, 2, 0, 0]},
-    {"tokens": ["近", "正", "門", "好"], "ner_tags": [1, 2, 2, 0]},
-]
+# 嘗試讀取生成的 500 筆資料 (nchu_rental_ner_500.json)
+try:
+    with open("nchu_rental_ner_500.json", "r", encoding="utf-8") as f:
+        dummy_data = json.load(f)
+    print(f"✅ 成功載入 {len(dummy_data)} 筆訓練資料！")
+except FileNotFoundError:
+    print("⚠️ 找不到 nchu_rental_ner_500.json，將使用預設的少數測試資料。")
+    dummy_data = [
+        {"text": ["預", "算", "六", "千", "內", "的", "套", "房"], "tags": ["O", "O", "B-Target", "I-Target", "I-Target", "O", "B-Target", "I-Target"]},
+        {"text": ["想", "找", "離", "中", "興", "大", "學", "近", "的", "雅", "房"], "tags": ["O", "O", "B-Target", "I-Target", "I-Target", "I-Target", "I-Target", "I-Target", "O", "B-Target", "I-Target"]},
+        {"text": ["台", "水", "台", "電", "可", "養", "貓"], "tags": ["B-Target", "I-Target", "I-Target", "I-Target", "B-Target", "I-Target", "I-Target"]}
+    ]
 
 # 將假資料轉換為 HuggingFace Dataset 格式
 def tokenize_and_align_labels(examples):
-    tokenized_inputs = tokenizer(examples["tokens"], is_split_into_words=True, padding="max_length", max_length=16, truncation=True)
+    tokenized_inputs = tokenizer(examples["text"], is_split_into_words=True, padding="max_length", max_length=16, truncation=True)
     
     labels = []
-    for i, label in enumerate(examples["ner_tags"]):
+    for i, tags in enumerate(examples["tags"]):
         word_ids = tokenized_inputs.word_ids(batch_index=i)
         label_ids = []
         for word_idx in word_ids:
             if word_idx is None:
                 label_ids.append(-100) # -100 是 PyTorch 忽略計算 loss 的預設值
             else:
-                label_ids.append(label[word_idx])
+                label_ids.append(label_to_id[tags[word_idx]])
         labels.append(label_ids)
 
     tokenized_inputs["labels"] = labels
@@ -44,32 +50,65 @@ def tokenize_and_align_labels(examples):
 
 dataset = Dataset.from_list(dummy_data)
 tokenized_datasets = dataset.map(tokenize_and_align_labels, batched=True)
+# 將資料切分為 80% 訓練集, 20% 驗證集 (固定 seed 確保每次切分一樣)
+split_datasets = tokenized_datasets.train_test_split(test_size=0.2, seed=42)
+train_dataset = split_datasets["train"]
+eval_dataset = split_datasets["test"]
 
 # ==========================================
 # 步驟 2: 載入原始模型並進行微調 (Fine-Tuning)
 # ==========================================
-print("🧠 [Step 2] Loading Model and Starting Fine-Tuning...")
+print("\n🧠 [Step 2] Loading Model and Starting Fine-Tuning...")
 model = AutoModelForTokenClassification.from_pretrained(
     model_checkpoint, 
     num_labels=len(label_list), 
-    id2label=id2label, 
-    label2id=label2id
+    id2label=id2label,
+    label2id=label_to_id
 )
+
+# 定義簡單的準確率計算公式 (免額外套件版本)
+import numpy as np
+def compute_metrics(p):
+    predictions, labels = p
+    predictions = np.argmax(predictions, axis=2)
+
+    # 忽略 -100 (padding/特殊字元) 的標籤
+    true_predictions = [
+        [label_list[p] for (p, l) in zip(prediction, label) if l != -100]
+        for prediction, label in zip(predictions, labels)
+    ]
+    true_labels = [
+        [label_list[l] for (p, l) in zip(prediction, label) if l != -100]
+        for prediction, label in zip(predictions, labels)
+    ]
+
+    # 計算簡單的 Token 級別準確率
+    correct = sum(p == l for pred, lbl in zip(true_predictions, true_labels) for p, l in zip(pred, lbl))
+    total = sum(len(lbl) for lbl in true_labels)
+    accuracy = correct / total if total > 0 else 0
+    return {"accuracy": accuracy}
 
 # 設定訓練參數
 training_args = TrainingArguments(
     output_dir="./custom_model_output",
+    eval_strategy="epoch",  # 每個 epoch 結束後進行驗證
     learning_rate=2e-5,
-    per_device_train_batch_size=2,
-    num_train_epochs=3, # 為了示範只跑 3 個 Epoch
+    per_device_train_batch_size=8,
+    per_device_eval_batch_size=8,
+    num_train_epochs=10,         # 原本是 3，現在資料夠多可以拉高到 10 次
     weight_decay=0.01,
-    logging_steps=1
+    logging_steps=10,
+    save_strategy="epoch",
+    load_best_model_at_end=True, # 訓練完自動載入表現最好的一次
+    report_to="none"
 )
 
 trainer = Trainer(
     model=model,
     args=training_args,
-    train_dataset=tokenized_datasets,
+    train_dataset=train_dataset,
+    eval_dataset=eval_dataset, # 加入驗證集
+    compute_metrics=compute_metrics # 加入評估公式
 )
 
 # 開始訓練 (這就是所謂的線下建模！)
@@ -78,7 +117,7 @@ trainer.train()
 # ==========================================
 # 步驟 3: 模型輕量化匯出 (ONNX Export)
 # ==========================================
-print("📉 [Step 3] Exporting Fine-Tuned Model to ONNX format...")
+print("[Step 3] Exporting Fine-Tuned Model to ONNX format...")
 # 先將微調好的模型存下來
 save_path = "./my_trained_albert"
 model.save_pretrained(save_path)
@@ -111,4 +150,4 @@ torch.onnx.export(
     }
 )
 
-print(f"✅ 大功告成！專屬您的模型已經匯出至 {onnx_output_path}，體積僅 16MB！")
+print(f"模型已經匯出至 {onnx_output_path}")
