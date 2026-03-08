@@ -48,14 +48,25 @@ export async function initNLP(onProgress) {
         try {
             // 1. Load Tokenizer using relative directory name
             if (onProgress) onProgress({ status: 'progress', file: 'tokenizer.json', loaded: 10, total: 100 });
-            tokenizer = await AutoTokenizer.from_pretrained('onnx_model_dir');
+            tokenizer = await AutoTokenizer.from_pretrained('custom_onnx_model_dir');
 
             // 2. Setup ONNXRuntime Web paths
             ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/';
 
-            // 3. Load ONNX model session directly via URI
+            // 3. Load ONNX model session directly via URI with externalData linking
             if (onProgress) onProgress({ status: 'progress', file: 'model.onnx', loaded: 50, total: 100 });
-            session = await ort.InferenceSession.create(window.location.origin + '/onnx_model_dir/model.onnx');
+            session = await ort.InferenceSession.create(
+                window.location.origin + '/custom_onnx_model_dir/model.onnx',
+                {
+                    executionProviders: ['wasm'],
+                    externalData: [
+                        {
+                            path: 'my_custom_model.onnx.data', // 原本匯出時寫死在 ONNX 裡面的黨名
+                            data: window.location.origin + '/custom_onnx_model_dir/model.onnx.data'
+                        }
+                    ]
+                }
+            );
             if (onProgress) onProgress({ status: 'progress', file: 'model.onnx', loaded: 100, total: 100 });
 
         } catch (e) {
@@ -106,7 +117,8 @@ async function segmentText(text) {
             }
         }
 
-        const label = max_idx === 0 ? 'B' : 'I';
+        // Custom model uses 3 labels: 0="O", 1="B-Target", 2="I-Target"
+        const label = (max_idx === 1) ? 'B' : (max_idx === 2 ? 'I' : 'O');
 
         // Decode token to string (Albert format adds ' ', replacing it)
         let char = tokenizer.decode([token_id]).replace(/ /g, '').trim();
@@ -117,6 +129,11 @@ async function segmentText(text) {
             current_word = char;
         } else if (label === 'I') {
             current_word += char.replace(/^##/, '');
+        } else if (label === 'O') {
+            if (current_word) {
+                words.push(current_word);
+                current_word = ''; // Reset after pushing
+            }
         }
     }
     if (current_word) words.push(current_word);
