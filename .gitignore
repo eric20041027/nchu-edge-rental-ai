@@ -1,8 +1,35 @@
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
 venv/
+.venv/
 .env
+
+# OS
 .DS_Store
 *.log
+
+# 訓練中間產物 (checkpoints / runs / 原始匯出檔)
+custom_model_output/
+my_custom_model.onnx
+my_custom_model.onnx.data
+my_trained_albert/
+
+# 舊版公版模型
+onnx_model_dir/
+
+# 舊版訓練資料
+nchu_rental_ner_500.json
+train_10k.json
+test_10k.json
+
+# Agents / Skills (開發工具，非專案本體)
+.agents/
+.agent/
+_agents/
+_agent/
+.gemini/
+
+# Vercel
 .vercel/
