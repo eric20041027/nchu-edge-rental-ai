@@ -167,21 +167,32 @@
                 // (4) Argmax 解碼
                 log("\n[步驟D] 解碼類別 (Argmax)...");
                 let extracted_tags = [];
-                for (let i = 0; i < tokens.input_ids.length; i++) {
-                    const prob0 = logits[i * 2]; // O / B-Tag (此處簡化對應)
-                    const prob1 = logits[i * 2 + 1]; // I-Tag
+                const labelList = ["O (外部)", "B-Target (特徵起頭)", "I-Target (特徵內部)"];
 
-                    const tag = prob1 > prob0 ? "Tag-1 (內部)" : "Tag-0 (外部)";
+                for (let i = 0; i < tokens.input_ids.length; i++) {
+                    // 模型輸出的 logits 是 [batch_size, seq_length, num_labels]
+                    // 這裡 num_labels = 3
+                    const prob0 = logits[i * 3];     // O
+                    const prob1 = logits[i * 3 + 1]; // B-Target
+                    const prob2 = logits[i * 3 + 2]; // I-Target
+
+                    // 找出機率最大值的 index (Argmax)
+                    let maxProb = prob0;
+                    let bestIndex = 0;
+                    if (prob1 > maxProb) { maxProb = prob1; bestIndex = 1; }
+                    if (prob2 > maxProb) { maxProb = prob2; bestIndex = 2; }
+
+                    const tag = labelList[bestIndex];
+
                     if (tokens.input_ids[i] !== 101 && tokens.input_ids[i] !== 102) { // 忽略 CLS 與 SEP
-                        // 解析原本的字
-                        const char = tokenizer.model.vocab ?
-                            Object.keys(tokenizer.model.vocab).find(k => tokenizer.model.vocab[k] === tokens.input_ids[i])
-                            : "?";
-                        extracted_tags.push(`${char}: [${tag}]`);
+                        // 用 tokenizer 正確解碼轉回中文字元
+                        const decodedChar = tokenizer.decode([tokens.input_ids[i]]).trim();
+                        // 有可能解出空字串，給個備用顯示
+                        const charDisplay = decodedChar || "[UNK]";
+                        extracted_tags.push(`${charDisplay}: [${tag}]`);
                     }
                 }
                 log("\n輸出結果預測：\n" + extracted_tags.join("\n"));
-                log("\n(注意：因為我們剛才只用 3 筆資料訓練了 1 秒鐘，所以模型現在是個只會亂猜的笨蛋喔！但重點是架構完全接通了！🚀)");
 
             } catch (err) {
                 log("\n❌ 推論失敗：" + err.message);
