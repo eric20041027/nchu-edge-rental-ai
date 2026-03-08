@@ -308,7 +308,32 @@ export async function recommend(text, top_k = 5) {
     const features = tagFeatures(words);
     const cbf_vector = formatForCBF(features);
 
+    // ★ 關鍵修正：直接掃描原始輸入文字來偵測「以上/以下/以內」
+    // 因為 NER 模型可能會將這些功能詞標記為 O (外部)，導致它們不會出現在 words 裡面
+    let budget_limit = cbf_vector.budget_limit;
+    if (!budget_limit) {
+        if (text.includes('以上')) budget_limit = 'above';
+        else if (text.includes('以下') || text.includes('以內')) budget_limit = 'below';
+    }
+
     let user_budget = cbf_vector.search_budget;
+
+    // ★ 關鍵修正：如果 NER 抽不到預算數字，也直接從原始文字用正則抓
+    if (!user_budget) {
+        let rawText = text.replace(/一/g, '1').replace(/二/g, '2').replace(/兩/g, '2').replace(/三/g, '3')
+            .replace(/四/g, '4').replace(/五/g, '5').replace(/六/g, '6').replace(/七/g, '7')
+            .replace(/八/g, '8').replace(/九/g, '9');
+        if (rawText.includes('萬')) {
+            let m = rawText.match(/(\d+)萬(\d*)/);
+            if (m) user_budget = parseInt(m[1]) * 10000 + (m[2] ? parseInt(m[2]) * 1000 : 0);
+        }
+        if (!user_budget) {
+            rawText = rawText.replace(/千/g, '000').replace(/[kK]/g, '000');
+            let m2 = rawText.match(/(\d{4,})/);
+            if (m2) user_budget = parseInt(m2[1]);
+        }
+    }
+
     let target_region = cbf_vector.search_region;
     let target_room = cbf_vector.search_room_type;
     let target_building = cbf_vector.search_building_type;
@@ -318,12 +343,14 @@ export async function recommend(text, top_k = 5) {
     let pet_friendly = cbf_vector.is_pet_friendly;
     let distance_limit = cbf_vector.distance_limit_km;
 
+    console.log("Parsed Budget:", user_budget, "Limit:", budget_limit);
+
     let MAX_THEORETICAL_SCORE = 0.0;
     if (user_budget) MAX_THEORETICAL_SCORE += 20.0;
     if (target_region) MAX_THEORETICAL_SCORE += 20.0;
     if (target_room) MAX_THEORETICAL_SCORE += 20.0;
     if (target_building) MAX_THEORETICAL_SCORE += 15.0;
-    if (distance_limit) MAX_THEORETICAL_SCORE += 25.0; // 距離權重很高
+    if (distance_limit) MAX_THEORETICAL_SCORE += 25.0;
     MAX_THEORETICAL_SCORE += (req_furnitures.length * 5.0);
     MAX_THEORETICAL_SCORE += (req_security.length * 5.0);
 
@@ -335,15 +362,17 @@ export async function recommend(text, top_k = 5) {
         let score = 0.0;
         let details = [];
         let notes = row.Note_List.join(" ");
+        let is_hard_excluded = false;
 
-        let budget_limit = cbf_vector.budget_limit;
+        // ★ 預算硬性篩選：違反預算限制的房屋直接跳過，不進入結果
         if (user_budget && budget_limit) {
             if (budget_limit === 'below' && row.Rent_Num > user_budget) {
-                score -= 1000.0; details.push("超出預算上限");
+                is_hard_excluded = true;
             } else if (budget_limit === 'above' && row.Rent_Num < user_budget) {
-                score -= 1000.0; details.push("低於預算下限");
+                is_hard_excluded = true;
             }
         }
+        if (is_hard_excluded) continue; // 直接跳過這間房，不推薦
 
         if (user_gender === "限女生" && notes.includes("限男生")) {
             score -= 1000.0; details.push("性別不符(限男)");
@@ -418,10 +447,8 @@ export async function recommend(text, top_k = 5) {
             }
         }
 
+        // ★ 修正百分比公式：不再無條件給 40% 底分
         let percentage_score = (score / MAX_THEORETICAL_SCORE) * 100;
-        if (score >= 0) {
-            percentage_score = 40 + (percentage_score * 0.6);
-        }
         percentage_score = Math.min(Math.max(percentage_score, 0), 100);
 
         if (score > 0) {
