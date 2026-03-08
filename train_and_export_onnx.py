@@ -1,6 +1,6 @@
 import os
 import torch
-from transformers import AutoTokenizer, AutoModelForTokenClassification, TrainingArguments, Trainer
+from transformers import BertTokenizerFast, AutoModelForTokenClassification, TrainingArguments, Trainer
 from datasets import Dataset
 
 # ==========================================
@@ -8,7 +8,7 @@ from datasets import Dataset
 # ==========================================
 print("🚀 [Step 1] Initializing Tokenizer and Dummy Data...")
 model_checkpoint = "clue/albert_chinese_tiny" # 使用輕量化中文 ALBERT 作為基底
-tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
+tokenizer = BertTokenizerFast.from_pretrained(model_checkpoint)
 
 # 定義標籤對應表 (B-Target: 特徵開頭, I-Target: 特徵內部, O: 無關字元)
 label_list = ["O", "B-Target", "I-Target"]
@@ -90,13 +90,16 @@ onnx_output_path = "my_custom_model.onnx"
 dummy_text = "預算五千套房"
 inputs = tokenizer(dummy_text, return_tensors="pt", max_length=16, padding="max_length", truncation=True)
 
+# 強制將模型與輸入張量移至 CPU，避免 Mac MPS 裝置在 ONNX 轉換時發生 device mismatch
+model.to("cpu")
+
 # 使用 PyTorch 內建的 ONNX 轉換工具
 torch.onnx.export(
     model, 
-    (inputs["input_ids"], inputs["attention_mask"], inputs["token_type_ids"]), 
+    (inputs["input_ids"].to("cpu"), inputs["attention_mask"].to("cpu"), inputs["token_type_ids"].to("cpu")), 
     onnx_output_path, 
     export_params=True,
-    opset_version=14, 
+    opset_version=18, 
     do_constant_folding=True, # 常數折疊，最佳化體積
     input_names=['input_ids', 'attention_mask', 'token_type_ids'], # 這裡的名字必須對應前端 inference.js 的 key!
     output_names=['logits'],
