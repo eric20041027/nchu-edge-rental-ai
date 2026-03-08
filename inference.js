@@ -1,9 +1,12 @@
+import { AutoTokenizer, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1';
+
+let tokenizer = null;
+let session = null;
 let rentalData = [];
 
 // Initialize CSV data
 export async function initData() {
     return new Promise((resolve, reject) => {
-        // PapaParse is loaded via CDN in index.html
         window.Papa.parse('/nchu_rental_info.csv', {
             download: true,
             header: true,
@@ -32,12 +35,94 @@ export async function initData() {
     });
 }
 
-// 模擬原本載入模型的耗時結構，實際上直接完成
+// Initialize NLP model using ALBERT via ONNXRuntime Web
 export async function initNLP(onProgress) {
-    return Promise.resolve();
+    if (!tokenizer || !session) {
+        env.allowLocalModels = false;
+        env.useBrowserCache = true;
+
+        const modelUrl = window.location.origin + '/onnx_model_dir';
+
+        try {
+            // 1. Load Tokenizer
+            if (onProgress) onProgress({ status: 'progress', file: 'tokenizer.json', loaded: 10, total: 100 });
+            tokenizer = await AutoTokenizer.from_pretrained(modelUrl);
+
+            // 2. Setup ONNXRuntime Web paths
+            ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/';
+
+            // 3. Load ONNX model session
+            if (onProgress) onProgress({ status: 'progress', file: 'model.onnx', loaded: 50, total: 100 });
+            session = await ort.InferenceSession.create(modelUrl + '/model.onnx');
+            if (onProgress) onProgress({ status: 'progress', file: 'model.onnx', loaded: 100, total: 100 });
+
+        } catch (e) {
+            console.error("NLP Init Error:", e);
+            throw e;
+        }
+    }
 }
 
-function tagFeatures(text) {
+async function segmentText(text) {
+    if (!text || !tokenizer || !session) return [];
+
+    // 1. Tokenize Text
+    const tokens = await tokenizer(text, { return_tensor: false });
+
+    // 2. Prepare Tensors
+    const input_ids = new ort.Tensor('int64', BigInt64Array.from(tokens.input_ids.map(BigInt)), [1, tokens.input_ids.length]);
+    const attention_mask = new ort.Tensor('int64', BigInt64Array.from(tokens.attention_mask.map(BigInt)), [1, tokens.attention_mask.length]);
+    const token_type_ids = new ort.Tensor('int64', BigInt64Array.from(tokens.token_type_ids.map(BigInt)), [1, tokens.token_type_ids.length]);
+
+    const feeds = {
+        input_ids: input_ids,
+        attention_mask: attention_mask,
+        token_type_ids: token_type_ids
+    };
+
+    // 3. Run ONNX Inference
+    const results = await session.run(feeds);
+    const logits = results.logits.data; // Float32Array format [batch, seq_len, num_labels]
+    const num_labels = results.logits.dims[2];
+
+    // 4. Argmax and Decode B/I tags
+    let words = [];
+    let current_word = '';
+
+    for (let i = 0; i < tokens.input_ids.length; i++) {
+        const token_id = tokens.input_ids[i];
+        // Skip Special Tokens (CLS=101, SEP=102, PAD=0)
+        if (token_id === 101 || token_id === 102 || token_id === 0) continue;
+
+        let max_val = -Infinity;
+        let max_idx = 0;
+        for (let j = 0; j < num_labels; j++) {
+            let val = logits[i * num_labels + j];
+            if (val > max_val) {
+                max_val = val;
+                max_idx = j;
+            }
+        }
+
+        const label = max_idx === 0 ? 'B' : 'I';
+
+        // Decode token to string (Albert format adds ' ', replacing it)
+        let char = tokenizer.decode([token_id]).replace(/ /g, '').trim();
+        if (!char) continue;
+
+        if (label === 'B') {
+            if (current_word) words.push(current_word);
+            current_word = char;
+        } else if (label === 'I') {
+            current_word += char.replace(/^##/, '');
+        }
+    }
+    if (current_word) words.push(current_word);
+
+    return words;
+}
+
+function tagFeatures(words) {
     const features = {
         "地址(區域)": null,
         "格局(房型)": null,
@@ -52,75 +137,74 @@ function tagFeatures(text) {
         "備註": []
     };
 
-    if (!text) return features;
-
-    // 1. 預算解析
-    // 尋找例如 "預算 6000", "6000", "6千" 的字眼
-    let budgetMatch = text.match(/預算\s*(\d+)/) || text.match(/(\d+)\s*(元|塊|千|萬)/) || text.match(/(\d{3,5})/);
-    if (budgetMatch) {
-        let num = parseInt(budgetMatch[1]);
-        if (budgetMatch[2] === '千') num *= 1000;
-        else if (budgetMatch[2] === '萬') num *= 10000;
-        else if (num < 100 && text.includes('預算')) num *= 1000; // e.g. "預算 6" -> 6000
-
-        if (num >= 1000 || text.includes("預算")) {
-            features["預算"] = num;
-        }
-    }
-
-    if (text.includes("以上") && !text.includes("以內")) features["預算限制"] = "above";
-    if (text.includes("以下") || text.includes("以內")) features["預算限制"] = "below";
-
-    // 2. 地區
-    const regions = ["南區", "西區", "東區", "北區", "中區", "大里區", "大里", "烏日", "市區", "校區", "學校"];
-    for (let r of regions) {
-        if (text.includes(r)) { features["地址(區域)"] = r; break; }
-    }
-
-    // 3. 房型
-    const rooms = ["套房", "雅房", "整層", "家庭式", "住家"];
-    for (let r of rooms) if (text.includes(r)) { features["格局(房型)"] = r; break; }
-
-    // 4. 建築
-    const builds = ["透天厝", "透天", "電梯大樓", "公寓", "別墅"];
-    for (let b of builds) if (text.includes(b)) { features["類型(建築)"] = b; break; }
-
-    // 5. 家具
     const furniture_keywords = ["床", "衣櫃", "電話", "網路", "寬頻", "冰箱", "洗衣機", "脫水機", "電視", "第四台", "書桌", "熱水器", "冷氣", "穿衣鏡", "電梯", "車位", "機車", "汽車", "飲水機", "陽台", "曬衣"];
-    for (let f of furniture_keywords) {
-        if (text.includes(f)) features["家具設施"].push(f);
-    }
+    const included_keywords = ["水費", "電費", "網路費", "管理費", "清潔費", "瓦斯"];
+    const security_keywords = ["監視器", "監視系統", "攝影", "感應", "滅火器", "警報", "照明", "逃生", "防盜"];
 
-    // 6. 租金包含項目
-    const included_keywords = ["水費", "電費", "網路費", "管理費", "清潔費", "瓦斯", "水", "電", "網路"];
-    if (text.includes("包") || text.includes("含")) {
-        for (let i of included_keywords) {
-            let regex = new RegExp(`(包|含).*?${i}`);
-            if (regex.test(text)) {
-                let key = (i === '水' || i === '電') ? i + '費' : i;
-                if (!features["租金包含"].includes(key)) features["租金包含"].push(key);
+    for (let i = 0; i < words.length; i++) {
+        let word = words[i];
+
+        if (word === "預算" && i + 1 < words.length) {
+            if (!isNaN(parseInt(words[i + 1]))) {
+                features["預算"] = parseInt(words[i + 1]);
+            }
+        } else if (!isNaN(parseInt(word)) && !features["預算"]) {
+            if (i + 1 < words.length && ["元", "塊", "千", "萬"].includes(words[i + 1])) {
+                let multiplier = words[i + 1] === "千" ? 1000 : (words[i + 1] === "萬" ? 10000 : 1);
+                features["預算"] = parseInt(word) * multiplier;
+            } else if (parseInt(word) > 1000) {
+                features["預算"] = parseInt(word);
+            }
+        }
+
+        if (word.includes("以上")) features["預算限制"] = "above";
+        if (word.includes("以下") || word.includes("以內")) features["預算限制"] = "below";
+
+        if (["南區", "西區", "東區", "北區", "中區", "大里", "大里區", "烏日", "市區", "校區", "學校"].includes(word)) {
+            features["地址(區域)"] = word;
+        }
+
+        if (["套房", "雅房", "整層", "家庭式", "住家"].includes(word)) features["格局(房型)"] = word;
+        if (["透天", "透天厝", "公寓", "電梯大樓", "別墅"].includes(word)) features["類型(建築)"] = word;
+
+        for (let f_kw of furniture_keywords) {
+            if (word.includes(f_kw) && !features["家具設施"].includes(f_kw)) {
+                features["家具設施"].push(f_kw);
+            }
+        }
+
+        for (let inc_kw of included_keywords) {
+            if (word.includes(inc_kw)) {
+                let is_included = false;
+                for (let j = Math.max(0, i - 2); j < i; j++) {
+                    if (["包", "包含", "含"].includes(words[j])) is_included = true;
+                }
+                if (is_included && !features["租金包含"].includes(inc_kw)) {
+                    features["租金包含"].push(inc_kw);
+                }
+            }
+        }
+
+        for (let sec_kw of security_keywords) {
+            if (word.includes(sec_kw) && !features["安全管理與消防"].includes(sec_kw)) {
+                features["安全管理與消防"].push(sec_kw);
+            }
+        }
+
+        if (word.includes("寵物") || word.includes("貓") || word.includes("狗")) {
+            let is_allowed = true;
+            for (let j = Math.max(0, i - 2); j < i; j++) {
+                if (["不", "禁", "不可", "不能"].includes(words[j])) is_allowed = false;
+            }
+            features["寵物"] = is_allowed ? "可養寵物" : "禁養寵物";
+        }
+
+        if (word.includes("男") || word.includes("女")) {
+            for (let j = Math.max(0, i - 2); j < i; j++) {
+                if (["限", "只"].includes(words[j])) features["性別限制"] = `限${word}生`;
             }
         }
     }
-
-    // 7. 安全
-    const security_keywords = ["監視器", "監視系統", "攝影", "感應", "滅火器", "警報", "照明", "逃生", "防盜"];
-    for (let s of security_keywords) {
-        if (text.includes(s)) features["安全管理與消防"].push(s);
-    }
-
-    // 8. 寵物
-    if (text.includes("寵物") || text.includes("貓") || text.includes("狗")) {
-        if (text.includes("不") || text.includes("禁") || text.includes("不能") || text.includes("不可")) {
-            features["寵物"] = "禁養寵物";
-        } else {
-            features["寵物"] = "可養寵物";
-        }
-    }
-
-    // 9. 性別
-    if (text.includes("限男") || text.includes("男網") || text.match(/男生/)) features["性別限制"] = "限男生";
-    else if (text.includes("限女") || text.includes("女孩") || text.match(/女生/)) features["性別限制"] = "限女生";
 
     return features;
 }
@@ -145,7 +229,12 @@ function formatForCBF(features) {
 }
 
 export async function recommend(text, top_k = 5) {
-    const features = tagFeatures(text);
+    // RUN ALBERT + ORT
+    const words = await segmentText(text);
+    console.log("ALBERT Segmented Words:", words);
+
+    // Feature Extraction
+    const features = tagFeatures(words);
     const cbf_vector = formatForCBF(features);
 
     let user_budget = cbf_vector.search_budget;
