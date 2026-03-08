@@ -118,7 +118,7 @@
                         executionProviders: ['wasm'],
                         externalData: [
                             {
-                                path: 'model.onnx.data',
+                                path: 'my_custom_model.onnx.data', // 原本匯出時寫死在 ONNX 裡面的黨名
                                 data: window.location.origin + '/custom_onnx_model_dir/model.onnx.data'
                             }
                         ]
