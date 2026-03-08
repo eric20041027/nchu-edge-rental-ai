@@ -136,6 +136,7 @@ function tagFeatures(words) {
         "安全管理與消防": [],
         "寵物": null,
         "性別限制": null,
+        "距離需求_km": null,
         "備註": []
     };
 
@@ -206,6 +207,39 @@ function tagFeatures(words) {
                 if (["限", "只"].includes(words[j])) features["性別限制"] = `限${word}生`;
             }
         }
+
+        // --- 距離特徵解析邏輯 ---
+        if (["近", "正門", "男宿", "女宿", "旁邊", "附近"].includes(word) || word.includes("正門") || word.includes("近")) {
+            if (features["距離需求_km"] === null || features["距離需求_km"] > 1.0) {
+                features["距離需求_km"] = 1.0; // 預設「近」或「正門」代表1公里內
+            }
+        }
+
+        if (word === "騎車" || word === "騎機車") {
+            let mins = 5; // 預設 5 分鐘
+            for (let j = i; j < Math.min(words.length, i + 3); j++) {
+                let parsed = parseInt(words[j]);
+                if (!isNaN(parsed)) mins = parsed;
+            }
+            // 騎車時速抓約 40km/h => 1分鐘大約移動 0.6 km
+            let km = mins * 0.6;
+            if (features["距離需求_km"] === null || features["距離需求_km"] > km) {
+                features["距離需求_km"] = km;
+            }
+        }
+
+        if (word === "走路" || word === "步行") {
+            let mins = 5;
+            for (let j = i; j < Math.min(words.length, i + 3); j++) {
+                let parsed = parseInt(words[j]);
+                if (!isNaN(parsed)) mins = parsed;
+            }
+            // 走路時速抓約 4.8km/h => 1分鐘大約移動 0.08 km
+            let km = mins * 0.08;
+            if (features["距離需求_km"] === null || features["距離需求_km"] > km) {
+                features["距離需求_km"] = km;
+            }
+        }
     }
 
     return features;
@@ -226,7 +260,8 @@ function formatForCBF(features) {
         required_included_fees: features["租金包含"],
         required_security: features["安全管理與消防"],
         is_pet_friendly: pet_friendly,
-        gender_preference: features["性別限制"]
+        gender_preference: features["性別限制"],
+        distance_limit_km: features["距離需求_km"]
     };
 }
 
@@ -247,12 +282,14 @@ export async function recommend(text, top_k = 5) {
     let req_security = cbf_vector.required_security;
     let user_gender = cbf_vector.gender_preference;
     let pet_friendly = cbf_vector.is_pet_friendly;
+    let distance_limit = cbf_vector.distance_limit_km;
 
     let MAX_THEORETICAL_SCORE = 0.0;
     if (user_budget) MAX_THEORETICAL_SCORE += 20.0;
     if (target_region) MAX_THEORETICAL_SCORE += 20.0;
     if (target_room) MAX_THEORETICAL_SCORE += 20.0;
     if (target_building) MAX_THEORETICAL_SCORE += 15.0;
+    if (distance_limit) MAX_THEORETICAL_SCORE += 25.0; // 距離權重很高
     MAX_THEORETICAL_SCORE += (req_furnitures.length * 5.0);
     MAX_THEORETICAL_SCORE += (req_security.length * 5.0);
 
@@ -322,6 +359,28 @@ export async function recommend(text, top_k = 5) {
         for (let s of req_security) {
             if (row.Security_List.some(item => item.includes(s))) {
                 score += 5.0; details.push(`有${s}`);
+            }
+        }
+
+        // --- 距離評分邏輯 ---
+        let house_dist = parseFloat(row['距離(km)']);
+        if (distance_limit && !isNaN(house_dist)) {
+            if (house_dist <= distance_limit) {
+                // 完全符合標準內，給滿分
+                score += 25.0;
+                if (distance_limit <= 1.0) {
+                    details.push(`極近中興(${house_dist}km)`);
+                } else {
+                    details.push(`距離符合(${house_dist}km)`);
+                }
+            } else {
+                // 如果稍微超過標準，依照超出比例扣分
+                let over_ratio = (house_dist - distance_limit) / distance_limit;
+                if (over_ratio <= 0.5) { // 超出在 50% 以內 (例：要找2km內，找到3km)，給部分分數
+                    let awarded = 25.0 * (1.0 - (over_ratio / 0.5));
+                    score += awarded;
+                    if (awarded > 10) details.push(`距離尚可(${house_dist}km)`);
+                }
             }
         }
 
