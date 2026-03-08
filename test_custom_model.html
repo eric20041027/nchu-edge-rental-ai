@@ -90,7 +90,7 @@
 
         // 設定：禁止連線至 HuggingFace，強制使用本機權重
         env.allowRemoteModels = false;
-        env.localModelPath = window.location.origin + '/';
+        env.localModelPath = './';
 
         let tokenizer = null;
         let session = null;
