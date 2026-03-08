@@ -105,9 +105,9 @@ The model performs token-level classification using 3 labels:
 
 **Example:**
 ```
-Input:  want find budget six thousand within suite room
-Labels: O    O    B      I   I        I      B     I
-             |budget     |6000-range        |suite room
+Input:  想 找 預 算 六 千 內 的 套 房
+Labels: O  O  O  O  B  I  I  O  B  I
+                    |六千內      |套房
 ```
 
 ### CBF Recommendation Algorithm
