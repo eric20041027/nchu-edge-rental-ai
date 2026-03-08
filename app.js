@@ -170,15 +170,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             const imgUrl = house.imgUrl ? house.imgUrl : "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=600&q=80";
 
             let commuteHtml = '';
-            if (house.distance > 0) {
-                // 如果距離 <= 0.42 km (約 5 min 步行，時速 5 km/h)
-                if (house.distance <= 0.42) {
-                    let walkMins = Math.ceil(house.distance / 0.083);
-                    commuteHtml = `<i class="fa-solid fa-person-walking"></i> 走路約 ${walkMins} 分鐘 (${house.distance} 公里)`;
+            let dist = parseFloat(house.distance);
+            if (!isNaN(dist) && dist > 0) {
+                // 走路時速約 4.5 km/h → 每分鐘走 0.075 km
+                let walkMins = Math.round(dist / 0.075);
+                // 機車市區均速約 25 km/h → 每分鐘走 0.417 km
+                let scooterMins = Math.max(1, Math.round(dist / 0.417));
+
+                if (walkMins <= 10) {
+                    // 步行 10 分鐘以內顯示走路
+                    commuteHtml = `<i class="fa-solid fa-person-walking"></i> 走路約 ${walkMins} 分鐘 (${dist} 公里)`;
                 } else {
-                    // 大於 0.42 km 使用機車計算，市區均速約 30 km/h (0.5 km/min)
-                    let scooterMins = Math.ceil(house.distance / 0.5);
-                    commuteHtml = `<i class="fa-solid fa-motorcycle"></i> 機車約 ${scooterMins} 分鐘 (${house.distance} 公里)`;
+                    // 超過 10 分鐘步行改顯示機車
+                    commuteHtml = `<i class="fa-solid fa-motorcycle"></i> 機車約 ${scooterMins} 分鐘 (${dist} 公里)`;
                 }
             } else {
                 commuteHtml = `<i class="fa-solid fa-location-dot"></i> 距離未提供`;

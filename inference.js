@@ -157,7 +157,7 @@ function tagFeatures(words) {
         "備註": []
     };
 
-    const furniture_keywords = ["床", "衣櫃", "電話", "網路", "寬頻", "冰箱", "洗衣機", "脫水機", "電視", "第四台", "書桌", "熱水器", "冷氣", "穿衣鏡", "電梯", "車位", "機車", "汽車", "飲水機", "陽台", "曬衣"];
+    const furniture_keywords = ["床", "衣櫃", "電話", "網路", "寬頻", "冰箱", "洗衣機", "脫水機", "電視", "第四台", "書桌", "熱水器", "冷氣", "穿衣鏡", "電梯", "車位", "機車", "汽車", "飲水機", "陽台", "曬衣", "獨洗", "獨曬", "開伙", "廚房", "烘衣", "沙發", "對外窗"];
     const included_keywords = ["水費", "電費", "網路費", "管理費", "清潔費", "瓦斯"];
     const security_keywords = ["監視器", "監視系統", "攝影", "感應", "滅火器", "警報", "照明", "逃生", "防盜"];
 
@@ -197,12 +197,23 @@ function tagFeatures(words) {
         if (word.includes("以上") || word.includes("上")) features["預算限制"] = "above";
         if (word.includes("以下") || word.includes("以內") || word.includes("內") || word.includes("下")) features["預算限制"] = "below";
 
-        if (["南區", "西區", "東區", "北區", "中區", "大里", "大里區", "烏日", "市區", "校區", "學校"].includes(word)) {
-            features["地址(區域)"] = word;
+        // 地區匹配：使用 includes 避免 NER 合併詞漏掉
+        const region_keywords = ["南區", "西區", "東區", "北區", "中區", "大里", "大里區", "烏日", "市區", "校區", "學校"];
+        for (let rk of region_keywords) {
+            if (word.includes(rk)) { features["地址(區域)"] = rk; break; }
         }
 
-        if (["套房", "雅房", "整層", "家庭式", "住家"].includes(word)) features["格局(房型)"] = word;
-        if (["透天", "透天厝", "公寓", "電梯大樓", "別墅"].includes(word)) features["類型(建築)"] = word;
+        // 房型匹配：使用 includes 處理 NER 合併詞（如「獨洗獨曬套房」）
+        const room_keywords = ["套房", "雅房", "整層", "家庭式", "住家"];
+        for (let rk of room_keywords) {
+            if (word.includes(rk)) { features["格局(房型)"] = rk; break; }
+        }
+
+        // 建築類型匹配
+        const building_keywords = ["透天", "透天厝", "公寓", "電梯大樓", "別墅"];
+        for (let bk of building_keywords) {
+            if (word.includes(bk)) { features["類型(建築)"] = bk; break; }
+        }
 
         for (let f_kw of furniture_keywords) {
             if (word.includes(f_kw) && !features["家具設施"].includes(f_kw)) {
