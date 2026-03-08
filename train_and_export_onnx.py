@@ -17,20 +17,57 @@ label_list = ["O", "B-Target", "I-Target"]
 label_to_id = {label: i for i, label in enumerate(label_list)}
 id2label = {i: label for i, label in enumerate(label_list)} # Keep id2label for model config
 
-# 嘗試讀取生成的 500 筆資料 (nchu_rental_ner_500.json)
+# 嘗試讀取生成的正式訓練集 (train.json / test.json)
 try:
-    with open("nchu_rental_ner_500.json", "r", encoding="utf-8") as f:
-        dummy_data = json.load(f)
-    print(f"✅ 成功載入 {len(dummy_data)} 筆訓練資料！")
-except FileNotFoundError:
-    print("⚠️ 找不到 nchu_rental_ner_500.json，將使用預設的少數測試資料。")
-    dummy_data = [
-        {"text": ["預", "算", "六", "千", "內", "的", "套", "房"], "tags": ["O", "O", "B-Target", "I-Target", "I-Target", "O", "B-Target", "I-Target"]},
-        {"text": ["想", "找", "離", "中", "興", "大", "學", "近", "的", "雅", "房"], "tags": ["O", "O", "B-Target", "I-Target", "I-Target", "I-Target", "I-Target", "I-Target", "O", "B-Target", "I-Target"]},
-        {"text": ["台", "水", "台", "電", "可", "養", "貓"], "tags": ["B-Target", "I-Target", "I-Target", "I-Target", "B-Target", "I-Target", "I-Target"]}
-    ]
+    with open("train.json", "r", encoding="utf-8") as f:
+        train_data = json.load(f)
+    print(f"✅ 成功載入 {len(train_data)} 筆『訓練資料』 (train.json)！")
+    
+    # 嘗試合併 10k 訓練集
+    try:
+        with open("train_10k.json", "r", encoding="utf-8") as f:
+            train_10k_data = json.load(f)
+            train_data.extend(train_10k_data)
+        print(f"✅ 成功合併 {len(train_10k_data)} 筆『額外訓練資料』 (train_10k.json)！現在總共有 {len(train_data)} 筆！")
+    except FileNotFoundError:
+        pass
 
-# 將假資料轉換為 HuggingFace Dataset 格式
+    with open("test.json", "r", encoding="utf-8") as f:
+        test_data = json.load(f)
+    print(f"✅ 成功載入 {len(test_data)} 筆『驗證資料』 (test.json)！")
+    
+    # 嘗試合併 10k 驗證集
+    try:
+        with open("test_10k.json", "r", encoding="utf-8") as f:
+            test_10k_data = json.load(f)
+            test_data.extend(test_10k_data)
+        print(f"✅ 成功合併 {len(test_10k_data)} 筆『額外驗證資料』 (test_10k.json)！現在總共有 {len(test_data)} 筆！")
+    except FileNotFoundError:
+        pass
+    
+    # 建立 Dataset
+    train_dataset_raw = Dataset.from_list(train_data)
+    eval_dataset_raw = Dataset.from_list(test_data)
+except FileNotFoundError:
+    print("⚠️ 找不到 train.json 或是 test.json，將嘗試讀取 nchu_rental_ner_500.json 並自動切分...")
+    try:
+        with open("nchu_rental_ner_500.json", "r", encoding="utf-8") as f:
+            dummy_data = json.load(f)
+        dataset = Dataset.from_list(dummy_data)
+    except FileNotFoundError:
+        print("⚠️ 找不到 nchu_rental_ner_500.json，將使用預設示範資料。")
+        dummy_data = [
+            {"text": ["預", "算", "六", "千", "內", "的", "套", "房"], "tags": ["O", "O", "B-Target", "I-Target", "I-Target", "O", "B-Target", "I-Target"]},
+            {"text": ["台", "水", "台", "電", "可", "養", "貓"], "tags": ["B-Target", "I-Target", "I-Target", "I-Target", "B-Target", "I-Target", "I-Target"]}
+        ]
+        dataset = Dataset.from_list(dummy_data)
+    
+    # 自動切分
+    split_datasets = dataset.train_test_split(test_size=0.2, seed=42)
+    train_dataset_raw = split_datasets["train"]
+    eval_dataset_raw = split_datasets["test"]
+
+# 將假資料轉換為 HuggingFace Dataset 格式 (Tokenization & Alignment)
 def tokenize_and_align_labels(examples):
     tokenized_inputs = tokenizer(examples["text"], is_split_into_words=True, padding="max_length", max_length=16, truncation=True)
     
@@ -48,12 +85,8 @@ def tokenize_and_align_labels(examples):
     tokenized_inputs["labels"] = labels
     return tokenized_inputs
 
-dataset = Dataset.from_list(dummy_data)
-tokenized_datasets = dataset.map(tokenize_and_align_labels, batched=True)
-# 將資料切分為 80% 訓練集, 20% 驗證集 (固定 seed 確保每次切分一樣)
-split_datasets = tokenized_datasets.train_test_split(test_size=0.2, seed=42)
-train_dataset = split_datasets["train"]
-eval_dataset = split_datasets["test"]
+train_dataset = train_dataset_raw.map(tokenize_and_align_labels, batched=True)
+eval_dataset = eval_dataset_raw.map(tokenize_and_align_labels, batched=True)
 
 # ==========================================
 # 步驟 2: 載入原始模型並進行微調 (Fine-Tuning)
@@ -95,7 +128,7 @@ training_args = TrainingArguments(
     learning_rate=2e-5,
     per_device_train_batch_size=8,
     per_device_eval_batch_size=8,
-    num_train_epochs=10,         # 原本是 3，現在資料夠多可以拉高到 10 次
+    num_train_epochs=3,         # 10k 資料量大，先設定跑 3 次
     weight_decay=0.01,
     logging_steps=10,
     save_strategy="epoch",
