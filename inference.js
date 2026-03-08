@@ -38,24 +38,24 @@ export async function initData() {
 // Initialize NLP model using ALBERT via ONNXRuntime Web
 export async function initNLP(onProgress) {
     if (!tokenizer || !session) {
-        env.allowLocalModels = false;
-        env.allowRemoteModels = true;
+        env.allowRemoteModels = false;
+        env.allowLocalModels = true;
         env.useBrowserCache = true;
 
-        // Custom URL MUST contain a trailing slash for transformers.js
-        const modelUrl = window.location.origin + '/onnx_model_dir/';
+        // Point Transformers.js to the root path of the server
+        env.localModelPath = window.location.origin + '/';
 
         try {
-            // 1. Load Tokenizer
+            // 1. Load Tokenizer using relative directory name
             if (onProgress) onProgress({ status: 'progress', file: 'tokenizer.json', loaded: 10, total: 100 });
-            tokenizer = await AutoTokenizer.from_pretrained(modelUrl);
+            tokenizer = await AutoTokenizer.from_pretrained('onnx_model_dir');
 
             // 2. Setup ONNXRuntime Web paths
             ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/';
 
-            // 3. Load ONNX model session
+            // 3. Load ONNX model session directly via URI
             if (onProgress) onProgress({ status: 'progress', file: 'model.onnx', loaded: 50, total: 100 });
-            session = await ort.InferenceSession.create(modelUrl + 'model.onnx');
+            session = await ort.InferenceSession.create(window.location.origin + '/onnx_model_dir/model.onnx');
             if (onProgress) onProgress({ status: 'progress', file: 'model.onnx', loaded: 100, total: 100 });
 
         } catch (e) {
