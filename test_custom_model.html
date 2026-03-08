@@ -114,7 +114,15 @@
 
                 session = await ort.InferenceSession.create(
                     window.location.origin + '/custom_onnx_model_dir/model.onnx',
-                    { executionProviders: ['wasm'] }
+                    {
+                        executionProviders: ['wasm'],
+                        externalData: [
+                            {
+                                path: 'model.onnx.data',
+                                data: window.location.origin + '/custom_onnx_model_dir/model.onnx.data'
+                            }
+                        ]
+                    }
                 );
                 log("✅ 您專屬的 ONNX 模型載入成功！WebAssembly 引擎啟動！");
 
