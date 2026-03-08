@@ -162,10 +162,10 @@ Navigate to [http://localhost:5002](http://localhost:5002)
 
 Type your rental requirements in the input box at the bottom, for example:
 
-- `Budget under 6000, suite room`
-- `Dali district, private laundry, air conditioning`
-- `5 min scooter ride, under 8K, pets allowed`
-- `Near NCHU main gate, single room`
+- `預算六千以下的套房`
+- `大里區 獨洗獨曬 有冷氣`
+- `騎車五分鐘 8K以內 可養貓`
+- `中興大學門口 雅房 台水台電`
 
 The system will parse your input in real time and recommend the best-matching properties.
 
