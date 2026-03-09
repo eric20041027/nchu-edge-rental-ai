@@ -339,13 +339,15 @@ function getDimensionName(idx) {
     return `dim${idx}`;
 }
 
-// Cosine similarity between two vectors
-function cosineSimilarity(a, b) {
+// Masked cosine similarity — only considers dimensions where the user expressed a preference
+// Unmentioned features (userVec[i] === 0) are ignored, not penalized
+function cosineSimilarity(userVec, houseVec) {
     let dot = 0, normA = 0, normB = 0;
-    for (let i = 0; i < a.length; i++) {
-        dot += a[i] * b[i];
-        normA += a[i] * a[i];
-        normB += b[i] * b[i];
+    for (let i = 0; i < userVec.length; i++) {
+        if (userVec[i] === 0) continue; // Skip dimensions the user didn't mention
+        dot += userVec[i] * houseVec[i];
+        normA += userVec[i] * userVec[i];
+        normB += houseVec[i] * houseVec[i];
     }
     if (normA === 0 || normB === 0) return 0;
     return dot / (Math.sqrt(normA) * Math.sqrt(normB));
