@@ -290,208 +290,306 @@ function tagFeatures(words) {
     return features;
 }
 
-function formatForCBF(features) {
-    let pet_friendly = -1;
-    if (features["寵物"] === "可養寵物") pet_friendly = 1;
-    else if (features["寵物"] === "禁養寵物") pet_friendly = 0;
+// ============================================================
+// Cosine Similarity Recommendation Engine
+// ============================================================
 
-    return {
-        search_budget: features["預算"],
-        budget_limit: features["預算限制"],
-        search_region: features["地址(區域)"],
-        search_room_type: features["格局(房型)"],
-        search_building_type: features["類型(建築)"],
-        required_furniture: features["家具設施"],
-        required_included_fees: features["租金包含"],
-        required_security: features["安全管理與消防"],
-        is_pet_friendly: pet_friendly,
-        gender_preference: features["性別限制"],
-        distance_limit_km: features["距離需求_km"]
-    };
+// Shared vector schema — every vector uses the same dimension layout
+const REGION_KEYS = ["南區", "西區", "東區", "北區", "中區", "大里", "烏日"];
+const ROOM_KEYS = ["套房", "雅房", "整層", "住家"];
+const BUILDING_KEYS = ["公寓", "透天", "電梯大樓", "別墅"];
+const FURNITURE_KEYS = ["床", "衣櫃", "電話", "網路", "寬頻", "冰箱", "洗衣機", "脫水機", "電視", "第四台", "書桌", "熱水器", "冷氣", "穿衣鏡", "電梯", "車位", "機車", "汽車", "飲水機", "陽台", "曬衣", "獨洗", "獨曬", "開伙", "廚房", "烘衣", "沙發", "對外窗"];
+const INCLUDED_KEYS = ["水費", "電費", "網路費", "管理費", "清潔費", "瓦斯"];
+const SECURITY_KEYS = ["監視器", "攝影", "感應", "滅火器", "警報", "照明", "逃生", "防盜"];
+
+// Dimension index calculation
+// [0]      budget_sim          (Gaussian similarity)
+// [1]      distance_sim        (Gaussian similarity)
+// [2..8]   region one-hot      (7 dims)
+// [9..12]  room one-hot        (4 dims)
+// [13..16] building one-hot    (4 dims)
+// [17..44] furniture multi-hot (28 dims)
+// [45..50] included multi-hot  (6 dims)
+// [51..58] security multi-hot  (8 dims)
+// [59]     pet_friendly        (0 or 1)
+// Total: 60 dimensions
+
+const VECTOR_LENGTH = 60;
+const IDX_BUDGET = 0;
+const IDX_DISTANCE = 1;
+const IDX_REGION_START = 2;
+const IDX_ROOM_START = IDX_REGION_START + REGION_KEYS.length;       // 9
+const IDX_BUILDING_START = IDX_ROOM_START + ROOM_KEYS.length;       // 13
+const IDX_FURNITURE_START = IDX_BUILDING_START + BUILDING_KEYS.length; // 17
+const IDX_INCLUDED_START = IDX_FURNITURE_START + FURNITURE_KEYS.length; // 45
+const IDX_SECURITY_START = IDX_INCLUDED_START + INCLUDED_KEYS.length;  // 51
+const IDX_PET = IDX_SECURITY_START + SECURITY_KEYS.length;            // 59
+
+// Human-readable names for each dimension (used in match_details)
+function getDimensionName(idx) {
+    if (idx === IDX_BUDGET) return "預算";
+    if (idx === IDX_DISTANCE) return "距離";
+    if (idx >= IDX_REGION_START && idx < IDX_ROOM_START) return REGION_KEYS[idx - IDX_REGION_START];
+    if (idx >= IDX_ROOM_START && idx < IDX_BUILDING_START) return ROOM_KEYS[idx - IDX_ROOM_START];
+    if (idx >= IDX_BUILDING_START && idx < IDX_FURNITURE_START) return BUILDING_KEYS[idx - IDX_BUILDING_START];
+    if (idx >= IDX_FURNITURE_START && idx < IDX_INCLUDED_START) return FURNITURE_KEYS[idx - IDX_FURNITURE_START];
+    if (idx >= IDX_INCLUDED_START && idx < IDX_SECURITY_START) return INCLUDED_KEYS[idx - IDX_INCLUDED_START];
+    if (idx >= IDX_SECURITY_START && idx < IDX_PET) return SECURITY_KEYS[idx - IDX_SECURITY_START];
+    if (idx === IDX_PET) return "可養寵物";
+    return `dim${idx}`;
+}
+
+// Cosine similarity between two vectors
+function cosineSimilarity(a, b) {
+    let dot = 0, normA = 0, normB = 0;
+    for (let i = 0; i < a.length; i++) {
+        dot += a[i] * b[i];
+        normA += a[i] * a[i];
+        normB += b[i] * b[i];
+    }
+    if (normA === 0 || normB === 0) return 0;
+    return dot / (Math.sqrt(normA) * Math.sqrt(normB));
+}
+
+// Gaussian similarity: returns 1.0 when values are identical, decays towards 0
+function gaussianSim(a, b, sigma) {
+    let diff = a - b;
+    return Math.exp(-(diff * diff) / (2 * sigma * sigma));
+}
+
+// Build a feature vector from the user's extracted features
+function buildUserVector(features, rawText) {
+    let vec = new Float32Array(VECTOR_LENGTH);
+
+    // Budget — use raw budget value normalized for Gaussian comparison
+    let budget = features["預算"];
+    // Fallback: parse budget from raw text if NER missed it
+    if (!budget) {
+        let rt = rawText.replace(/一/g, '1').replace(/二/g, '2').replace(/兩/g, '2').replace(/三/g, '3')
+            .replace(/四/g, '4').replace(/五/g, '5').replace(/六/g, '6').replace(/七/g, '7')
+            .replace(/八/g, '8').replace(/九/g, '9');
+        if (rt.includes('萬')) {
+            let m = rt.match(/(\d+)萬(\d*)/);
+            if (m) budget = parseInt(m[1]) * 10000 + (m[2] ? parseInt(m[2]) * 1000 : 0);
+        }
+        if (!budget) {
+            rt = rt.replace(/千/g, '000').replace(/[kK]/g, '000');
+            let m2 = rt.match(/(\d{4,})/);
+            if (m2) budget = parseInt(m2[1]);
+        }
+    }
+    if (budget) vec[IDX_BUDGET] = budget / 30000.0; // Normalize to ~0-1 range
+
+    // Distance
+    let dist = features["距離需求_km"];
+    if (dist) vec[IDX_DISTANCE] = 1.0 - Math.min(dist / 5.0, 1.0); // closer = higher
+
+    // Region
+    let region = features["地址(區域)"];
+    if (region) {
+        for (let i = 0; i < REGION_KEYS.length; i++) {
+            if (region.includes(REGION_KEYS[i])) { vec[IDX_REGION_START + i] = 1.0; break; }
+        }
+    }
+
+    // Room type
+    let room = features["格局(房型)"];
+    if (room) {
+        for (let i = 0; i < ROOM_KEYS.length; i++) {
+            if (room.includes(ROOM_KEYS[i])) { vec[IDX_ROOM_START + i] = 1.0; break; }
+        }
+    }
+
+    // Building type
+    let building = features["類型(建築)"];
+    if (building) {
+        for (let i = 0; i < BUILDING_KEYS.length; i++) {
+            if (building.includes(BUILDING_KEYS[i])) { vec[IDX_BUILDING_START + i] = 1.0; break; }
+        }
+    }
+
+    // Furniture multi-hot
+    for (let f of features["家具設施"]) {
+        for (let i = 0; i < FURNITURE_KEYS.length; i++) {
+            if (f.includes(FURNITURE_KEYS[i])) vec[IDX_FURNITURE_START + i] = 1.0;
+        }
+    }
+
+    // Included fees multi-hot
+    for (let f of features["租金包含"]) {
+        for (let i = 0; i < INCLUDED_KEYS.length; i++) {
+            if (f.includes(INCLUDED_KEYS[i])) vec[IDX_INCLUDED_START + i] = 1.0;
+        }
+    }
+
+    // Security multi-hot
+    for (let f of features["安全管理與消防"]) {
+        for (let i = 0; i < SECURITY_KEYS.length; i++) {
+            if (f.includes(SECURITY_KEYS[i])) vec[IDX_SECURITY_START + i] = 1.0;
+        }
+    }
+
+    // Pet
+    if (features["寵物"] === "可養寵物") vec[IDX_PET] = 1.0;
+
+    return vec;
+}
+
+// Build a feature vector from a rental property row (CSV data)
+function buildHouseVector(row) {
+    let vec = new Float32Array(VECTOR_LENGTH);
+
+    // Budget normalized
+    if (row.Rent_Num && row.Rent_Num < 900000) {
+        vec[IDX_BUDGET] = row.Rent_Num / 30000.0;
+    }
+
+    // Distance — closer = higher value
+    let dist = parseFloat(row['距離(km)']);
+    if (!isNaN(dist)) {
+        vec[IDX_DISTANCE] = 1.0 - Math.min(dist / 5.0, 1.0);
+    }
+
+    // Region
+    let addr = String(row['地址'] || '');
+    for (let i = 0; i < REGION_KEYS.length; i++) {
+        if (addr.includes(REGION_KEYS[i])) { vec[IDX_REGION_START + i] = 1.0; break; }
+    }
+
+    // Room type
+    let roomStr = String(row['格局'] || '');
+    for (let i = 0; i < ROOM_KEYS.length; i++) {
+        if (roomStr.includes(ROOM_KEYS[i])) { vec[IDX_ROOM_START + i] = 1.0; break; }
+    }
+
+    // Building type
+    let buildStr = String(row['類型'] || '');
+    for (let i = 0; i < BUILDING_KEYS.length; i++) {
+        if (buildStr.includes(BUILDING_KEYS[i])) { vec[IDX_BUILDING_START + i] = 1.0; break; }
+    }
+
+    // Furniture multi-hot
+    for (let item of row.Furniture_List) {
+        for (let i = 0; i < FURNITURE_KEYS.length; i++) {
+            if (item.includes(FURNITURE_KEYS[i])) vec[IDX_FURNITURE_START + i] = 1.0;
+        }
+    }
+
+    // Included fees
+    let includedStr = String(row['租金包含'] || '');
+    for (let i = 0; i < INCLUDED_KEYS.length; i++) {
+        if (includedStr.includes(INCLUDED_KEYS[i])) vec[IDX_INCLUDED_START + i] = 1.0;
+    }
+
+    // Security
+    for (let item of row.Security_List) {
+        for (let i = 0; i < SECURITY_KEYS.length; i++) {
+            if (item.includes(SECURITY_KEYS[i])) vec[IDX_SECURITY_START + i] = 1.0;
+        }
+    }
+
+    // Pet friendly
+    let notes = row.Note_List.join(" ");
+    if (notes.includes("可養寵物")) vec[IDX_PET] = 1.0;
+
+    return vec;
 }
 
 export async function recommend(text, top_k = 5) {
-    // RUN ALBERT + ORT
+    // Step 1: NER segmentation
     const words = await segmentText(text);
     console.log("ALBERT Segmented Words:", words);
 
-    // Feature Extraction
+    // Step 2: Feature extraction (reuses existing tagFeatures)
     const features = tagFeatures(words);
-    const cbf_vector = formatForCBF(features);
+    console.log("Extracted Features:", features);
 
-    // ★ 關鍵修正：直接掃描原始輸入文字來偵測「以上/以下/以內」
-    // 因為 NER 模型可能會將這些功能詞標記為 O (外部)，導致它們不會出現在 words 裡面
-    let budget_limit = cbf_vector.budget_limit;
+    // Step 3: Build user vector
+    const userVec = buildUserVector(features, text);
+    console.log("User Vector:", Array.from(userVec));
+
+    // Detect budget limit from raw text (NER may tag 以上/以下 as O)
+    let budget_limit = features["預算限制"];
     if (!budget_limit) {
         if (text.includes('以上')) budget_limit = 'above';
         else if (text.includes('以下') || text.includes('以內')) budget_limit = 'below';
     }
 
-    let user_budget = cbf_vector.search_budget;
+    // Get budget value for hard filtering
+    let user_budget = userVec[IDX_BUDGET] * 30000; // Denormalize
+    if (user_budget < 100) user_budget = null; // No budget specified
 
-    // ★ 關鍵修正：如果 NER 抽不到預算數字，也直接從原始文字用正則抓
-    if (!user_budget) {
-        let rawText = text.replace(/一/g, '1').replace(/二/g, '2').replace(/兩/g, '2').replace(/三/g, '3')
-            .replace(/四/g, '4').replace(/五/g, '5').replace(/六/g, '6').replace(/七/g, '7')
-            .replace(/八/g, '8').replace(/九/g, '9');
-        if (rawText.includes('萬')) {
-            let m = rawText.match(/(\d+)萬(\d*)/);
-            if (m) user_budget = parseInt(m[1]) * 10000 + (m[2] ? parseInt(m[2]) * 1000 : 0);
-        }
-        if (!user_budget) {
-            rawText = rawText.replace(/千/g, '000').replace(/[kK]/g, '000');
-            let m2 = rawText.match(/(\d{4,})/);
-            if (m2) user_budget = parseInt(m2[1]);
-        }
-    }
-
-    let target_region = cbf_vector.search_region;
-    let target_room = cbf_vector.search_room_type;
-    let target_building = cbf_vector.search_building_type;
-    let req_furnitures = cbf_vector.required_furniture;
-    let req_security = cbf_vector.required_security;
-    let user_gender = cbf_vector.gender_preference;
-    let pet_friendly = cbf_vector.is_pet_friendly;
-    let distance_limit = cbf_vector.distance_limit_km;
+    let user_gender = features["性別限制"];
+    let pet_pref = features["寵物"];
 
     console.log("Parsed Budget:", user_budget, "Limit:", budget_limit);
 
-    let MAX_THEORETICAL_SCORE = 0.0;
-    if (user_budget) MAX_THEORETICAL_SCORE += 20.0;
-    if (target_region) MAX_THEORETICAL_SCORE += 20.0;
-    if (target_room) MAX_THEORETICAL_SCORE += 20.0;
-    if (target_building) MAX_THEORETICAL_SCORE += 15.0;
-    if (distance_limit) MAX_THEORETICAL_SCORE += 25.0;
-    MAX_THEORETICAL_SCORE += (req_furnitures.length * 5.0);
-    MAX_THEORETICAL_SCORE += (req_security.length * 5.0);
-
-    if (MAX_THEORETICAL_SCORE === 0) MAX_THEORETICAL_SCORE = 1.0;
-
+    // Step 4: Score each property
     let results = [];
 
     for (let row of rentalData) {
-        let score = 0.0;
-        let details = [];
         let notes = row.Note_List.join(" ");
-        let is_hard_excluded = false;
 
-        // ★ 預算硬性篩選：違反預算限制的房屋直接跳過，不進入結果
+        // === Hard exclusion filters (NOT part of cosine) ===
         if (user_budget && budget_limit) {
-            if (budget_limit === 'below' && row.Rent_Num > user_budget) {
-                is_hard_excluded = true;
-            } else if (budget_limit === 'above' && row.Rent_Num < user_budget) {
-                is_hard_excluded = true;
-            }
+            if (budget_limit === 'below' && row.Rent_Num > user_budget) continue;
+            if (budget_limit === 'above' && row.Rent_Num < user_budget) continue;
         }
-        if (is_hard_excluded) continue; // 直接跳過這間房，不推薦
+        if (user_gender === "限女生" && notes.includes("限男生")) continue;
+        if (user_gender === "限男生" && notes.includes("限女生")) continue;
+        if (pet_pref === "可養寵物" && notes.includes("禁養寵物")) continue;
 
-        if (user_gender === "限女生" && notes.includes("限男生")) {
-            score -= 1000.0; details.push("性別不符(限男)");
-        } else if (user_gender === "限男生" && notes.includes("限女生")) {
-            score -= 1000.0; details.push("性別不符(限女)");
-        }
+        // Build house vector
+        const houseVec = buildHouseVector(row);
 
-        if (pet_friendly === 1 && notes.includes("禁養寵物")) {
-            score -= 1000.0; details.push("禁養寵物");
-        } else if (pet_friendly === 0 && notes.includes("可養寵物")) {
-            score -= 50.0; details.push("有其他寵物");
-        }
+        // Compute cosine similarity
+        let sim = cosineSimilarity(userVec, houseVec);
 
-        if (user_budget) {
-            let diff = Math.abs(row.Rent_Num - user_budget);
-            if (diff <= 500) {
-                score += 20.0; details.push("預算完美符合");
-            } else {
-                let deduction = (diff - 500) / 200.0;
-                let awarded = Math.max(0.0, 20.0 - deduction);
-                score += awarded;
-                if (awarded >= 10) details.push("符合預算");
-            }
+        // Boost: apply Gaussian bonus for budget proximity (sigma = 2000 NTD)
+        if (user_budget && row.Rent_Num < 900000) {
+            let budgetSim = gaussianSim(user_budget, row.Rent_Num, 2000);
+            sim = sim * 0.7 + budgetSim * 0.3; // Blend: 70% cosine + 30% budget precision
         }
 
-        let addr = String(row['地址'] || '');
-        if (target_region && addr.includes(target_region)) {
-            score += 20.0; details.push(`位於${target_region}`);
-        }
+        let percentage = Math.round(sim * 100);
+        if (percentage <= 0) continue;
 
-        let roomStr = String(row['格局'] || '');
-        if (target_room && roomStr.includes(target_room)) {
-            score += 20.0; details.push(`房型相符(${target_room})`);
-        }
-
-        let buildStr = String(row['類型'] || '');
-        if (target_building && buildStr.includes(target_building)) {
-            score += 15.0; details.push(`建築相符(${target_building})`);
-        }
-
-        for (let f of req_furnitures) {
-            if (row.Furniture_List.some(item => item.includes(f))) {
-                score += 5.0; details.push(`有${f}`);
+        // Generate match details — list dimensions where both user and house have non-zero values
+        let details = [];
+        for (let i = 0; i < VECTOR_LENGTH; i++) {
+            if (userVec[i] > 0 && houseVec[i] > 0) {
+                let name = getDimensionName(i);
+                if (!details.includes(name)) details.push(name);
             }
         }
 
-        for (let s of req_security) {
-            if (row.Security_List.some(item => item.includes(s))) {
-                score += 5.0; details.push(`有${s}`);
-            }
-        }
-
-        // --- 距離評分邏輯 ---
-        let house_dist = parseFloat(row['距離(km)']);
-        if (distance_limit && !isNaN(house_dist)) {
-            if (house_dist <= distance_limit) {
-                // 完全符合標準內，給滿分
-                score += 25.0;
-                if (distance_limit <= 1.0) {
-                    details.push(`極近中興(${house_dist}km)`);
-                } else {
-                    details.push(`距離符合(${house_dist}km)`);
-                }
-            } else {
-                // 如果稍微超過標準，依照超出比例扣分
-                let over_ratio = (house_dist - distance_limit) / distance_limit;
-                if (over_ratio <= 0.5) { // 超出在 50% 以內 (例：要找2km內，找到3km)，給部分分數
-                    let awarded = 25.0 * (1.0 - (over_ratio / 0.5));
-                    score += awarded;
-                    if (awarded > 10) details.push(`距離尚可(${house_dist}km)`);
-                }
-            }
-        }
-
-        // ★ 修正百分比公式：不再無條件給 40% 底分
-        let percentage_score = (score / MAX_THEORETICAL_SCORE) * 100;
-        percentage_score = Math.min(Math.max(percentage_score, 0), 100);
-
-        if (score > 0) {
-            results.push({
-                house: row,
-                score: Math.round(percentage_score),
-                rent_num: row.Rent_Num,
-                match_details: details.join(", ")
-            });
-        }
+        results.push({
+            house: row,
+            score: percentage,
+            rent_num: row.Rent_Num,
+            match_details: details.join(", ")
+        });
     }
 
+    // Step 5: Sort by similarity desc, then by rent asc for ties
     results.sort((a, b) => {
         if (b.score !== a.score) return b.score - a.score;
         return a.rent_num - b.rent_num;
     });
 
-    return results.slice(0, top_k).map(item => {
-        // Map back to the API response structure expected by app.js
-        return {
-            id: item.house['網址'], // unique identifier
-            title: `${item.house['格局']} | ${item.house['地址']}`,
-            price_str: item.house['租金'],
-            url: item.house['網址'],
-            imgUrl: item.house['圖片網址'] || null,
-            score: item.score,
-            match_details: item.match_details,
-            size: item.house['室內坪數'] || "坪數未提供",
-            floor: item.house['樓層'] || "樓層未提供",
-            furniture: item.house['家具設施'] || "無特殊設施提供",
-            distance: item.house.distance,
-            address: item.house['地址']
-        };
-    });
+    return results.slice(0, top_k).map(item => ({
+        id: item.house['網址'],
+        title: `${item.house['格局']} | ${item.house['地址']}`,
+        price_str: item.house['租金'],
+        url: item.house['網址'],
+        imgUrl: item.house['圖片網址'] || null,
+        score: item.score,
+        match_details: item.match_details,
+        size: item.house['室內坪數'] || "坪數未提供",
+        floor: item.house['樓層'] || "樓層未提供",
+        furniture: item.house['家具設施'] || "無特殊設施提供",
+        distance: item.house.distance,
+        address: item.house['地址']
+    }));
 }
+
