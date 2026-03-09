@@ -5,23 +5,22 @@
  * Input:  [CLS] user_query [SEP] property_description [SEP]
  * Output: logits → softmax → match probability
  *
- * The model has learned which queries match which properties,
- * so all recommendation logic is baked into the model weights.
+ * Optimized with batch inference to minimize browser latency.
  */
 import { AutoTokenizer, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1';
 
 let tokenizer = null;
 let session = null;
-let propertyData = []; // Precomputed property descriptions
+let propertyData = [];
 
 const MAX_LENGTH = 128;
+const BATCH_SIZE = 10; // Process 10 properties per ONNX call
 
 // ============================================================
 // Data Loading
 // ============================================================
 
 export async function initData() {
-    // Load precomputed property data (descriptions + metadata)
     const response = await fetch('/property_data.json');
     propertyData = await response.json();
     console.log(`Loaded ${propertyData.length} property descriptions`);
@@ -65,30 +64,43 @@ export async function initNLP(onProgress) {
 }
 
 // ============================================================
-// Inference: Score a single query-property pair
+// Batch Inference: Score multiple query-property pairs at once
 // ============================================================
 
-async function scorePair(query, propertyText) {
-    // Tokenize as sentence pair: [CLS] query [SEP] property [SEP]
-    const encoded = await tokenizer(query, {
-        text_pair: propertyText,
-        padding: true,
-        truncation: true,
-        max_length: MAX_LENGTH,
-        return_tensors: 'np',
-    });
+async function scoreBatch(query, propertyTexts) {
+    const batchSize = propertyTexts.length;
+    if (batchSize === 0) return [];
 
+    // Tokenize all pairs
+    const allInputIds = [];
+    const allAttentionMask = [];
+    const allTokenTypeIds = [];
+
+    for (const propText of propertyTexts) {
+        const encoded = await tokenizer(query, {
+            text_pair: propText,
+            padding: 'max_length',
+            truncation: true,
+            max_length: MAX_LENGTH,
+            return_tensors: 'np',
+        });
+        allInputIds.push(...encoded.input_ids.data);
+        allAttentionMask.push(...encoded.attention_mask.data);
+        allTokenTypeIds.push(...encoded.token_type_ids.data);
+    }
+
+    // Create batch tensors
     const inputIds = new ort.Tensor('int64',
-        BigInt64Array.from(encoded.input_ids.data.map(v => BigInt(v))),
-        encoded.input_ids.dims
+        BigInt64Array.from(allInputIds.map(v => BigInt(v))),
+        [batchSize, MAX_LENGTH]
     );
     const attentionMask = new ort.Tensor('int64',
-        BigInt64Array.from(encoded.attention_mask.data.map(v => BigInt(v))),
-        encoded.attention_mask.dims
+        BigInt64Array.from(allAttentionMask.map(v => BigInt(v))),
+        [batchSize, MAX_LENGTH]
     );
     const tokenTypeIds = new ort.Tensor('int64',
-        BigInt64Array.from(encoded.token_type_ids.data.map(v => BigInt(v))),
-        encoded.token_type_ids.dims
+        BigInt64Array.from(allTokenTypeIds.map(v => BigInt(v))),
+        [batchSize, MAX_LENGTH]
     );
 
     const feeds = {
@@ -98,15 +110,20 @@ async function scorePair(query, propertyText) {
     };
 
     const results = await session.run(feeds);
-    const logits = results.logits.data; // [not_match_score, match_score]
+    const logits = results.logits.data; // [batch_size * 2] flat array
 
-    // Softmax to get probability
-    const maxLogit = Math.max(logits[0], logits[1]);
-    const exp0 = Math.exp(logits[0] - maxLogit);
-    const exp1 = Math.exp(logits[1] - maxLogit);
-    const matchProb = exp1 / (exp0 + exp1);
+    // Extract match probabilities via softmax
+    const probs = [];
+    for (let i = 0; i < batchSize; i++) {
+        const l0 = logits[i * 2];     // not-match logit
+        const l1 = logits[i * 2 + 1]; // match logit
+        const maxL = Math.max(l0, l1);
+        const exp0 = Math.exp(l0 - maxL);
+        const exp1 = Math.exp(l1 - maxL);
+        probs.push(exp1 / (exp0 + exp1));
+    }
 
-    return matchProb;
+    return probs;
 }
 
 // ============================================================
@@ -115,13 +132,11 @@ async function scorePair(query, propertyText) {
 
 function parseBudgetFromText(text) {
     let budget = null;
-    let limit = null; // 'above' or 'below'
+    let limit = null;
 
-    // Detect direction
     if (text.includes('以上')) limit = 'above';
     else if (text.includes('以下') || text.includes('以內') || text.includes('內')) limit = 'below';
 
-    // Parse number
     let rt = text.replace(/一/g, '1').replace(/二/g, '2').replace(/兩/g, '2').replace(/三/g, '3')
         .replace(/四/g, '4').replace(/五/g, '5').replace(/六/g, '6').replace(/七/g, '7')
         .replace(/八/g, '8').replace(/九/g, '9');
@@ -148,43 +163,55 @@ function parseBudgetFromText(text) {
 }
 
 // ============================================================
-// Main Recommendation Function
+// Main Recommendation Function (Batch Optimized)
 // ============================================================
 
 export async function recommend(text, top_k = 5) {
     console.log("User Query:", text);
+    const startTime = performance.now();
 
-    // Parse budget from raw text for hard exclusion
     const { budget: userBudget, limit: budgetLimit } = parseBudgetFromText(text);
     console.log("Parsed Budget:", userBudget, "Limit:", budgetLimit);
 
-    let results = [];
-
-    // Score each property by running it through the model with the query
-    for (let prop of propertyData) {
-        // Hard exclusion: budget limits
+    // Step 1: Apply hard exclusions first (no model needed)
+    const candidates = [];
+    for (let i = 0; i < propertyData.length; i++) {
+        const prop = propertyData[i];
         if (userBudget && budgetLimit) {
             if (budgetLimit === 'below' && prop.rent > userBudget) continue;
             if (budgetLimit === 'above' && prop.rent < userBudget) continue;
         }
+        candidates.push({ index: i, prop });
+    }
+    console.log(`After hard exclusion: ${candidates.length} / ${propertyData.length} candidates`);
 
-        // Run sentence-pair classification
-        const matchProb = await scorePair(text, prop.text);
-        const percentage = Math.round(matchProb * 100);
+    // Step 2: Batch score all remaining candidates
+    const allProbs = [];
+    for (let bStart = 0; bStart < candidates.length; bStart += BATCH_SIZE) {
+        const batch = candidates.slice(bStart, bStart + BATCH_SIZE);
+        const propTexts = batch.map(c => c.prop.text);
+        const batchProbs = await scoreBatch(text, propTexts);
+        allProbs.push(...batchProbs);
+    }
 
-        if (percentage <= 5) continue; // Skip very low matches
+    // Step 3: Collect results
+    let results = [];
+    for (let i = 0; i < candidates.length; i++) {
+        const percentage = Math.round(allProbs[i] * 100);
+        if (percentage <= 5) continue;
 
         results.push({
-            property: prop,
+            property: candidates[i].prop,
             score: percentage,
-            matchProb: matchProb,
         });
     }
 
-    // Sort by match probability descending
+    // Step 4: Sort and return
     results.sort((a, b) => b.score - a.score);
 
-    // Return top-K results in the format expected by app.js
+    const elapsed = (performance.now() - startTime).toFixed(0);
+    console.log(`Inference complete: ${results.length} results in ${elapsed}ms`);
+
     return results.slice(0, top_k).map(item => ({
         id: item.property.url,
         title: `${item.property.room_type} | ${item.property.address}`,

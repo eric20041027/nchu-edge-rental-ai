@@ -33,6 +33,11 @@ with open("recommendation_dev.json", "r", encoding="utf-8") as f:
     dev_data = json.load(f)
 print(f"  Dev:   {len(dev_data)} samples")
 
+# 統計類別分布
+train_pos = sum(1 for d in train_data if d["label"] == 1)
+train_neg = len(train_data) - train_pos
+print(f"  Train distribution: POS={train_pos}, NEG={train_neg}, ratio=1:{train_neg/train_pos:.1f}")
+
 train_dataset_raw = Dataset.from_list(train_data)
 eval_dataset_raw = Dataset.from_list(dev_data)
 
@@ -41,7 +46,7 @@ eval_dataset_raw = Dataset.from_list(dev_data)
 # ==========================================
 print("\n[Step 2] Tokenizing sentence pairs...")
 
-MAX_LENGTH = 128  # query + property combined
+MAX_LENGTH = 128
 
 def tokenize_function(examples):
     """Tokenize as [CLS] query [SEP] property [SEP]"""
@@ -65,7 +70,7 @@ print("\n[Step 3] Loading model and starting fine-tuning...")
 
 model = AutoModelForSequenceClassification.from_pretrained(
     model_checkpoint,
-    num_labels=2,  # match / not-match
+    num_labels=2,
     id2label={0: "NOT_MATCH", 1: "MATCH"},
     label2id={"NOT_MATCH": 0, "MATCH": 1},
 )
@@ -75,7 +80,6 @@ def compute_metrics(p):
     preds = np.argmax(predictions, axis=1)
     accuracy = (preds == labels).mean()
 
-    # Precision, Recall, F1 for MATCH class
     tp = ((preds == 1) & (labels == 1)).sum()
     fp = ((preds == 1) & (labels == 0)).sum()
     fn = ((preds == 0) & (labels == 1)).sum()
@@ -93,17 +97,26 @@ def compute_metrics(p):
 
 training_args = TrainingArguments(
     output_dir="./recommendation_model_output",
-    eval_strategy="epoch",
-    learning_rate=2e-5,
-    per_device_train_batch_size=16,
-    per_device_eval_batch_size=16,
-    num_train_epochs=5,
+    # 每 100 步顯示一次驗證結果 (含 accuracy)
+    eval_strategy="steps",
+    eval_steps=100,
+    learning_rate=3e-5,              # 稍微提高學習率
+    per_device_train_batch_size=32,   # 加大 batch size
+    per_device_eval_batch_size=32,
+    num_train_epochs=8,               # 增加到 8 個 epoch
     weight_decay=0.01,
-    logging_steps=50,
-    save_strategy="epoch",
+    warmup_ratio=0.1,                 # 前 10% 步數慢慢增加學習率
+    label_smoothing_factor=0.1,       # 標籤平滑，防止過擬合
+    logging_steps=50,                 # 每 50 步顯示 loss
+    logging_first_step=True,          # 第一步就顯示
+    save_strategy="steps",
+    save_steps=100,
     load_best_model_at_end=True,
-    metric_for_best_model="f1",
+    metric_for_best_model="accuracy",
+    greater_is_better=True,
     report_to="none",
+    # 早停：如果 3 次評估都沒改善就停止
+    save_total_limit=3,
 )
 
 trainer = Trainer(
@@ -144,7 +157,6 @@ tokenizer.save_pretrained(save_path)
 
 onnx_output_path = "my_custom_model.onnx"
 
-# Dummy input for ONNX export
 dummy_query = "預算五千套房"
 dummy_property = "套房 南區 5000元"
 inputs = tokenizer(

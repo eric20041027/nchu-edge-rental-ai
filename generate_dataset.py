@@ -242,7 +242,7 @@ QUERY_PREFIXES = [
 QUERY_CONNECTORS = [" ", "的", " 要", " 有", " 而且"]
 
 
-def generate_queries_for_property(prop, num_queries=25):
+def generate_queries_for_property(prop, num_queries=40):
     """根據一筆房源的特徵，生成多種模擬學生查詢"""
     queries = []
 
@@ -284,15 +284,15 @@ def generate_queries_for_property(prop, num_queries=25):
         "special": special_exprs,
     }
 
-    # 策略 1: 單特徵查詢 (每種類型各取幾個)
+    # 策略 1: 單特徵查詢 (每種類型各取 3 個)
     for key, exprs in all_features.items():
-        for expr in random.sample(exprs, min(2, len(exprs))):
+        for expr in random.sample(exprs, min(3, len(exprs))):
             prefix = random.choice(QUERY_PREFIXES)
             queries.append(f"{prefix}{expr}")
 
-    # 策略 2: 雙特徵組合
+    # 策略 2: 雙特徵組合 (增加到 15 個)
     feature_keys = [k for k, v in all_features.items() if v]
-    for _ in range(min(10, num_queries)):
+    for _ in range(15):
         if len(feature_keys) < 2:
             break
         k1, k2 = random.sample(feature_keys, 2)
@@ -302,8 +302,8 @@ def generate_queries_for_property(prop, num_queries=25):
         prefix = random.choice(QUERY_PREFIXES) if random.random() > 0.3 else ""
         queries.append(f"{prefix}{e1}{conn}{e2}")
 
-    # 策略 3: 三特徵組合
-    for _ in range(min(8, num_queries)):
+    # 策略 3: 三特徵組合 (增加到 12 個)
+    for _ in range(12):
         if len(feature_keys) < 3:
             break
         keys = random.sample(feature_keys, 3)
@@ -311,14 +311,29 @@ def generate_queries_for_property(prop, num_queries=25):
         prefix = random.choice(QUERY_PREFIXES) if random.random() > 0.4 else ""
         queries.append(f"{prefix}{' '.join(parts)}")
 
-    # 策略 4: 完整描述 (4+ 特徵)
-    for _ in range(min(5, num_queries)):
+    # 策略 4: 完整描述 (4+ 特徵，增加到 8 個)
+    for _ in range(8):
         if len(feature_keys) < 4:
             break
         n = random.randint(4, min(6, len(feature_keys)))
         keys = random.sample(feature_keys, n)
         parts = [random.choice(all_features[k]) for k in keys]
         queries.append(" ".join(parts))
+
+    # 策略 5: 口語化句型
+    colloquial = [
+        "想在中興大學附近租房",
+        "學校旁邊有沒有房子",
+        "想找便宜的租屋",
+        "有空房嗎",
+    ]
+    if prop["rent"] and prop["rent"] <= 5000:
+        colloquial.append("便宜的房子")
+        colloquial.append("平價租屋")
+    if prop["distance"] and prop["distance"] <= 1.0:
+        colloquial.append("走路就能到學校")
+        colloquial.append("學校附近租房")
+    queries.extend(random.sample(colloquial, min(3, len(colloquial))))
 
     # 去重 + 截斷
     queries = list(set(queries))
@@ -329,14 +344,17 @@ def generate_queries_for_property(prop, num_queries=25):
 # ============================================================
 # 4. 產生正負配對資料
 # ============================================================
-def generate_dataset(properties, num_neg_per_pos=2):
+def generate_dataset(properties, num_neg_per_pos=3):
     """
     為每筆房源生成正例 (matching) 和負例 (non-matching) 配對。
     正例: 查詢確實描述了該房源的特徵
-    負例: 隨機配對其他房源的查詢 (不匹配)
+    負例: 隨機配對 + 困難負例 (相似租金但不同特徵)
     """
     all_samples = []
     property_texts = [property_to_text(p) for p in properties]
+
+    # 預建按租金排序的索引，用於困難負例挖掘
+    rent_sorted = sorted(range(len(properties)), key=lambda i: properties[i]["rent"])
 
     for idx, prop in enumerate(properties):
         prop_text = property_texts[idx]
@@ -351,11 +369,28 @@ def generate_dataset(properties, num_neg_per_pos=2):
                 "property_idx": idx
             })
 
-        # 負例：隨機配對其他房源
+        # 負例：混合隨機負例 + 困難負例
         other_indices = [i for i in range(len(properties)) if i != idx]
+
+        # 找出相似租金的房源作為困難負例
+        hard_neg_indices = [
+            i for i in other_indices
+            if abs(properties[i]["rent"] - prop["rent"]) <= 1000  # 租金差 ≤ 1000
+            and properties[i]["room_type"] != prop["room_type"]  # 但房型不同
+        ]
+
         for query in queries:
-            neg_indices = random.sample(other_indices, min(num_neg_per_pos, len(other_indices)))
-            for neg_idx in neg_indices:
+            neg_pool = []
+            # 1-2 個困難負例
+            if hard_neg_indices:
+                n_hard = min(1, len(hard_neg_indices))
+                neg_pool.extend(random.sample(hard_neg_indices, n_hard))
+            # 其餘為隨機負例
+            n_random = num_neg_per_pos - len(neg_pool)
+            remaining = [i for i in other_indices if i not in neg_pool]
+            neg_pool.extend(random.sample(remaining, min(n_random, len(remaining))))
+
+            for neg_idx in neg_pool:
                 all_samples.append({
                     "query": query,
                     "property": property_texts[neg_idx],
@@ -377,7 +412,7 @@ def main():
     print(f"  Loaded {len(properties)} properties")
 
     print("\nStep 2: Generating query-property pairs...")
-    all_samples = generate_dataset(properties, num_neg_per_pos=2)
+    all_samples = generate_dataset(properties, num_neg_per_pos=3)
     print(f"  Generated {len(all_samples)} total samples")
 
     # 統計正負例
