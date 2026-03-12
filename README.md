@@ -5,9 +5,10 @@
 ## 核心特徵
 
 - **自然語言辨識**: 採用 Sentence-Pair Classification 模式，精準理解使用者需求。
+- **路名/地點感知**: 模型現在能識別具體路名（如：「國光路」、「復新街」），並自動在第一階段初篩與第二階段精篩中強化位置關聯。
 - **邊緣端推論 (Edge AI)**: 使用 ONNX Runtime Web，模型直接在使用者瀏覽器運行不需將資料回傳伺服器，反應迅速且保護隱私。
 - **直覺式介面**: 現代化、響應式設計，支援行動裝置。
-- **完整的訓練管線**: 包含自動化合成資料集、模型訓練、匯出與量化流程。
+- **完整的訓練管線**: 包含自動化合成資料集、模型訓練、匯出與路名清理量化流程。
 
 ## 核心技術棧
 
@@ -116,12 +117,17 @@ graph TD
    python train_and_export_onnx.py
    ```
    此步驟會微調 `albert-chinese-tiny` 並直接匯出為 `model.onnx`。
-4. **更新推論資料**:
+4. **量化壓縮**:
+   ```bash
+   python quantize_model.py
+   ```
+   此步驟會自動清理衝突的形狀資訊並將模型壓縮至約 7.8MB。
+5. **更新推論資料**:
    ```bash
    python precompute_embeddings.py
    ```
-   此步驟會根據原始 CSV 與新模型生成 `property_data.json`。
-5. **部署模型**: 將生成的模型檔案與 JSON 移至對應目錄即可。
+   此步驟會提取路名並生成最新的 `property_data.json`。
+6. **部署模型**: 將 `my_custom_model_quant.onnx` 重新命名為 `model.onnx` 並放至 `custom_onnx_model_dir/` 即可。
 
 ## 備註
 - 模型採用 Sentence-Pair 模式，輸入格式為 `[CLS] 查詢 [SEP] 房屋描述 [SEP]`。

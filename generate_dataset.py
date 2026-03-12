@@ -36,8 +36,14 @@ def load_properties(csv_path="nchu_rental_info.csv"):
         security = [s.strip() for s in row.get("安全管理", "").split("/") if s.strip()]
         notes = [s.strip() for s in row.get("備註", "").split("/") if s.strip()]
 
-        # 解析地址中的區域
+        # 解析地址中的路/街/巷
         addr = row.get("地址", "")
+        road = ""
+        # 匹配 路/街/大道
+        road_match = re.search(r"([^區市台]*(?:路|街|大道)(?:[一二三四五六七八九十]|[\d])?段?)", addr)
+        if road_match:
+            road = road_match.group(1).strip()
+
         region = ""
         for r in ["南區", "大里區", "西區", "東區", "北區", "烏日"]:
             if r in addr:
@@ -47,6 +53,7 @@ def load_properties(csv_path="nchu_rental_info.csv"):
         properties.append({
             "address": addr,
             "region": region,
+            "road": road,
             "room_type": row.get("格局", ""),
             "building_type": row.get("類型", ""),
             "size": row.get("室內坪數", ""),
@@ -78,6 +85,8 @@ def property_to_text(prop):
         parts.append(prop["building_type"])
     if prop["region"]:
         parts.append(prop["region"])
+    if prop["road"]:
+        parts.append(prop["road"])
     if prop["rent"]:
         parts.append(f"{prop['rent']}元")
     if prop["distance"]:
@@ -278,6 +287,7 @@ def generate_queries_for_property(prop, num_queries=40):
         "room": room_exprs,
         "building": building_exprs,
         "region": region_exprs,
+        "road": [prop["road"]] if prop["road"] else [],
         "distance": distance_exprs,
         "furniture": list(set(furniture_exprs)),
         "included": list(set(included_exprs)),
@@ -362,9 +372,23 @@ def is_compatible(query, prop):
         if prop["rent"] > limit:
             return False
     
-    # 3. 地區檢查
+    # 3. 地區/路段檢查
     for reg in ["南區", "大里", "東區", "西區"]:
-        if reg in query and reg not in prop["address"] and reg not in prop["region"]:
+        if reg in query and reg not in prop.get("address", "") and reg not in prop.get("region", ""):
+            return False
+    
+    if prop.get("road") and prop["road"] in query:
+        # 如果 query 提到了一條路，但這間房子不在那條路上
+        # (這裡簡單處理：如果 query 有路名，且 prop 有路名，要一致)
+        # 但有些 query 可能包含多個關鍵字，所以我們只做正向匹配的否定
+        pass
+    
+    # 更精確的路段排除：如果查詢中提到某路，但房源描述中完全沒有該路名
+    # 我們需要從 query 中識別出可能是路名的部分。
+    # 這裡暫時依賴 Sentence-Pair 模型學習，但為了負例挖掘，我們加一個簡單檢查
+    roads_in_query = re.findall(r"([^區市台]*(?:路|街|大道)(?:[一二三四五六七八九十]|[\d])?段?)", query)
+    for road in roads_in_query:
+        if road not in prop.get("address", "") and road not in prop.get("road", ""):
             return False
             
     # 4. 特定家具 (如果有提到，則房源必須具備)

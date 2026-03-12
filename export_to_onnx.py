@@ -31,7 +31,7 @@ torch.onnx.export(
     ),
     onnx_output_path,
     export_params=True,
-    opset_version=17, # 用 17 比較穩
+    opset_version=14, 
     do_constant_folding=True,
     input_names=["input_ids", "attention_mask", "token_type_ids"],
     output_names=["logits"],
@@ -39,7 +39,7 @@ torch.onnx.export(
         "input_ids": {0: "batch_size", 1: "sequence_length"},
         "attention_mask": {0: "batch_size", 1: "sequence_length"},
         "token_type_ids": {0: "batch_size", 1: "sequence_length"},
-        "logits": {0: "batch_size"},
+        "logits": {0: "batch_size", 1: "num_labels"},
     },
 )
 print("ONNX export successful!")

@@ -201,7 +201,7 @@ torch.onnx.export(
         "input_ids": {0: "batch_size", 1: "sequence_length"},
         "attention_mask": {0: "batch_size", 1: "sequence_length"},
         "token_type_ids": {0: "batch_size", 1: "sequence_length"},
-        "logits": {0: "batch_size"},
+        "logits": {0: "batch_size", 1: "num_labels"},
     },
 )
 

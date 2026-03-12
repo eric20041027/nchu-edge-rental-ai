@@ -40,10 +40,17 @@ def load_properties(csv_path="nchu_rental_info.csv"):
         parts = []
         room_type = row.get("格局", "")
         building_type = row.get("類型", "")
+        
+        # 提取路名
+        road = ""
+        road_match = re.search(r"([^區市台]*(?:路|街|大道)(?:[一二三四五六七八九十]|[\d])?段?)", addr)
+        if road_match:
+            road = road_match.group(1).strip()
 
         if room_type: parts.append(room_type)
         if building_type: parts.append(building_type)
         if region: parts.append(region)
+        if road: parts.append(road) # 新增路名到描述中
         if rent_num: parts.append(f"{rent_num}元")
         if dist: parts.append(f"距離{dist}km")
 

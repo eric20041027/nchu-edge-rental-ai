@@ -30,17 +30,6 @@ export async function initData() {
 // ============================================================
 
 export async function initNLP(onProgress) {
-    // 優先使用 window.ort (來自 index.html) 或 env.backends.onnx.runtime
-    const ort = window.ort || env.backends.onnx.runtime;
-
-    if (ort) {
-        // 重要：對齊版本至 1.17.1 (與 @xenova/transformers 2.17.x 匹配)
-        ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.17.1/dist/';
-        ort.env.wasm.numThreads = 1;
-        ort.env.wasm.simd = false;
-        ort.env.wasm.proxy = false;
-    }
-
     if (!tokenizer || !session) {
         env.allowRemoteModels = false;
         env.allowLocalModels = true;
@@ -53,24 +42,16 @@ export async function initNLP(onProgress) {
             if (onProgress) onProgress({ status: 'progress', file: 'tokenizer.json', loaded: 50, total: 100 });
 
             if (onProgress) onProgress({ status: 'progress', file: 'model.onnx', loaded: 50, total: 100 });
-            
-            const modelUrl = window.location.origin + '/custom_onnx_model_dir/model.onnx';
-            
-            session = await (ort ? ort.InferenceSession : window.ort.InferenceSession).create(
+            const modelUrl = window.location.origin + '/custom_onnx_model_dir/model.onnx?v=20260311_v1';
+            session = await window.ort.InferenceSession.create(
                 modelUrl,
                 {
                     executionProviders: ['wasm'],
                     graphOptimizationLevel: 'all',
-                    externalData: [
-                        {
-                            path: 'model.onnx.data',
-                            data: window.location.origin + '/custom_onnx_model_dir/model.onnx.data'
-                        },
-                        {
-                            path: 'my_custom_model.onnx.data',
-                            data: window.location.origin + '/custom_onnx_model_dir/my_custom_model.onnx.data'
-                        }
-                    ]
+                    externalData: [{
+                        path: 'my_custom_model.onnx.data',
+                        data: window.location.origin + '/custom_onnx_model_dir/my_custom_model.onnx.data?v=20260311_v1'
+                    }]
                 }
             );
             if (onProgress) onProgress({ status: 'ready', file: 'model.onnx', loaded: 100, total: 100 });
@@ -87,23 +68,18 @@ export async function initNLP(onProgress) {
 // ============================================================
 
 async function scorePair(query, propertyText) {
-    if (!session) {
-        throw new Error("AI model session not initialized. Re-ranking skipped.");
-    }
-
     const encoded = await tokenizer(query, {
         text_pair: propertyText,
         padding: 'max_length',
         truncation: true,
         max_length: MAX_LENGTH,
         return_tensors: 'np',
-        return_token_type_ids: true,
+        return_token_type_ids: true, // 重要：必須有這個，模型才能區分 query 與 property
     });
 
     const inputs = {};
-    const modelInputs = session.inputNames; 
+    const modelInputs = session.inputNames; // ["input_ids", "attention_mask", "token_type_ids"]
 
-    const ort = window.ort || env.backends.onnx.runtime;
     for (const key of modelInputs) {
         if (encoded[key]) {
             inputs[key] = new ort.Tensor('int64',
@@ -206,13 +182,17 @@ export async function recommend(text, top_k = 5) {
         // Step 2: Two-Stage Retrieval
         // Stage 2.1: Simple Keyword-Overlap + Price Proximity Retrieval
         console.log(`Stage 1: Keyword-overlap + Price proximity retrieval...`);
-        const queryKeywords = text.split(/\s+|[,，、。]/).filter(k => k.length > 1 && !k.match(/^\d+$/)); // 數字不當關鍵字
+        const queryKeywords = text.split(/\s+|[,，、。]/).filter(k => k.length > 1 && !k.match(/^\d+$/));
 
         const preScoredCandidates = candidates.map(prop => {
             let kScore = 0;
             // 關鍵字匹配
             queryKeywords.forEach(kw => {
-                if (prop.text.includes(kw)) kScore += 2; // AI 模型更注重關鍵字
+                const isLocationMatch = kw.endsWith('路') || kw.endsWith('街') || kw.endsWith('大道') || kw.includes('區');
+                if (prop.text.includes(kw)) {
+                    // 如果關鍵字包含路/街/區，權重更高
+                    kScore += isLocationMatch ? 5 : 2;
+                }
             });
 
             // 價格接近程度匹配 (如果您輸入的是 6000 而沒有 "以下")
