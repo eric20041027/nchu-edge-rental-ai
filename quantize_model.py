@@ -2,8 +2,6 @@ import onnx
 from onnxruntime.quantization import quantize_dynamic, QuantType
 import os
 
-# 解決外部資料檔案名稱不匹配的問題
-# 模型內部可能還記著 "my_custom_model.onnx.data"
 if os.path.exists("custom_onnx_model_dir/model.onnx.data"):
     os.link("custom_onnx_model_dir/model.onnx.data", "custom_onnx_model_dir/my_custom_model.onnx.data")
 

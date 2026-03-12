@@ -47,7 +47,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     userRequirement.addEventListener('input', function () {
         const text = this.value.trim();
 
-        // 1. 處理介面切換 (僅在此處檢查，且只在狀態改變時更新 DOM)
         if (!text) {
             if (resultsScreen.style.display !== 'none') {
                 resultsScreen.style.display = 'none';
@@ -57,7 +56,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        // 2. 效率化調整高度
         if (this.scrollHeight > this.clientHeight || this.value.length < (this.lastLen || 0)) {
             this.style.height = 'auto';
             this.style.height = Math.min(this.scrollHeight, 150) + 'px';
@@ -65,31 +63,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         this.lastLen = this.value.length;
     });
 
-    // 支援按下 Enter 送出
     userRequirement.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
-            e.preventDefault(); // 避免換行
+            e.preventDefault();
             const text = userRequirement.value.trim();
             if (text) fetchRecommendations(text);
         }
     });
 
-    // 點擊建議標籤快速輸入
     chips.forEach(chip => {
         chip.addEventListener('click', () => {
             userRequirement.value = chip.textContent;
-            // 觸發 input 事件與自動拉高
             userRequirement.dispatchEvent(new Event('input'));
-            userRequirement.focus(); // 輸入框保持 Focus
+            userRequirement.focus();
         });
     });
 
-    // 動態變更推薦結果
     async function fetchRecommendations(inputText) {
         console.log("fetchRecommendations triggered with:", inputText);
-        // console.trace("Trace for trigger:"); // 用於調試意外觸發
-
-        // 先跳到結果螢幕並顯示讀取中
         welcomeScreen.style.display = 'none';
         resultsScreen.style.display = 'block';
         processingStatus.style.display = 'flex';
@@ -97,7 +88,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         mainContent.scrollTop = 0;
 
         try {
-            // 關鍵字初步過濾 (檢查是否為租屋相關或純數字預算)
             const housingKeywords = ['房', '租', '預算', '萬', '千', 'k', '元', '近', '走', '分', '坪', '樓', '東區', '南區', '西區', '大里', '中興', '興大'];
             const isRelevant = housingKeywords.some(key => inputText.toLowerCase().includes(key)) || /\d+/.test(inputText);
 
