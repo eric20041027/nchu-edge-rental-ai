@@ -33,9 +33,10 @@ export async function initNLP(onProgress) {
     // Force set WASM paths for ONNX Runtime Web to a stable CDN
     // This ensures Vercel and other platforms can always find the necessary WASM files.
     if (window.ort) {
-        window.ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/';
-        window.ort.env.wasm.numThreads = 1; // Force single-thread to avoid SharedArrayBuffer issues
-        window.ort.env.wasm.simd = false;   // Disable SIMD to prevent potential instruction set errors
+        window.ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.17.1/dist/';
+        window.ort.env.wasm.numThreads = 1;
+        window.ort.env.wasm.simd = false;
+        window.ort.env.wasm.proxy = false; // Disable proxy to avoid worker-related threading issues
     }
 
     if (!tokenizer || !session) {
@@ -50,16 +51,25 @@ export async function initNLP(onProgress) {
             if (onProgress) onProgress({ status: 'progress', file: 'tokenizer.json', loaded: 50, total: 100 });
 
             if (onProgress) onProgress({ status: 'progress', file: 'model.onnx', loaded: 50, total: 100 });
-            const modelUrl = window.location.origin + '/custom_onnx_model_dir/model.onnx?v=20260311_v1';
+            
+            // Note: v= query parameter might cause issues with external data file resolution on some CDNs
+            const modelUrl = window.location.origin + '/custom_onnx_model_dir/model.onnx';
+            
             session = await window.ort.InferenceSession.create(
                 modelUrl,
                 {
                     executionProviders: ['wasm'],
                     graphOptimizationLevel: 'all',
-                    externalData: [{
-                        path: 'my_custom_model.onnx.data',
-                        data: window.location.origin + '/custom_onnx_model_dir/my_custom_model.onnx.data?v=20260311_v1'
-                    }]
+                    externalData: [
+                        {
+                            path: 'model.onnx.data',
+                            data: window.location.origin + '/custom_onnx_model_dir/model.onnx.data'
+                        },
+                        {
+                            path: 'my_custom_model.onnx.data',
+                            data: window.location.origin + '/custom_onnx_model_dir/my_custom_model.onnx.data'
+                        }
+                    ]
                 }
             );
             if (onProgress) onProgress({ status: 'ready', file: 'model.onnx', loaded: 100, total: 100 });
