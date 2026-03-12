@@ -33,7 +33,7 @@ export async function initNLP(onProgress) {
     // Force set WASM paths for ONNX Runtime Web to a stable CDN
     // This ensures Vercel and other platforms can always find the necessary WASM files.
     if (window.ort) {
-        window.ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.17.1/dist/';
+        window.ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/';
     }
 
     if (!tokenizer || !session) {
