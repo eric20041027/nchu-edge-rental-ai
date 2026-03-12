@@ -33,10 +33,24 @@ with open("recommendation_dev.json", "r", encoding="utf-8") as f:
     dev_data = json.load(f)
 print(f"  Dev:   {len(dev_data)} samples")
 
-# 統計類別分布
-train_pos = sum(1 for d in train_data if d["label"] == 1)
-train_neg = len(train_data) - train_pos
-print(f"  Train distribution: POS={train_pos}, NEG={train_neg}, ratio=1:{train_neg/train_pos:.1f}")
+# 統計並平衡類別分布
+import random
+random.seed(42)
+
+pos_samples = [d for d in train_data if d["label"] == 1]
+neg_samples = [d for d in train_data if d["label"] == 0]
+print(f"  Original distribution: POS={len(pos_samples)}, NEG={len(neg_samples)}")
+
+if len(neg_samples) > len(pos_samples):
+    neg_samples = random.sample(neg_samples, len(pos_samples))
+    print(f"  Balanced NEG down to {len(neg_samples)}")
+elif len(pos_samples) > len(neg_samples):
+    pos_samples = random.sample(pos_samples, len(neg_samples))
+    print(f"  Balanced POS down to {len(pos_samples)}")
+
+train_data = pos_samples + neg_samples
+random.shuffle(train_data)
+print(f"  Final balanced train set: {len(train_data)} samples")
 
 train_dataset_raw = Dataset.from_list(train_data)
 eval_dataset_raw = Dataset.from_list(dev_data)
@@ -99,18 +113,18 @@ training_args = TrainingArguments(
     output_dir="./recommendation_model_output",
     # 每 100 步顯示一次驗證結果 (含 accuracy)
     eval_strategy="steps",
-    eval_steps=100,
-    learning_rate=3e-5,              # 稍微提高學習率
+    eval_steps=200,
+    learning_rate=5e-5,              # 提高學習率以助於從 0 分處跳出
     per_device_train_batch_size=32,   # 加大 batch size
     per_device_eval_batch_size=32,
-    num_train_epochs=8,               # 增加到 8 個 epoch
+    num_train_epochs=8,               # 8 個 epoch
     weight_decay=0.01,
     warmup_ratio=0.1,                 # 前 10% 步數慢慢增加學習率
-    label_smoothing_factor=0.1,       # 標籤平滑，防止過擬合
+    label_smoothing_factor=0.0,       # 關閉標籤平滑，確保 matching 分數能推高
     logging_steps=50,                 # 每 50 步顯示 loss
     logging_first_step=True,          # 第一步就顯示
     save_strategy="steps",
-    save_steps=100,
+    save_steps=200,
     load_best_model_at_end=True,
     metric_for_best_model="accuracy",
     greater_is_better=True,

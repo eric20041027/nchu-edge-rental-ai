@@ -342,26 +342,61 @@ def generate_queries_for_property(prop, num_queries=40):
 
 
 # ============================================================
-# 4. 產生正負配對資料
+# 4. 判斷查詢與房源是否相容 (用於確保負例真的是負例)
 # ============================================================
-def generate_dataset(properties, num_neg_per_pos=3):
+def is_compatible(query, prop):
+    """
+    檢查房源是否符合查詢的要求。
+    用於確保在生成「負例」時，不小心挑到其實符合條件的房源。
+    """
+    # 1. 房型檢查
+    for rt in ["套房", "雅房", "住宅"]:
+        if rt in query and prop["room_type"] != rt:
+            return False
+    
+    # 2. 預算檢查 (解析查詢中的數字)
+    # 匹配 "6000以下", "6000以內", "6k", "六千"
+    budget_match = re.search(r"(\d+)(?:元)?(?:以下|以內|內)", query)
+    if budget_match:
+        limit = int(budget_match.group(1))
+        if prop["rent"] > limit:
+            return False
+    
+    # 3. 地區檢查
+    for reg in ["南區", "大里", "東區", "西區"]:
+        if reg in query and reg not in prop["address"] and reg not in prop["region"]:
+            return False
+            
+    # 4. 特定家具 (如果有提到，則房源必須具備)
+    for feat, terms in FURNITURE_QUERY_MAP.items():
+        # 如果候選語句中出現了該家具的關鍵字
+        if any(term in query for term in terms):
+            # 房源的家具清單中也必須有該特徵
+            # (這裡放寬一點，只要 prop["furniture"] 包含 feat 或其簡寫)
+            if not any(feat in f for f in prop["furniture"]):
+                return False
+
+    return True
+
+
+# ============================================================
+# 5. 產生正負配對資料
+# ============================================================
+def generate_dataset(properties, num_neg_per_pos=1):
     """
     為每筆房源生成正例 (matching) 和負例 (non-matching) 配對。
     正例: 查詢確實描述了該房源的特徵
-    負例: 隨機配對 + 困難負例 (相似租金但不同特徵)
+    負例: 必須「不符合」查詢條件的房源才作為負例
     """
     all_samples = []
     property_texts = [property_to_text(p) for p in properties]
-
-    # 預建按租金排序的索引，用於困難負例挖掘
-    rent_sorted = sorted(range(len(properties)), key=lambda i: properties[i]["rent"])
 
     for idx, prop in enumerate(properties):
         prop_text = property_texts[idx]
         queries = generate_queries_for_property(prop)
 
-        # 正例
         for query in queries:
+            # 正例
             all_samples.append({
                 "query": query,
                 "property": prop_text,
@@ -369,34 +404,28 @@ def generate_dataset(properties, num_neg_per_pos=3):
                 "property_idx": idx
             })
 
-        # 負例：混合隨機負例 + 困難負例
-        other_indices = [i for i in range(len(properties)) if i != idx]
-
-        # 找出相似租金的房源作為困難負例
-        hard_neg_indices = [
-            i for i in other_indices
-            if abs(properties[i]["rent"] - prop["rent"]) <= 1000  # 租金差 ≤ 1000
-            and properties[i]["room_type"] != prop["room_type"]  # 但房型不同
-        ]
-
-        for query in queries:
-            neg_pool = []
-            # 1-2 個困難負例
-            if hard_neg_indices:
-                n_hard = min(1, len(hard_neg_indices))
-                neg_pool.extend(random.sample(hard_neg_indices, n_hard))
-            # 其餘為隨機負例
-            n_random = num_neg_per_pos - len(neg_pool)
-            remaining = [i for i in other_indices if i not in neg_pool]
-            neg_pool.extend(random.sample(remaining, min(n_random, len(remaining))))
-
-            for neg_idx in neg_pool:
+            # 負例挖掘
+            neg_samples_found = 0
+            # 隨機打亂候選房源索引來挑選負例
+            other_indices = [i for i in range(len(properties)) if i != idx]
+            random.shuffle(other_indices)
+            
+            for neg_idx in other_indices:
+                neg_prop = properties[neg_idx]
+                
+                # 關鍵邏輯：如果這個房源「也符合」使用者的查詢，就不能把它當作負例標記為 0
+                if is_compatible(query, neg_prop):
+                    continue
+                
                 all_samples.append({
                     "query": query,
                     "property": property_texts[neg_idx],
                     "label": 0,
                     "property_idx": neg_idx
                 })
+                neg_samples_found += 1
+                if neg_samples_found >= num_neg_per_pos:
+                    break
 
     random.shuffle(all_samples)
     return all_samples
@@ -412,7 +441,7 @@ def main():
     print(f"  Loaded {len(properties)} properties")
 
     print("\nStep 2: Generating query-property pairs...")
-    all_samples = generate_dataset(properties, num_neg_per_pos=3)
+    all_samples = generate_dataset(properties, num_neg_per_pos=1)
     print(f"  Generated {len(all_samples)} total samples")
 
     # 統計正負例

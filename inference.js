@@ -5,7 +5,7 @@
  * Input:  [CLS] user_query [SEP] property_description [SEP]
  * Output: logits → softmax → match probability
  *
- * Optimized with batch inference to minimize browser latency.
+ * Sequential inference to avoid ONNX "Session already started" error.
  */
 import { AutoTokenizer, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1';
 
@@ -13,15 +13,14 @@ let tokenizer = null;
 let session = null;
 let propertyData = [];
 
-const MAX_LENGTH = 128;
-const BATCH_SIZE = 10; // Process 10 properties per ONNX call
+const MAX_LENGTH = 64;
 
 // ============================================================
 // Data Loading
 // ============================================================
 
 export async function initData() {
-    const response = await fetch('/property_data.json');
+    const response = await fetch('/property_data.json?v=20260310');
     propertyData = await response.json();
     console.log(`Loaded ${propertyData.length} property descriptions`);
 }
@@ -43,14 +42,15 @@ export async function initNLP(onProgress) {
             if (onProgress) onProgress({ status: 'progress', file: 'tokenizer.json', loaded: 50, total: 100 });
 
             if (onProgress) onProgress({ status: 'progress', file: 'model.onnx', loaded: 50, total: 100 });
+            const modelUrl = window.location.origin + '/custom_onnx_model_dir/model.onnx?v=20260311_v1';
             session = await window.ort.InferenceSession.create(
-                window.location.origin + '/custom_onnx_model_dir/model.onnx',
+                modelUrl,
                 {
                     executionProviders: ['wasm'],
                     graphOptimizationLevel: 'all',
                     externalData: [{
                         path: 'my_custom_model.onnx.data',
-                        data: window.location.origin + '/custom_onnx_model_dir/model.onnx.data'
+                        data: window.location.origin + '/custom_onnx_model_dir/my_custom_model.onnx.data?v=20260311_v1'
                     }]
                 }
             );
@@ -64,75 +64,52 @@ export async function initNLP(onProgress) {
 }
 
 // ============================================================
-// Batch Inference: Score multiple query-property pairs at once
+// Single Pair Inference
 // ============================================================
 
-async function scoreBatch(query, propertyTexts) {
-    const batchSize = propertyTexts.length;
-    if (batchSize === 0) return [];
+async function scorePair(query, propertyText) {
+    const encoded = await tokenizer(query, {
+        text_pair: propertyText,
+        padding: 'max_length',
+        truncation: true,
+        max_length: MAX_LENGTH,
+        return_tensors: 'np',
+        return_token_type_ids: true, // 重要：必須有這個，模型才能區分 query 與 property
+    });
 
-    // Tokenize all pairs
-    const allInputIds = [];
-    const allAttentionMask = [];
-    const allTokenTypeIds = [];
+    const inputs = {};
+    const modelInputs = session.inputNames; // ["input_ids", "attention_mask", "token_type_ids"]
 
-    for (const propText of propertyTexts) {
-        const encoded = await tokenizer(query, {
-            text_pair: propText,
-            padding: 'max_length',
-            truncation: true,
-            max_length: MAX_LENGTH,
-            return_tensors: 'np',
-        });
-        allInputIds.push(...encoded.input_ids.data);
-        allAttentionMask.push(...encoded.attention_mask.data);
-        allTokenTypeIds.push(...encoded.token_type_ids.data);
+    for (const key of modelInputs) {
+        if (encoded[key]) {
+            inputs[key] = new ort.Tensor('int64',
+                BigInt64Array.from(encoded[key].data.map(v => BigInt(v))),
+                encoded[key].dims
+            );
+        }
     }
 
-    // Create batch tensors
-    const inputIds = new ort.Tensor('int64',
-        BigInt64Array.from(allInputIds.map(v => BigInt(v))),
-        [batchSize, MAX_LENGTH]
-    );
-    const attentionMask = new ort.Tensor('int64',
-        BigInt64Array.from(allAttentionMask.map(v => BigInt(v))),
-        [batchSize, MAX_LENGTH]
-    );
-    const tokenTypeIds = new ort.Tensor('int64',
-        BigInt64Array.from(allTokenTypeIds.map(v => BigInt(v))),
-        [batchSize, MAX_LENGTH]
-    );
-
-    const feeds = {
-        input_ids: inputIds,
-        attention_mask: attentionMask,
-        token_type_ids: tokenTypeIds,
-    };
-
-    const results = await session.run(feeds);
-    const logits = results.logits.data; // [batch_size * 2] flat array
-
-    // Extract match probabilities via softmax
-    const probs = [];
-    for (let i = 0; i < batchSize; i++) {
-        const l0 = logits[i * 2];     // not-match logit
-        const l1 = logits[i * 2 + 1]; // match logit
-        const maxL = Math.max(l0, l1);
-        const exp0 = Math.exp(l0 - maxL);
-        const exp1 = Math.exp(l1 - maxL);
-        probs.push(exp1 / (exp0 + exp1));
-    }
-
-    return probs;
+    const results = await session.run(inputs);
+    const logits = results.logits.data;
+    const maxL = Math.max(logits[0], logits[1]);
+    const exp0 = Math.exp(logits[0] - maxL);
+    const exp1 = Math.exp(logits[1] - maxL);
+    return exp1 / (exp0 + exp1);
 }
 
 // ============================================================
-// Budget Parsing (for hard exclusion only)
+// Constraint Parsing (for hard exclusion only)
 // ============================================================
 
-function parseBudgetFromText(text) {
+function parseConstraintsFromText(text) {
     let budget = null;
     let limit = null;
+    let genderUnrestricted = false; // true if user specifically says "不限女"
+
+    // Detection for "unrestricted gender"
+    if (text.includes('不限女') || text.includes('不限性別') || text.includes('男生') || text.includes('男士')) {
+        genderUnrestricted = true;
+    }
 
     if (text.includes('以上')) limit = 'above';
     else if (text.includes('以下') || text.includes('以內') || text.includes('內')) limit = 'below';
@@ -159,71 +136,135 @@ function parseBudgetFromText(text) {
         }
     }
 
-    return { budget, limit };
+    return { budget, limit, genderUnrestricted };
 }
 
+let inferenceLock = false;
+
 // ============================================================
-// Main Recommendation Function (Batch Optimized)
+// Main Recommendation Function
 // ============================================================
 
 export async function recommend(text, top_k = 5) {
-    console.log("User Query:", text);
-    const startTime = performance.now();
+    if (inferenceLock) {
+        console.warn("New recommendation ignored: Previous inference still in progress.");
+        return null; // app.js handles null/empty
+    }
+    inferenceLock = true;
 
-    const { budget: userBudget, limit: budgetLimit } = parseBudgetFromText(text);
-    console.log("Parsed Budget:", userBudget, "Limit:", budgetLimit);
+    try {
+        console.log("User Query:", text);
+        const startTime = performance.now();
 
-    // Step 1: Apply hard exclusions first (no model needed)
-    const candidates = [];
-    for (let i = 0; i < propertyData.length; i++) {
-        const prop = propertyData[i];
-        if (userBudget && budgetLimit) {
-            if (budgetLimit === 'below' && prop.rent > userBudget) continue;
-            if (budgetLimit === 'above' && prop.rent < userBudget) continue;
+        const { budget: userBudget, limit: budgetLimit, genderUnrestricted } = parseConstraintsFromText(text);
+        console.log("Parsed constraints:", { userBudget, budgetLimit, genderUnrestricted });
+
+        // Step 1: Apply hard exclusions first
+        const candidates = [];
+        for (let i = 0; i < propertyData.length; i++) {
+            const prop = propertyData[i];
+
+            // Gender exclusion: If user says "男生" or "不限女", skip female-only rooms
+            if (genderUnrestricted) {
+                const isFemaleOnly = prop.text.includes('限女') || (prop.furniture && prop.furniture.includes('限女'));
+                if (isFemaleOnly) continue;
+            }
+
+            // Budget exclusion (only if limit word like "以下" is present)
+            if (userBudget && budgetLimit) {
+                if (budgetLimit === 'below' && prop.rent > userBudget) continue;
+                if (budgetLimit === 'above' && prop.rent < userBudget) continue;
+            }
+            candidates.push(prop);
         }
-        candidates.push({ index: i, prop });
-    }
-    console.log(`After hard exclusion: ${candidates.length} / ${propertyData.length} candidates`);
+        console.log(`After hard exclusion: ${candidates.length} / ${propertyData.length} candidates`);
 
-    // Step 2: Batch score all remaining candidates
-    const allProbs = [];
-    for (let bStart = 0; bStart < candidates.length; bStart += BATCH_SIZE) {
-        const batch = candidates.slice(bStart, bStart + BATCH_SIZE);
-        const propTexts = batch.map(c => c.prop.text);
-        const batchProbs = await scoreBatch(text, propTexts);
-        allProbs.push(...batchProbs);
-    }
+        // Step 2: Two-Stage Retrieval
+        // Stage 2.1: Simple Keyword-Overlap + Price Proximity Retrieval
+        console.log(`Stage 1: Keyword-overlap + Price proximity retrieval...`);
+        const queryKeywords = text.split(/\s+|[,，、。]/).filter(k => k.length > 1 && !k.match(/^\d+$/)); // 數字不當關鍵字
 
-    // Step 3: Collect results
-    let results = [];
-    for (let i = 0; i < candidates.length; i++) {
-        const percentage = Math.round(allProbs[i] * 100);
-        if (percentage <= 5) continue;
+        const preScoredCandidates = candidates.map(prop => {
+            let kScore = 0;
+            // 關鍵字匹配
+            queryKeywords.forEach(kw => {
+                if (prop.text.includes(kw)) kScore += 2; // AI 模型更注重關鍵字
+            });
 
-        results.push({
-            property: candidates[i].prop,
-            score: percentage,
+            // 價格接近程度匹配 (如果您輸入的是 6000 而沒有 "以下")
+            if (userBudget && !budgetLimit) {
+                const diff = Math.abs(prop.rent - userBudget);
+                // 擴散公式：越接近分數越高，差 500 元以內得分較高
+                const priceSimilarity = 10.0 / (1.0 + diff / 500.0);
+                kScore += priceSimilarity;
+            }
+
+            return { prop, kScore };
         });
+
+        // Sort by keyword score and take top 30
+        preScoredCandidates.sort((a, b) => b.kScore - a.kScore);
+        const topCandidates = preScoredCandidates.slice(0, 30).map(c => c.prop);
+        console.log(`Stage 1 complete: Selected top ${topCandidates.length} candidates for AI re-ranking.`);
+
+        // Stage 2.2: AI Re-ranking (Cross-Encoder)
+        const scoredResults = [];
+        console.log(`Stage 2: Starting AI re-ranking for ${topCandidates.length} candidates...`);
+
+        for (let i = 0; i < topCandidates.length; i++) {
+            const prop = topCandidates[i];
+            try {
+                const aiScore = await scorePair(text, prop.text); // 0.0 ~ 1.0
+                let finalScore = aiScore;
+
+                // 如果是純數字預算（無以上/以下），結合價格接近程度
+                if (userBudget && !budgetLimit) {
+                    const diff = Math.abs(prop.rent - userBudget);
+                    const priceSimilarity = 1.0 / (1.0 + diff / 500.0); // 0.0 ~ 1.0
+
+                    // 混和評分：AI (70%) + 價格 (30%)
+                    finalScore = (aiScore * 0.7) + (priceSimilarity * 0.3);
+                }
+
+                const percentage = Math.round(finalScore * 100);
+                if (percentage > 5) {
+                    scoredResults.push({ property: prop, score: percentage });
+                }
+            } catch (err) {
+                console.error(`AI scoring error for property ${i}:`, err);
+            }
+        }
+
+        // Step 3: Sort and return
+        scoredResults.sort((a, b) => b.score - a.score);
+
+        // Debug: Log top result detail
+        if (scoredResults.length > 0) {
+            console.log("Top Match Details:", {
+                query: text,
+                property: scoredResults[0].property.text,
+                score: scoredResults[0].score + "%"
+            });
+        }
+
+        const elapsed = (performance.now() - startTime).toFixed(0);
+        console.log(`Inference complete: ${scoredResults.length} results in ${elapsed}ms`);
+
+        return scoredResults.slice(0, top_k).map(item => ({
+            id: item.property.url,
+            title: `${item.property.room_type} | ${item.property.address}`,
+            price_str: item.property.rent_str,
+            url: item.property.url,
+            imgUrl: item.property.img || null,
+            score: item.score,
+            match_details: "",
+            size: item.property.size || "坪數未提供",
+            floor: item.property.floor || "樓層未提供",
+            furniture: item.property.furniture || "無特殊設施提供",
+            distance: item.property.distance,
+            address: item.property.address,
+        }));
+    } finally {
+        inferenceLock = false;
     }
-
-    // Step 4: Sort and return
-    results.sort((a, b) => b.score - a.score);
-
-    const elapsed = (performance.now() - startTime).toFixed(0);
-    console.log(`Inference complete: ${results.length} results in ${elapsed}ms`);
-
-    return results.slice(0, top_k).map(item => ({
-        id: item.property.url,
-        title: `${item.property.room_type} | ${item.property.address}`,
-        price_str: item.property.rent_str,
-        url: item.property.url,
-        imgUrl: item.property.img || null,
-        score: item.score,
-        match_details: `AI 模型配對分數: ${item.score}%`,
-        size: item.property.size || "坪數未提供",
-        floor: item.property.floor || "樓層未提供",
-        furniture: item.property.furniture || "無特殊設施提供",
-        distance: item.property.distance,
-        address: item.property.address,
-    }));
 }
