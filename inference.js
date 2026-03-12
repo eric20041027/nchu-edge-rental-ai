@@ -34,6 +34,8 @@ export async function initNLP(onProgress) {
     // This ensures Vercel and other platforms can always find the necessary WASM files.
     if (window.ort) {
         window.ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/';
+        window.ort.env.wasm.numThreads = 1; // Force single-thread to avoid SharedArrayBuffer issues
+        window.ort.env.wasm.simd = false;   // Disable SIMD to prevent potential instruction set errors
     }
 
     if (!tokenizer || !session) {
