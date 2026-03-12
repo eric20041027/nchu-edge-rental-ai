@@ -5,7 +5,7 @@
 ## 核心特徵
 
 - **自然語言辨識**: 採用 Sentence-Pair Classification 模式，精準理解使用者需求。
-- **邊緣端推論 (Edge AI)**: 使用 ONNX Runtime Web，模型直接在使用者瀏覽器運行，反應迅速且保護隱私。
+- **邊緣端推論 (Edge AI)**: 使用 ONNX Runtime Web，模型直接在使用者瀏覽器運行不需將資料回傳伺服器，反應迅速且保護隱私。
 - **直覺式介面**: 現代化、響應式設計，支援行動裝置。
 - **完整的訓練管線**: 包含自動化合成資料集、模型訓練、匯出與量化流程。
 
@@ -35,7 +35,7 @@ python3 -m http.server 8000
 然後訪問 `http://localhost:8000`。
 
 ### 2. 開發與訓練環境設定
-如果您需要重新訓練模型或產生資料集，請設定 Python 環境：
+如果需要重新訓練模型或產生資料集，請設定 Python 環境：
 
 ```bash
 # 建立虛擬環境
@@ -48,29 +48,58 @@ pip install torch transformers datasets numpy onnx onnxruntime
 
 ## 專案架構與資料流
 
-### 目錄結構
+本專案將流程分為資料準備、模型訓練、以及前端推論三個核心階段。
+
+### 核心工作流圖 (Workflow Diagram)
+
+```mermaid
+graph TD
+    A[nchu_rental_info.csv] --> B(generate_dataset.py)
+    A --> C(precompute_embeddings.py)
+    B --> D[Training Dataset .json]
+    D --> E(train_and_export_onnx.py)
+    E --> F[model.onnx]
+    F --> G(quantize_model.py)
+    G --> H[custom_onnx_model_dir/]
+    C --> I[property_data.json]
+    H --> J[inference.js]
+    I --> J
+    K[User Input] --> J
+    J --> L[Recommended Listings]
+```
+
+### 1. 資料準備 (Data Preparation)
+*   **原始資料**: 從 `nchu_rental_info.csv` 讀取房源資訊。
+*   **描述生成**: `precompute_embeddings.py` 會讀取 CSV 並生成 `property_data.json`，其中包含每筆房源的「標準化描述文本」，這是 AI 進行比對的基準。
+
+### 2. 模型訓練 (Model Training)
+*   **合成資料**: `generate_dataset.py` 模擬學生口語（如：「預算 5k」、「套房」）生成正負配對樣本。
+*   **微調與匯出**: `train_and_export_onnx.py` 基於 `albert-chinese-tiny` 進行二分類微調，並匯出為 `model.onnx`。可以使用 `quantize_model.py` 進一步壓縮模型體積。
+
+### 3. Web 推論 (Runtime Inference)
+當使用者輸入需求時：
+1.  **硬性過濾**: `inference.js` 先根據性別限制、預算範圍（若包含「以下」等詞彙）過濾掉絕對不符的房源。
+2.  **粗篩 (Stage 1)**: 利用關鍵字重疊度與價格接近程度，從候選房源中挑選出 Top 30。
+3.  **精篩 (Stage 2)**: 將查詢與 Top 30 房源描述送入 **ALBERT ONNX 模型** 進行深度語意評分。
+4.  **渲染**: `app.js` 根據最終加權分數進行排序並呈現。
+
+## 目錄結構
 ```text
 ├── index.html            # 網頁主進入點
 ├── styles.css             # 介面樣式
 ├── app.js                 # UI 邏輯與互動
-├── inference.js           # ONNX 推論邏輯與模型載入
-├── property_data.json      # 房源完整資訊 (供 UI 顯示)
-├── custom_onnx_model_dir/ # 已匯出的 ONNX 模型與標記器
-│   ├── model.onnx         # 權重檔
-│   ├── model.onnx.data    # 外部權重資料 (>100MB 拆分)
+├── inference.js           # ONNX 推論邏輯與兩階段檢索系統
+├── property_data.json      # 房源完整資訊與描述文本
+├── custom_onnx_model_dir/ # 模型存放區 (過大時需使用 LFS)
+│   ├── model.onnx         # ALBERT 權重
+│   ├── model.onnx.data    # 外部權重資料
 │   └── tokenizer.json     # 標記器設定
-├── scripts/               # 訓練與工具腳本
-│   ├── generate_dataset.py       # 自動生成訓練集 (由 CSV 轉 JSON)
-│   ├── train_and_export_onnx.py  # 模型微調與 ONNX 匯出
-│   └── quantize_model.py         # (選用) 模型量化壓縮
+├── generate_dataset.py       # 自動生成模擬訓練集
+├── train_and_export_onnx.py  # 模型微調與匯出
+├── precompute_embeddings.py   # 生成 property_data.json
+├── quantize_model.py         # 模型量化壓縮工具
 └── nchu_rental_info.csv   # 原始房源資料庫
 ```
-
-### 資料流 (Request Lifecycle)
-1. **輸入**: 使用者在文字框輸入租屋需求。
-2. **預處理**: `inference.js` 調用 `AutoTokenizer` 將文字轉換為 Token。
-3. **推論**: 瀏覽器透過 WASM 執行 `model.onnx`，計算 Query 與各房源的匹配分數。
-4. **渲染**: `app.js` 根據分數排序，將 Top-K 房源以卡片形式呈現。
 
 ## 模型訓練流程
 
@@ -79,15 +108,20 @@ pip install torch transformers datasets numpy onnx onnxruntime
 1. **更新資料**: 修改 `nchu_rental_info.csv`。
 2. **生成資料集**:
    ```bash
-   python scripts/generate_dataset.py
+   python generate_dataset.py
    ```
    這會模擬學生口語，自動生成正負配對樣本。
 3. **訓練並匯出**:
    ```bash
-   python scripts/train_and_export_onnx.py
+   python train_and_export_onnx.py
    ```
    此步驟會微調 `albert-chinese-tiny` 並直接匯出為 `model.onnx`。
-4. **部署模型**: 將生成的模型檔案移至 `custom_onnx_model_dir/` 即可。
+4. **更新推論資料**:
+   ```bash
+   python precompute_embeddings.py
+   ```
+   此步驟會根據原始 CSV 與新模型生成 `property_data.json`。
+5. **部署模型**: 將生成的模型檔案與 JSON 移至對應目錄即可。
 
 ## 備註
 - 模型採用 Sentence-Pair 模式，輸入格式為 `[CLS] 查詢 [SEP] 房屋描述 [SEP]`。
