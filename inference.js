@@ -30,13 +30,15 @@ export async function initData() {
 // ============================================================
 
 export async function initNLP(onProgress) {
-    // Force set WASM paths for ONNX Runtime Web to a stable CDN
-    // This ensures Vercel and other platforms can always find the necessary WASM files.
-    if (window.ort) {
-        window.ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.17.1/dist/';
-        window.ort.env.wasm.numThreads = 1;
-        window.ort.env.wasm.simd = false;
-        window.ort.env.wasm.proxy = false; // Disable proxy to avoid worker-related threading issues
+    // 優先使用 window.ort (來自 index.html) 或 env.backends.onnx.runtime
+    const ort = window.ort || env.backends.onnx.runtime;
+
+    if (ort) {
+        // 重要：對齊版本至 1.17.1 (與 @xenova/transformers 2.17.x 匹配)
+        ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.17.1/dist/';
+        ort.env.wasm.numThreads = 1;
+        ort.env.wasm.simd = false;
+        ort.env.wasm.proxy = false;
     }
 
     if (!tokenizer || !session) {
@@ -52,10 +54,9 @@ export async function initNLP(onProgress) {
 
             if (onProgress) onProgress({ status: 'progress', file: 'model.onnx', loaded: 50, total: 100 });
             
-            // Note: v= query parameter might cause issues with external data file resolution on some CDNs
             const modelUrl = window.location.origin + '/custom_onnx_model_dir/model.onnx';
             
-            session = await window.ort.InferenceSession.create(
+            session = await (ort ? ort.InferenceSession : window.ort.InferenceSession).create(
                 modelUrl,
                 {
                     executionProviders: ['wasm'],
@@ -86,18 +87,23 @@ export async function initNLP(onProgress) {
 // ============================================================
 
 async function scorePair(query, propertyText) {
+    if (!session) {
+        throw new Error("AI model session not initialized. Re-ranking skipped.");
+    }
+
     const encoded = await tokenizer(query, {
         text_pair: propertyText,
         padding: 'max_length',
         truncation: true,
         max_length: MAX_LENGTH,
         return_tensors: 'np',
-        return_token_type_ids: true, // 重要：必須有這個，模型才能區分 query 與 property
+        return_token_type_ids: true,
     });
 
     const inputs = {};
-    const modelInputs = session.inputNames; // ["input_ids", "attention_mask", "token_type_ids"]
+    const modelInputs = session.inputNames; 
 
+    const ort = window.ort || env.backends.onnx.runtime;
     for (const key of modelInputs) {
         if (encoded[key]) {
             inputs[key] = new ort.Tensor('int64',
