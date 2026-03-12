@@ -1,275 +1,94 @@
-# NCHU AI Rental Recommendation System
+# 興大 AI 租屋推薦 (NCHU AI Rental Recommendation)
 
-A fully browser-side **AI-powered rental recommendation platform** for National Chung Hsing University (NCHU) students. Users describe their housing needs in natural language, and the system performs real-time semantic analysis using a custom-trained ALBERT NER model, then recommends the best-matching rental properties via a Content-Based Filtering algorithm.
+這是一個專為中興大學學生設計的 AI 租屋推薦系統。使用者只需輸入自然語言需求（例如：「預算 6000 以內、近正門、有冷氣」），系統即可透過微調後的 ALBERT 模型進行語意匹配，提供最適合的房源建議。
 
-> **Core Highlight**: The entire AI inference pipeline runs on **WebAssembly (WASM)** — no backend server, no API keys. Just open the webpage and go.
+## 🌟 核心特徵
 
-## Key Features
+- **自然語言辨識**: 採用 Sentence-Pair Classification 模式，精準理解使用者需求。
+- **邊緣端推論 (Edge AI)**: 使用 ONNX Runtime Web，模型直接在使用者瀏覽器運行，反應迅速且保護隱私。
+- **直覺式介面**: 現代化、響應式設計，支援行動裝置。
+- **完整的訓練管線**: 包含自動化合成資料集、模型訓練、匯出與量化流程。
 
-- **Custom-Trained NER Model** — Fine-tuned from `clue/albert_chinese_tiny` with 10,000+ annotated samples, achieving **99.99%** validation accuracy
-- **Browser-Side Real-Time Inference** — Powered by ONNXRuntime-Web (WebAssembly), all model inference runs directly in the frontend with zero latency
-- **Intelligent Semantic Parsing** — Supports Chinese numerals, English abbreviations (6K), and colloquial expressions
-- **Content-Based Filtering** — Multi-dimensional CBF scoring algorithm covering budget, room type, distance, amenities, and 11 feature dimensions
-- **Google Maps Integration** — Each property card embeds a live map for instant location awareness
-- **Responsive Dark Theme** — Modern Glassmorphism design, fully optimized for both mobile and desktop
+## 🛠 核心技術棧
 
----
+- **Frontend**:
+  - 原生 JavaScript (ES6+)
+  - [ONNX Runtime Web](https://onnxruntime.ai/docs/tutorials/web/) (WASM 加速)
+  - CSS3 (現代化佈局與動畫)
+- **Machine Learning**:
+  - Python 3.10+
+  - PyTorch
+  - Hugging Face Transformers (ALBERT Tiny)
+  - Hugging Face Datasets
+- **Deployment**:
+  - 支援 Vercel, GitHub Pages 等靜態託管平台。
 
-## Tech Stack
+## 🚀 快速開始
 
-| Layer | Technology |
-|-------|-----------|
-| **ML Model** | ALBERT (chinese_tiny) + PyTorch + HuggingFace Transformers |
-| **Model Format** | ONNX (Open Neural Network Exchange) + External Data Weights |
-| **Frontend Inference** | ONNXRuntime-Web (WebAssembly backend) |
-| **Tokenizer** | Xenova/Transformers.js (`AutoTokenizer`) |
-| **Frontend** | Vanilla HTML5 + CSS3 + JavaScript (ES Modules) |
-| **Data Parsing** | PapaParse (CSV to JSON) |
-| **Typography** | Google Fonts — Noto Sans TC |
-| **Icons** | FontAwesome 6 |
-| **Version Control** | Git + GitHub |
-
----
-
-## Architecture
-
-### System Flow
-
-```
-User Input (Natural Language)
-        |
-        v
-+-------------------------+
-|   Tokenizer (ALBERT)    |  <- Xenova/Transformers.js
-|   Character Encoding    |
-+-----------+-------------+
-            | input_ids, attention_mask, token_type_ids
-            v
-+-------------------------+
-|   ONNX Runtime (WASM)   |  <- model.onnx + model.onnx.data
-|   Token Classification  |
-|   3-Class NER Inference  |
-+-----------+-------------+
-            | logits -> argmax -> B-Target / I-Target / O
-            v
-+-------------------------+
-|   Feature Extractor     |  <- tagFeatures() in inference.js
-|   Structured Feature    |
-|   Extraction            |
-+-----------+-------------+
-            | CBF Feature Vector
-            v
-+-------------------------+
-|   Scoring Engine        |  <- recommend() in inference.js
-|   Content-Based         |
-|   Filtering             |
-+-----------+-------------+
-            | Top-K Results
-            v
-+-------------------------+
-|   UI Renderer           |  <- app.js -> index.html
-|   Property Cards + Maps |
-+-------------------------+
-```
-
-### Directory Structure
-
-```
-Renting_model_ONNX/
-├── index.html                  # Main page (rental recommendation UI)
-├── styles.css                  # Dark theme stylesheet
-├── app.js                      # Frontend interaction logic + card rendering
-├── inference.js                # AI inference engine (NER + CBF scoring)
-├── nchu_rental_info.csv        # Rental property database
-│
-├── custom_onnx_model_dir/      # ONNX model directory for frontend
-│   ├── model.onnx              # ONNX model graph
-│   ├── model.onnx.data         # External weight file (~16MB)
-│   ├── tokenizer.json          # ALBERT tokenizer vocabulary
-│   ├── tokenizer_config.json   # Tokenizer configuration
-│   └── special_tokens_map.json # Special token mapping
-│
-├── README.md                   # Project documentation
-└── .gitignore                  # Git ignore rules
-```
-
-### NER Labeling Format (BIO Tagging)
-
-The model performs token-level classification using 3 labels:
-
-| Label ID | Label Name | Description |
-|----------|-----------|-------------|
-| 0 | `O` | Outside — non-feature tokens (verbs, prepositions, etc.) |
-| 1 | `B-Target` | Begin — first character of a feature entity |
-| 2 | `I-Target` | Inside — subsequent characters of a feature entity |
-
-**Example:**
-```
-Input:  想 找 預 算 六 千 內 的 套 房
-Labels: O  O  O  O  B  I  I  O  B  I
-                    |六千內      |套房
-```
-
-### CBF Recommendation Algorithm
-
-The `recommend()` function scores each property across 11 feature dimensions:
-
-| Feature Dimension | Max Score | Description |
-|-------------------|-----------|-------------|
-| Budget Match | 20 pts | Full score if difference <= 500, linear decay beyond |
-| Region Match | 20 pts | Address contains specified region keyword |
-| Room Type Match | 20 pts | Layout matches specified room type |
-| Building Type | 15 pts | Building type matches specification |
-| Distance Match | 25 pts | Distance within requested limit |
-| Furniture/Amenities | 5 pts each | Per-item match against property listing |
-| Security Features | 5 pts each | Per-item match against security listing |
-
-**Hard Exclusion Rules:**
-- Budget "above" constraint — properties below budget are excluded entirely
-- Budget "below/within" constraint — properties exceeding budget are excluded entirely
-- Gender restriction conflicts — excluded
-- Pet restriction conflicts — excluded
-
----
-
-## Prerequisites
-
-- A modern web browser (Chrome / Edge / Firefox with WebAssembly support)
-- Any static file server (e.g., Python's `http.server`)
-
----
-
-## Getting Started
-
-### 1. Clone the Repository
+### 1. 執行網頁應用
+本專案為靜態網頁，您可以直接開啟 `index.html` 或使用本地伺服器：
 
 ```bash
-git clone https://github.com/eric20041027/Renting-recommendation-ONNX.git
-cd Renting-recommendation-ONNX
+# 使用 Python 啟動伺服器
+python3 -m http.server 8000
 ```
+然後訪問 `http://localhost:8000`。
 
-### 2. Start a Local Development Server
+### 2. 開發與訓練環境設定
+如果您需要重新訓練模型或產生資料集，請設定 Python 環境：
 
 ```bash
-python3 -m http.server 5002
+# 建立虛擬環境
+python3 -m venv .venv
+source .venv/bin/activate
+
+# 安裝依賴
+pip install torch transformers datasets numpy onnx onnxruntime
 ```
 
-### 3. Open in Browser
+## 🏗 專案架構與資料流
 
-Navigate to [http://localhost:5002](http://localhost:5002)
-
-### 4. Usage
-
-Type your rental requirements in the input box at the bottom, for example:
-
-- `預算六千以下的套房`
-- `大里區 獨洗獨曬 有冷氣`
-- `騎車五分鐘 8K以內 可養貓`
-- `中興大學門口 雅房 台水台電`
-
-The system will parse your input in real time and recommend the best-matching properties.
-
----
-
-## Model Training Guide
-
-### Training Data Format
-
-Training data (`train.json`) and validation data (`test.json`) are included in the repository. Each entry is a JSON object with `text` (character array) and `tags` (BIO label array):
-
-```json
-[
-  {
-    "text": ["預", "算", "六", "千", "內", "的", "套", "房"],
-    "tags": ["O", "O", "B-Target", "I-Target", "I-Target", "O", "B-Target", "I-Target"]
-  }
-]
+### 目錄結構
+```text
+├── index.html            # 網頁主進入點
+├── styles.css             # 介面樣式
+├── app.js                 # UI 邏輯與互動
+├── inference.js           # ONNX 推論邏輯與模型載入
+├── property_data.json      # 房源完整資訊 (供 UI 顯示)
+├── custom_onnx_model_dir/ # 已匯出的 ONNX 模型與標記器
+│   ├── model.onnx         # 權重檔
+│   ├── model.onnx.data    # 外部權重資料 (>100MB 拆分)
+│   └── tokenizer.json     # 標記器設定
+├── scripts/               # 訓練與工具腳本
+│   ├── generate_dataset.py       # 自動生成訓練集 (由 CSV 轉 JSON)
+│   ├── train_and_export_onnx.py  # 模型微調與 ONNX 匯出
+│   └── quantize_model.py         # (選用) 模型量化壓縮
+└── nchu_rental_info.csv   # 原始房源資料庫
 ```
 
-### Run Training
+### 資料流 (Request Lifecycle)
+1. **輸入**: 使用者在文字框輸入租屋需求。
+2. **預處理**: `inference.js` 調用 `AutoTokenizer` 將文字轉換為 Token。
+3. **推論**: 瀏覽器透過 WASM 執行 `model.onnx`，計算 Query 與各房源的匹配分數。
+4. **渲染**: `app.js` 根據分數排序，將 Top-K 房源以卡片形式呈現。
 
-```bash
-python3 train_and_export_onnx.py
-```
+## 📈 模型訓練流程
 
-This script will:
-1. Load `train.json` and `test.json`
-2. Fine-tune `clue/albert_chinese_tiny` for token classification
-3. Report validation accuracy after each epoch
-4. Export the final model to ONNX format
+如果您想要更新房源或優化模型：
 
-### Deploy Updated Model
+1. **更新資料**: 修改 `nchu_rental_info.csv`。
+2. **生成資料集**:
+   ```bash
+   python scripts/generate_dataset.py
+   ```
+   這會模擬學生口語，自動生成正負配對樣本。
+3. **訓練並匯出**:
+   ```bash
+   python scripts/train_and_export_onnx.py
+   ```
+   此步驟會微調 `albert-chinese-tiny` 並直接匯出為 `model.onnx`。
+4. **部署模型**: 將生成的模型檔案移至 `custom_onnx_model_dir/` 即可。
 
-```bash
-cp my_custom_model.onnx custom_onnx_model_dir/model.onnx
-cp my_custom_model.onnx.data custom_onnx_model_dir/model.onnx.data
-cp my_trained_albert/tokenizer.json custom_onnx_model_dir/
-cp my_trained_albert/tokenizer_config.json custom_onnx_model_dir/
-cp my_trained_albert/special_tokens_map.json custom_onnx_model_dir/
-```
-
-### Configurable Training Parameters
-
-| Parameter | Default | Description |
-|-----------|---------|-------------|
-| `num_train_epochs` | 3 | Number of training epochs |
-| `learning_rate` | 2e-5 | Learning rate |
-| `per_device_train_batch_size` | 8 | Batch size per device |
-| `max_length` | 16 | Maximum token sequence length |
-
----
-
-## Deployment
-
-This project is a fully static website and can be deployed to any static hosting service.
-
-### GitHub Pages
-
-1. Go to Repository Settings -> Pages
-2. Set Source to `main` branch
-3. Access via `https://your-username.github.io/repo-name/`
-
-> **Note**: The model weight file is approximately 16MB. Initial page load may take a few seconds.
-
-### Netlify / Vercel
-
-Connect your GitHub repository directly for automatic deployment. No additional configuration required.
-
----
-
-## Troubleshooting
-
-### Model Loading Error: `Module.MountedFiles`
-
-**Cause**: The ONNX model internally references `my_custom_model.onnx.data` as its external weight file name.
-
-**Solution**: Ensure `inference.js` correctly maps the internal name to the actual file path:
-```javascript
-externalData: [{
-    path: 'my_custom_model.onnx.data',
-    data: window.location.origin + '/custom_onnx_model_dir/model.onnx.data'
-}]
-```
-
-### Tokenizer Error: `local_files_only=true`
-
-**Cause**: `env.localModelPath` is not pointing to the correct model directory.
-
-**Solution**: Verify path settings in `inference.js`:
-```javascript
-env.allowRemoteModels = false;
-env.allowLocalModels = true;
-env.localModelPath = window.location.origin + '/';
-```
-
-### Inaccurate Recommendations
-
-1. **Check NER output**: Open browser DevTools Console and look for `ALBERT Segmented Words:` logs
-2. **Add training data**: Generate more samples for poorly recognized sentence patterns
-3. **Adjust scoring weights**: Modify score allocations in the `recommend()` function within `inference.js`
-
----
-
-## License
-
-This project is a course project for National Chung Hsing University.
+## 📝 備註
+- 模型採用 Sentence-Pair 模式，輸入格式為 `[CLS] 查詢 [SEP] 房屋描述 [SEP]`。
+- 由於 ONNX 模型權重較大，建議使用支援 LFS 的 Git 託管。
