@@ -50,7 +50,7 @@ export async function initNLP(onProgress) {
                     graphOptimizationLevel: 'all',
                     externalData: [{
                         path: 'my_custom_model.onnx.data',
-                        data: window.location.origin + '/custom_onnx_model_dir/my_custom_model.onnx.data?v=20260311_v1'
+                        data: window.location.origin + '/custom_onnx_model_dir/model.onnx.data?v=20260311_v1'
                     }]
                 }
             );
