@@ -13,7 +13,7 @@ import re
 
 def load_properties(csv_path="nchu_rental_info.csv"):
     """載入 CSV 並產生每筆房源的描述文本"""
-    with open(csv_path, "r", encoding="utf-8") as f:
+    with open(csv_path, "r", encoding="utf-8-sig") as f:
         reader = csv.DictReader(f)
         rows = list(reader)
 

@@ -16,7 +16,7 @@ random.seed(42)
 # 1. 讀取 CSV 房源資料
 # ============================================================
 def load_properties(csv_path="nchu_rental_info.csv"):
-    with open(csv_path, "r", encoding="utf-8") as f:
+    with open(csv_path, "r", encoding="utf-8-sig") as f:
         reader = csv.DictReader(f)
         rows = list(reader)
 

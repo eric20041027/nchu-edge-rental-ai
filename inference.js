@@ -180,20 +180,48 @@ export async function recommend(text, top_k = 5) {
         console.log(`After hard exclusion: ${candidates.length} / ${propertyData.length} candidates`);
 
         // Step 2: Two-Stage Retrieval
-        // Stage 2.1: Simple Keyword-Overlap + Price Proximity Retrieval
-        console.log(`Stage 1: Keyword-overlap + Price proximity retrieval...`);
-        const queryKeywords = text.split(/\s+|[,，、。]/).filter(k => k.length > 1 && !k.match(/^\d+$/));
+        // 提取關鍵字並過濾掉常見動詞/介詞
+        const stopWords = ['近', '靠近', '想找', '尋找', '住在', '一間', '想要', '預算', '大約', '希望'];
+        let queryKeywords = text.split(/\s+|[,，、。]/)
+            .filter(k => k.length > 1 && !k.match(/^\d+$/))
+            .map(k => {
+                let clean = k;
+                stopWords.forEach(sw => { if (clean.startsWith(sw)) clean = clean.substring(sw.length); });
+                return clean;
+            })
+            .filter(k => k.length > 1);
 
         const preScoredCandidates = candidates.map(prop => {
             let kScore = 0;
+            let locationWeight = 0;
+            
             // 關鍵字匹配
             queryKeywords.forEach(kw => {
-                const isLocationMatch = kw.endsWith('路') || kw.endsWith('街') || kw.endsWith('大道') || kw.includes('區');
+                const isRoad = kw.endsWith('路') || kw.endsWith('街') || kw.endsWith('大道');
+                const isRegion = kw.includes('區');
+                const isSchoolSpot = kw.includes('正門') || kw.includes('側門') || kw.includes('男宿');
+                
                 if (prop.text.includes(kw)) {
-                    // 如果關鍵字包含路/街/區，權重更高
-                    kScore += isLocationMatch ? 5 : 2;
+                    if (isRoad) {
+                        kScore += 15; // 路名相符權重極高
+                        locationWeight += 1;
+                    } else if (isSchoolSpot) {
+                        kScore += 10; // 學校具體位置
+                        locationWeight += 1;
+                    } else if (isRegion) {
+                        kScore += 5;
+                        locationWeight += 0.5;
+                    } else {
+                        kScore += 2;
+                    }
                 }
             });
+
+            // 檢查是否輸入了地點但房源完全不對 (路名不符)
+            const queryRoads = queryKeywords.filter(kw => kw.endsWith('路') || kw.endsWith('街') || kw.endsWith('大道'));
+            if (queryRoads.length > 0 && locationWeight === 0) {
+                kScore -= 10; // 嚴厲懲罰路名不符
+            }
 
             // 價格接近程度匹配 (如果您輸入的是 6000 而沒有 "以下")
             if (userBudget && !budgetLimit) {
@@ -208,7 +236,7 @@ export async function recommend(text, top_k = 5) {
 
         // Sort by keyword score and take top 30
         preScoredCandidates.sort((a, b) => b.kScore - a.kScore);
-        const topCandidates = preScoredCandidates.slice(0, 30).map(c => c.prop);
+        const topCandidates = preScoredCandidates.slice(0, 30);
         console.log(`Stage 1 complete: Selected top ${topCandidates.length} candidates for AI re-ranking.`);
 
         // Stage 2.2: AI Re-ranking (Cross-Encoder)
@@ -216,21 +244,17 @@ export async function recommend(text, top_k = 5) {
         console.log(`Stage 2: Starting AI re-ranking for ${topCandidates.length} candidates...`);
 
         for (let i = 0; i < topCandidates.length; i++) {
-            const prop = topCandidates[i];
+            const { prop, kScore } = topCandidates[i];
             try {
-                const aiScore = await scorePair(text, prop.text); // 0.0 ~ 1.0
-                let finalScore = aiScore;
-
-                // 如果是純數字預算（無以上/以下），結合價格接近程度
-                if (userBudget && !budgetLimit) {
-                    const diff = Math.abs(prop.rent - userBudget);
-                    const priceSimilarity = 1.0 / (1.0 + diff / 500.0); // 0.0 ~ 1.0
-
-                    // 混和評分：AI (70%) + 價格 (30%)
-                    finalScore = (aiScore * 0.7) + (priceSimilarity * 0.3);
-                }
-
-                const percentage = Math.round(finalScore * 100);
+                // S2: AI Semantic Score (0.0 ~ 1.0)
+                const aiScore = await scorePair(text, prop.text); 
+                
+                // 綜合評分：核心以 AI 為主 (權重 50)，並加上關鍵字匹配分 (kScore)
+                // 基礎偏移量 20 讓合格房源看起來都有一定配對度
+                const rawScore = 20 + kScore + (aiScore * 50);
+                
+                const percentage = Math.round(Math.min(Math.max(rawScore, 0), 100));
+                
                 if (percentage > 5) {
                     scoredResults.push({ property: prop, score: percentage });
                 }
