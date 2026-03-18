@@ -128,6 +128,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         houses.forEach((house, index) => {
             const card = document.createElement('div');
             card.className = 'property-card';
+            // 添加 staggered animation delay
+            card.style.animationDelay = `${index * 0.1}s`;
 
             let badgeClass = '';
             // 由於已經在後端轉化為 0~100 的數字，直接取用
