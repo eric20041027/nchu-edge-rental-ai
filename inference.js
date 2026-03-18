@@ -31,12 +31,9 @@ export async function initData() {
 
 export async function initNLP(onProgress) {
     if (!tokenizer || !session) {
-        // 配置 ONNX Runtime WASM 路徑 (確保在 Vercel 能找到 .wasm 檔案)
-        // 注意：這裡假設 ort.min.js 是從 CDN 載入的，或者 .wasm 檔案在與 HTML 相同的目錄
-        if (window.ort && window.ort.env) {
-            window.ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.17.1/dist/';
-        }
-
+        // 配置 ONNX Runtime WASM 路徑 (若從 CDN 載入且有報錯才需手動指定)
+        // 此處移除手動指定，讓 CDN 版本的 ort.min.js 自動尋找相應版本的 .wasm
+        
         env.allowRemoteModels = false;
         env.allowLocalModels = true;
         env.useBrowserCache = true;
