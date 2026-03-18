@@ -31,34 +31,60 @@ export async function initData() {
 
 export async function initNLP(onProgress) {
     if (!tokenizer || !session) {
+        // 配置 ONNX Runtime WASM 路徑 (確保在 Vercel 能找到 .wasm 檔案)
+        // 注意：這裡假設 ort.min.js 是從 CDN 載入的，或者 .wasm 檔案在與 HTML 相同的目錄
+        if (window.ort && window.ort.env) {
+            window.ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.17.1/dist/';
+        }
+
         env.allowRemoteModels = false;
         env.allowLocalModels = true;
         env.useBrowserCache = true;
         env.localModelPath = window.location.origin + '/';
 
         try {
+            console.log("Starting model initialization...");
             if (onProgress) onProgress({ status: 'progress', file: 'tokenizer.json', loaded: 10, total: 100 });
+            
+            // 1. 加載 Tokenizer
             tokenizer = await AutoTokenizer.from_pretrained('custom_onnx_model_dir');
-            if (onProgress) onProgress({ status: 'progress', file: 'tokenizer.json', loaded: 50, total: 100 });
+            console.log("Tokenizer loaded.");
+            if (onProgress) onProgress({ status: 'progress', file: 'tokenizer.json', loaded: 30, total: 100 });
 
-            if (onProgress) onProgress({ status: 'progress', file: 'model.onnx', loaded: 50, total: 100 });
-            const modelUrl = window.location.origin + '/custom_onnx_model_dir/model.onnx?v=20260311_v1';
-            session = await window.ort.InferenceSession.create(
-                modelUrl,
-                {
-                    executionProviders: ['wasm'],
-                    graphOptimizationLevel: 'all',
-                    externalData: [{
-                        path: 'my_custom_model.onnx.data',
-                        data: window.location.origin + '/custom_onnx_model_dir/model.onnx.data?v=20260311_v1'
-                    }]
-                }
-            );
+            // 2. 加載 ONNX 模型
+            if (onProgress) onProgress({ status: 'progress', file: 'model.onnx', loaded: 40, total: 100 });
+            const modelUrl = window.location.origin + '/custom_onnx_model_dir/model.onnx?v=20260318_v1';
+            
+            console.log("Creating InferenceSession for:", modelUrl);
+            
+            // 簡化 Session 創建：如果模型 >= 7MB 通常已經包含權重，
+            // 除非它特別是 split format。我們先嘗試不帶 externalData 載入。
+            session = await window.ort.InferenceSession.create(modelUrl, {
+                executionProviders: ['wasm'],
+                graphOptimizationLevel: 'all'
+            });
+
             if (onProgress) onProgress({ status: 'ready', file: 'model.onnx', loaded: 100, total: 100 });
             console.log('ONNX Sentence-Pair model loaded successfully');
         } catch (err) {
-            console.error('Model loading error:', err);
-            throw err;
+            console.error('Model loading error details:', err);
+            // 如果第一次失敗，嘗試帶上 externalData (以防萬一)
+            try {
+                console.log("Retrying with externalData...");
+                const modelUrl = window.location.origin + '/custom_onnx_model_dir/model.onnx?v=20260318_v1';
+                session = await window.ort.InferenceSession.create(modelUrl, {
+                    executionProviders: ['wasm'],
+                    externalData: [{
+                        path: 'model.onnx.data', // 統一名稱為 model.onnx.data
+                        data: window.location.origin + '/custom_onnx_model_dir/model.onnx.data?v=20260318_v1'
+                    }]
+                });
+                if (onProgress) onProgress({ status: 'ready', file: 'model.onnx', loaded: 100, total: 100 });
+                console.log('ONNX model loaded on retry with externalData');
+            } catch (retryErr) {
+                console.error('Model loading retry failed:', retryErr);
+                throw retryErr;
+            }
         }
     }
 }
