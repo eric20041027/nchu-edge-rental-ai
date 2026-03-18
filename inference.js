@@ -223,22 +223,19 @@ export async function recommend(text, top_k = 5) {
                 const isRoad = kw.endsWith('路') || kw.endsWith('街') || kw.endsWith('大道');
                 const isRegion = kw.includes('區');
                 const isSchoolSpot = kw.includes('正門') || kw.includes('側門') || kw.includes('男宿');
-                const isRoomType = kw.includes('套房') || kw.includes('雅房') || kw.includes('一房') || kw.includes('工作室');
                 
                 if (prop.text.includes(kw)) {
                     if (isRoad) {
-                        kScore += 20; // 路名相符權重極高
+                        kScore += 15; // 路名相符權重極高
                         locationWeight += 1;
                     } else if (isSchoolSpot) {
-                        kScore += 15; // 學校具體位置
+                        kScore += 10; // 學校具體位置
                         locationWeight += 1;
                     } else if (isRegion) {
-                        kScore += 10;
-                        locationWeight += 0.5;
-                    } else if (isRoomType) {
-                        kScore += 15; // 房型匹配非常重要
-                    } else {
                         kScore += 5;
+                        locationWeight += 0.5;
+                    } else {
+                        kScore += 2;
                     }
                 }
             });
@@ -275,9 +272,9 @@ export async function recommend(text, top_k = 5) {
                 // S2: AI Semantic Score (0.0 ~ 1.0)
                 const aiScore = await scorePair(text, prop.text); 
                 
-                // 綜合評分：核心以 AI 為主 (權重 60)，並加上關鍵字匹配分 (kScore)
-                // 基礎偏移量增加到 25
-                const rawScore = 25 + kScore + (aiScore * 60);
+                // 綜合評分：核心以 AI 為主 (權重 50)，並加上關鍵字匹配分 (kScore)
+                // 基礎偏移量 20 讓合格房源看起來都有一定配對度
+                const rawScore = 20 + kScore + (aiScore * 50);
                 
                 const percentage = Math.round(Math.min(Math.max(rawScore, 0), 100));
                 
