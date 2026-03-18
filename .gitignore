@@ -10,11 +10,18 @@ venv/
 .DS_Store
 *.log
 
-# 訓練中間產物 (checkpoints / runs / 原始匯出檔)
+# 訓練中間產物 (checkpoints / Training intermediate outputs)
 custom_model_output/
+recommendation_model_output/
 my_custom_model.onnx
 my_custom_model.onnx.data
 my_trained_albert/
+
+# Generated datasets (regenerable from CSV)
+recommendation_train.json
+recommendation_dev.json
+recommendation_test.json
+property_texts.json
 
 # 舊版公版模型
 onnx_model_dir/

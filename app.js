@@ -1,4 +1,5 @@
-import { initData, initNLP, recommend } from './inference.js';
+console.log(">>> APP_VERSION: 20260311_V2 <<<");
+import { initData, initNLP, recommend } from './inference.js?v=20260311_V2';
 
 document.addEventListener('DOMContentLoaded', async () => {
     const userRequirement = document.getElementById('userRequirement');
@@ -41,95 +42,64 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadStatus.style.color = '#ff6b6b';
     }
 
-    // 初始化 textarea 高度
-    userRequirement.style.height = "auto";
-    userRequirement.style.height = (userRequirement.scrollHeight) + "px";
-
-    // 處理輸入框自動長高
-    userRequirement.addEventListener('input', function () {
-        this.style.height = 'auto'; // 重置高度
-        this.style.height = (this.scrollHeight) + 'px'; // 設為內容高度
-
-        // 限縮最高高度
-        if (this.scrollHeight > 120) {
-            this.style.overflowY = 'auto';
-        } else {
-            this.style.overflowY = 'hidden';
-            // 自動滾到底部確保輸入框在視野內
-            mainContent.scrollTop = mainContent.scrollHeight;
-        }
-    });
-
     let debounceTimer;
 
-    // 監聽文字輸入事件 (即時響應)
-    userRequirement.addEventListener('input', () => {
-        const text = userRequirement.value.trim();
+    userRequirement.addEventListener('input', function () {
+        const text = this.value.trim();
 
-        // 如果清空內容，則顯示歡迎畫面，隱藏結果
         if (!text) {
-            resultsScreen.style.display = 'none';
-            welcomeScreen.style.display = 'flex';
+            if (resultsScreen.style.display !== 'none') {
+                resultsScreen.style.display = 'none';
+                welcomeScreen.style.display = 'flex';
+            }
+            this.style.height = '40px';
             return;
         }
 
-        // 當有字輸入時，切換為結果畫面
-        welcomeScreen.style.display = 'none';
-        resultsScreen.style.display = 'block';
-
-        // 每次打字時，顯示小型的運算動畫
-        processingStatus.style.display = 'flex';
-        // 降低透明度模擬正在更新
-        recommendationList.style.opacity = '0.4';
-
-        // 保證結果區是在畫面上方的，讓使用者不必下滑
-        mainContent.scrollTop = 0;
-
-        // 清除上一次的計時器
-        clearTimeout(debounceTimer);
-
-        // 設定 600ms 後使用者如果沒繼續打字，才執行尋找
-        debounceTimer = setTimeout(() => {
-            // 執行真正的 API 請求
-            fetchRecommendations(text).then(() => {
-                // 下載完成後隱藏運算動畫，恢復透明度
-                processingStatus.style.display = 'none';
-                recommendationList.style.opacity = '1';
-            });
-        }, 600);
+        if (this.scrollHeight > this.clientHeight || this.value.length < (this.lastLen || 0)) {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 150) + 'px';
+        }
+        this.lastLen = this.value.length;
     });
 
-    // 支援按下 Enter 送出
     userRequirement.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
-            e.preventDefault(); // 避免換行
-            clearTimeout(debounceTimer); // 取消輸入延遲防抖
+            e.preventDefault();
             const text = userRequirement.value.trim();
-            if (text) {
-                // 立即觸發 API 更新
-                processingStatus.style.display = 'flex';
-                recommendationList.style.opacity = '0.4';
-                fetchRecommendations(text).then(() => {
-                    processingStatus.style.display = 'none';
-                    recommendationList.style.opacity = '1';
-                });
-            }
+            if (text) fetchRecommendations(text);
         }
     });
 
-    // 點擊建議標籤快速輸入
     chips.forEach(chip => {
         chip.addEventListener('click', () => {
             userRequirement.value = chip.textContent;
-            // 觸發 input 事件與自動拉高
             userRequirement.dispatchEvent(new Event('input'));
-            userRequirement.focus(); // 輸入框保持 Focus
+            userRequirement.focus();
         });
     });
 
-    // 動態變更推薦結果
     async function fetchRecommendations(inputText) {
+        console.log("fetchRecommendations triggered with:", inputText);
+        welcomeScreen.style.display = 'none';
+        resultsScreen.style.display = 'block';
+        processingStatus.style.display = 'flex';
+        recommendationList.style.opacity = '0.4';
+        mainContent.scrollTop = 0;
+
         try {
+            const housingKeywords = ['房', '租', '預算', '萬', '千', 'k', '元', '近', '走', '分', '坪', '樓', '東區', '南區', '西區', '大里', '中興', '興大'];
+            const isRelevant = housingKeywords.some(key => inputText.toLowerCase().includes(key)) || /\d+/.test(inputText);
+
+            if (!isRelevant && inputText.length > 1) {
+                recommendationList.innerHTML = `<div style="text-align: center; color: #ff6b6b; padding: 2rem;">
+                    <i class="fa-solid fa-circle-question" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
+                    偵測到不相干的文字，請重新輸入更具體的租屋需求。<br>
+                    <small style="color: #aaa;">例如：「預算 6000 南區 套房」</small>
+                </div>`;
+                return;
+            }
+
             const data = await recommend(inputText, 5);
 
             if (data && data.length >= 0) {
@@ -139,8 +109,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         } catch (error) {
             console.error("Fetch Error:", error);
-            // 發生錯誤時顯示友善提示
             recommendationList.innerHTML = `<div style="text-align: center; color: white; padding: 2rem;">無法取得推薦結果，請檢查系統狀態。</div>`;
+        } finally {
+            processingStatus.style.display = 'none';
+            recommendationList.style.opacity = '1';
         }
     }
 
@@ -196,9 +168,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="card-content">
                     <div class="card-price">NT$ ${house.price_str}</div>
                     <h4 class="card-title">${house.title}</h4>
-                    <div style="font-size: 0.8rem; color: #aaa; margin: 0.5rem 0;" class="match-details">
-                        <i class="fa-solid fa-check"></i> 符合項目：${house.match_details}
-                    </div>
                     <div class="card-details" style="display: flex; gap: 10px; font-size: 0.85rem; color: #ccc; margin-bottom: 5px;">
                         <span><i class="fa-solid fa-vector-square"></i> ${house.size}</span>
                         <span><i class="fa-solid fa-building"></i> ${house.floor}</span>
@@ -235,15 +204,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // 發送按鈕的點擊與鍵盤 Enter 直接觸發防抖立刻執行
+    // 發送按鈕的點擊
     const btnAnalyze = document.getElementById('btnAnalyze');
     if (btnAnalyze) {
         btnAnalyze.addEventListener('click', () => {
-            clearTimeout(debounceTimer);
             const text = userRequirement.value.trim();
             if (text) fetchRecommendations(text);
-            processingStatus.style.display = 'none';
-            recommendationList.style.opacity = '1';
         });
     }
 });

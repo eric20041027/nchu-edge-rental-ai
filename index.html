@@ -6,30 +6,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="中興大學 AI 租屋推薦系統，輸入需求即可獲得最適合的租屋選項。">
     <title>興大 AI 租屋推薦</title>
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap"
         rel="stylesheet">
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Custom CSS -->
     <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
     <div class="app-container">
-        <!-- 頂部導航列 -->
         <nav class="navbar">
             <div class="nav-container">
                 <h1 class="logo"><i class="fa-solid fa-house-chimney"></i> 興大 AI 租屋推薦</h1>
             </div>
         </nav>
 
-        <!-- 主要結果顯示區 (可獨立滾動) -->
         <main class="main-content" id="mainContent">
 
-            <!-- 初始歡迎畫面 (無關鍵字時顯示) -->
             <div class="welcome-screen" id="welcomeScreen">
                 <h2>告訴 AI 你的找房需求</h2>
                 <p>簡單輸入幾個條件，AI 將即時為你配對中興最佳租屋</p>
@@ -41,23 +35,19 @@
                 </div>
             </div>
 
-            <!-- AI 推薦結果區 (初始隱藏) -->
             <div class="results-screen" id="resultsScreen" style="display: none;">
 
-                <!-- 狀態提示 -->
                 <div class="status-header" id="processingStatus" style="display: none;">
                     <div class="spinner-small"></div>
                     <span>AI 正在即時分析您的需求...</span>
                 </div>
 
-                <!-- 房屋卡片列表 -->
                 <div class="property-grid" id="recommendationList">
                     <!-- Javascript 會將 property-card 插入此處 -->
                 </div>
             </div>
         </main>
 
-        <!-- 底部固定輸入區 -->
         <footer class="input-footer">
             <div class="input-container">
                 <div class="ai-prompt-box">
@@ -70,7 +60,7 @@
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
-    <script type="module" src="app.js"></script>
+    <script type="module" src="app.js?v=20260311_V4_HYBRID"></script>
 </body>
 
 </html>
