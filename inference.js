@@ -217,12 +217,30 @@ export async function recommend(text, top_k = 5) {
 
         // Step 2: Two-Stage Retrieval
         // 提取關鍵字並過濾掉常見動詞/介詞
-        const stopWords = ['近', '靠近', '想找', '尋找', '住在', '一間', '想要', '預算', '大約', '希望'];
+        const stopWords = [
+            '近', '靠近', '想找', '尋找', '住在', '一間', '想要', '預算', '大約', '希望',
+            '位於', '位在', '位處', '在', '含', '有', '附', '座落於', '座落'
+        ];
+        
+        // 額外定義地址後綴，用於提取核心地址
+        const locSuffixes = ['路', '街', '大道', '區'];
+
         let queryKeywords = text.split(/\s+|[,，、。]/)
             .filter(k => k.length > 1 && !k.match(/^\d+$/))
             .map(k => {
                 let clean = k;
+                // 1. 移除開頭的 stopWords
                 stopWords.forEach(sw => { if (clean.startsWith(sw)) clean = clean.substring(sw.length); });
+                
+                // 2. 如果是地址類關鍵字（以路、街等結尾），嘗試進一步清理開頭
+                // 例如：從 "位於國光路" 提取出 "國光路"
+                locSuffixes.forEach(suffix => {
+                    if (clean.endsWith(suffix) && clean.length > suffix.length) {
+                        // 移除常見的方位或連字
+                        const locPrefixes = ['位', '於', '在', '處'];
+                        locPrefixes.forEach(p => { if (clean.startsWith(p)) clean = clean.substring(p.length); });
+                    }
+                });
                 return clean;
             })
             .filter(k => k.length > 1);
