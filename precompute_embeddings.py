@@ -43,9 +43,12 @@ def load_properties(csv_path="nchu_rental_info.csv"):
         
         # 提取路名
         road = ""
+        # 優化路名抓取：匹配 路/街/大道 + 數字段(如二段)，但排除後續的門牌號碼
         road_match = re.search(r"([^區市台]*(?:路|街|大道)(?:[一二三四五六七八九十]|[\d])?段?)", addr)
         if road_match:
             road = road_match.group(1).strip()
+            # 二次清理：移除可能誤抓到的門牌號碼起始數字 (例如 "學府路1" -> "學府路")
+            road = re.sub(r"\d+$", "", road)
 
         if room_type: parts.append(room_type)
         if building_type: parts.append(building_type)

@@ -1,7 +1,7 @@
 [
   {
     "idx": 0,
-    "text": "套房 透天厝 南區 國光路3 6500元 距離1.0km 床 衣櫃 電話 寬頻網路 冰箱 限學生",
+    "text": "套房 透天厝 南區 國光路 6500元 距離1.0km 床 衣櫃 電話 寬頻網路 冰箱 限學生",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=46",
     "address": "台中市南區國光路365巷2號",
     "room_type": "套房",
@@ -35,7 +35,7 @@
   },
   {
     "idx": 2,
-    "text": "套房 大樓 南區 興大路5 5200元 距離1.0km 床 衣櫃 電話 寬頻網路 冰箱 含網路費 限學生 禁養寵物",
+    "text": "套房 大樓 南區 興大路 5200元 距離1.0km 床 衣櫃 電話 寬頻網路 冰箱 含網路費 限學生 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=36",
     "address": "台中市南區興大路56號",
     "room_type": "套房",
@@ -52,7 +52,7 @@
   },
   {
     "idx": 3,
-    "text": "套房 公寓 大里區 永興路2 6500元 距離1.0km 床 衣櫃 寬頻網路 陽台 熱水器 禁養寵物",
+    "text": "套房 公寓 大里區 永興路 6500元 距離1.0km 床 衣櫃 寬頻網路 陽台 熱水器 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=702",
     "address": "台中市大里區台中市大里區永興路233號",
     "room_type": "套房",
@@ -69,7 +69,7 @@
   },
   {
     "idx": 4,
-    "text": "套/雅房 華廈 南區 南和一街2 22000元 距離1.0km 床 衣櫃 電視 冰箱 陽台 含管理費 禁養寵物",
+    "text": "套/雅房 華廈 南區 南和一街 22000元 距離1.0km 床 衣櫃 電視 冰箱 陽台 含管理費 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=653",
     "address": "台中市南區南和一街2號6樓之6",
     "room_type": "套/雅房",
@@ -86,7 +86,7 @@
   },
   {
     "idx": 5,
-    "text": "住宅 大樓 南區 五權南路4 15000元 距離1.0km 床 衣櫃 冰箱 陽台 洗衣機 禁養寵物",
+    "text": "住宅 大樓 南區 五權南路 15000元 距離1.0km 床 衣櫃 冰箱 陽台 洗衣機 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=677",
     "address": "台中市南區台中市南區五權南路478號12樓之2",
     "room_type": "住宅",
@@ -103,7 +103,7 @@
   },
   {
     "idx": 6,
-    "text": "住宅 公寓 大里區 大明路3 9500元 距離1.0km 床 衣櫃 書櫃 冰箱 陽台 限女性 限學生 禁養寵物",
+    "text": "住宅 公寓 大里區 大明路 9500元 距離1.0km 床 衣櫃 書櫃 冰箱 陽台 限女性 限學生 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=204",
     "address": "台中市大里區大明路366巷26號3F",
     "room_type": "住宅",
@@ -120,7 +120,7 @@
   },
   {
     "idx": 7,
-    "text": "套房 大樓 南區 興大路4 6000元 距離1.0km 床 衣櫃 寬頻網路 冰箱 陽台 含管理費網路費 限學生 禁養寵物",
+    "text": "套房 大樓 南區 興大路 6000元 距離1.0km 床 衣櫃 寬頻網路 冰箱 陽台 含管理費網路費 限學生 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=546",
     "address": "台中市南區興大路418號4F",
     "room_type": "套房",
@@ -137,7 +137,7 @@
   },
   {
     "idx": 8,
-    "text": "套房 透天厝 南區 仁和二街2 5800元 距離1.0km 床 衣櫃 電話 寬頻網路 冰箱 含網路費 限學生 禁養寵物",
+    "text": "套房 透天厝 南區 仁和二街 5800元 距離1.0km 床 衣櫃 電話 寬頻網路 冰箱 含網路費 限學生 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=45",
     "address": "台中市南區仁和二街21號",
     "room_type": "套房",
@@ -154,7 +154,7 @@
   },
   {
     "idx": 9,
-    "text": "住宅 公寓 南區 五權南路2 14000元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含網路費 限學生 禁養寵物",
+    "text": "住宅 公寓 南區 五權南路 14000元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含網路費 限學生 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=6",
     "address": "台中市南區五權南路296巷8號1~2F",
     "room_type": "住宅",
@@ -171,7 +171,7 @@
   },
   {
     "idx": 10,
-    "text": "住宅 公寓 南區 忠孝路1 19000元 距離1.0km 床 衣櫃 洗衣機 書桌 冷氣機",
+    "text": "住宅 公寓 南區 忠孝路 19000元 距離1.0km 床 衣櫃 洗衣機 書桌 冷氣機",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=699",
     "address": "台中市南區台中市南區忠孝路121-1號2樓",
     "room_type": "住宅",
@@ -188,7 +188,7 @@
   },
   {
     "idx": 11,
-    "text": "套房 透天厝 大里區 大智路7 5700元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含管理費網路費有線電視 禁養寵物",
+    "text": "套房 透天厝 大里區 大智路 5700元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含管理費網路費有線電視 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=497",
     "address": "台中市大里區大智路768號",
     "room_type": "套房",
@@ -205,7 +205,7 @@
   },
   {
     "idx": 12,
-    "text": "套房 大樓 南區 南門路5 10000元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 含水費管理費 禁養寵物",
+    "text": "套房 大樓 南區 南門路 10000元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 含水費管理費 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=700",
     "address": "台中市南區台中市南區南門路59巷47號5樓",
     "room_type": "套房",
@@ -222,7 +222,7 @@
   },
   {
     "idx": 13,
-    "text": "套房 透天厝 南區 明德街8 4000元 距離1.0km 床 衣櫃 寬頻網路 冰箱 陽台 含水費網路費公設（電）費 禁養寵物",
+    "text": "套房 透天厝 南區 明德街 4000元 距離1.0km 床 衣櫃 寬頻網路 冰箱 陽台 含水費網路費公設（電）費 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=35",
     "address": "台中市南區明德街82巷3-3號",
     "room_type": "套房",
@@ -239,7 +239,7 @@
   },
   {
     "idx": 14,
-    "text": "住宅 透天厝 南區 福新街1 6500元 距離1.0km 床 衣櫃 冰箱 洗衣機 有線電視 含水費有線電視 禁養寵物",
+    "text": "住宅 透天厝 南區 福新街 6500元 距離1.0km 床 衣櫃 冰箱 洗衣機 有線電視 含水費有線電視 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=583",
     "address": "台中市南區福新街100號",
     "room_type": "住宅",
@@ -256,7 +256,7 @@
   },
   {
     "idx": 15,
-    "text": "套房 透天厝 南區 學府路1 8380元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 含水費管理費網路費 限學生 禁養寵物",
+    "text": "套房 透天厝 南區 學府路 8380元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 含水費管理費網路費 限學生 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=610",
     "address": "台中市南區學府路147巷10號",
     "room_type": "套房",
@@ -273,7 +273,7 @@
   },
   {
     "idx": 16,
-    "text": "套房 透天厝 南區 永和街2 4800元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃",
+    "text": "套房 透天厝 南區 永和街 4800元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=633",
     "address": "台中市南區永和街227號",
     "room_type": "套房",
@@ -290,7 +290,7 @@
   },
   {
     "idx": 17,
-    "text": "套房 透天厝 南區 仁和二街5 6300元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 含網路費 限女性",
+    "text": "套房 透天厝 南區 仁和二街 6300元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 含網路費 限女性",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=537",
     "address": "台中市南區仁和二街56號",
     "room_type": "套房",
@@ -307,7 +307,7 @@
   },
   {
     "idx": 18,
-    "text": "套房 大樓 南區 興大路4 6000元 距離1.0km 床 衣櫃 寬頻網路 書櫃 陽台 含水費管理費網路費 限學生",
+    "text": "套房 大樓 南區 興大路 6000元 距離1.0km 床 衣櫃 寬頻網路 書櫃 陽台 含水費管理費網路費 限學生",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=462",
     "address": "台中市南區興大路440號5F-1",
     "room_type": "套房",
@@ -324,7 +324,7 @@
   },
   {
     "idx": 19,
-    "text": "套/雅房 透天厝 南區 南平路5 6000元 距離1.0km 床 衣櫃 電視 冰箱 洗衣機 含水費 禁養寵物",
+    "text": "套/雅房 透天厝 南區 南平路 6000元 距離1.0km 床 衣櫃 電視 冰箱 洗衣機 含水費 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=666",
     "address": "台中市南區南平路53-2號",
     "room_type": "套/雅房",
@@ -341,7 +341,7 @@
   },
   {
     "idx": 20,
-    "text": "套房 透天厝 東區 七中路1 5000元 距離1.0km 床 衣櫃 電視 寬頻網路 陽台 含管理費網路費 限學生 禁養寵物",
+    "text": "套房 透天厝 東區 七中路 5000元 距離1.0km 床 衣櫃 電視 寬頻網路 陽台 含管理費網路費 限學生 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=576",
     "address": "台中市東區七中路130號",
     "room_type": "套房",
@@ -375,7 +375,7 @@
   },
   {
     "idx": 22,
-    "text": "套/雅房 透天厝 南區 仁德街3 3000元 距離1.0km 床 衣櫃 寬頻網路 書櫃 冰箱 含水費網路費 限學生",
+    "text": "套/雅房 透天厝 南區 仁德街 3000元 距離1.0km 床 衣櫃 寬頻網路 書櫃 冰箱 含水費網路費 限學生",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=29",
     "address": "台中市南區仁德街3巷10號",
     "room_type": "套/雅房",
@@ -392,7 +392,7 @@
   },
   {
     "idx": 23,
-    "text": "套房 透天厝 南區 國光路3 4500元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含水費網路費 限學生",
+    "text": "套房 透天厝 南區 國光路 4500元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含水費網路費 限學生",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=467",
     "address": "台中市南區國光路389巷29號",
     "room_type": "套房",
@@ -409,7 +409,7 @@
   },
   {
     "idx": 24,
-    "text": "套房 透天厝 南區 南門路5 4900元 距離1.0km 床 衣櫃 陽台 書桌 熱水器 含水費 禁養寵物",
+    "text": "套房 透天厝 南區 南門路 4900元 距離1.0km 床 衣櫃 陽台 書桌 熱水器 含水費 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=540",
     "address": "台中市南區南門路5巷1弄4號",
     "room_type": "套房",
@@ -426,7 +426,7 @@
   },
   {
     "idx": 25,
-    "text": "套房 大樓 南區 學府路1 4000元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 含管理費網路費清潔費 限學生 禁養寵物",
+    "text": "套房 大樓 南區 學府路 4000元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 含管理費網路費清潔費 限學生 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=446",
     "address": "台中市南區學府路135巷5號2樓",
     "room_type": "套房",
@@ -443,7 +443,7 @@
   },
   {
     "idx": 26,
-    "text": "套房 透天厝 大里區 永興路3 3000元 距離1.0km 床 衣櫃 電話 寬頻網路 陽台 限學生",
+    "text": "套房 透天厝 大里區 永興路 3000元 距離1.0km 床 衣櫃 電話 寬頻網路 陽台 限學生",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=116",
     "address": "台中市大里區永興路334巷21號",
     "room_type": "套房",
@@ -460,7 +460,7 @@
   },
   {
     "idx": 27,
-    "text": "住宅 透天厝 南區 信義南街1 3500元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含有線電視",
+    "text": "住宅 透天厝 南區 信義南街 3500元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含有線電視",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=267",
     "address": "台中市南區信義南街189號",
     "room_type": "住宅",
@@ -477,7 +477,7 @@
   },
   {
     "idx": 28,
-    "text": "套房 華廈 南區 學府路7 8000元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 含水費管理費網路費 禁養寵物",
+    "text": "套房 華廈 南區 學府路 8000元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 含水費管理費網路費 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=601",
     "address": "台中市南區學府路75號3F",
     "room_type": "套房",
@@ -494,7 +494,7 @@
   },
   {
     "idx": 29,
-    "text": "套房 大樓 南區 學府路6 7000元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含管理費網路費",
+    "text": "套房 大樓 南區 學府路 7000元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含管理費網路費",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=622",
     "address": "台中市南區學府路65號3樓",
     "room_type": "套房",
@@ -511,7 +511,7 @@
   },
   {
     "idx": 30,
-    "text": "套房 公寓 南區 明德街8 4000元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含管理費網路費",
+    "text": "套房 公寓 南區 明德街 4000元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含管理費網路費",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=566",
     "address": "台中市南區明德街82巷17-1號2F",
     "room_type": "套房",
@@ -528,7 +528,7 @@
   },
   {
     "idx": 31,
-    "text": "套房 大樓 南區 高工路2 4700元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含水費管理費網路費 限女性 禁養寵物",
+    "text": "套房 大樓 南區 高工路 4700元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含水費管理費網路費 限女性 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=567",
     "address": "台中市南區高工路249號8F-1",
     "room_type": "套房",
@@ -545,7 +545,7 @@
   },
   {
     "idx": 32,
-    "text": "套房 透天厝 南區 仁義街7 8300元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 含網路費 禁養寵物",
+    "text": "套房 透天厝 南區 仁義街 8300元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 含網路費 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=654",
     "address": "台中市南區仁義街71巷2號",
     "room_type": "套房",
@@ -562,7 +562,7 @@
   },
   {
     "idx": 33,
-    "text": "套房 透天厝 大里區 大明路2 4700元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 含水費網路費 禁養寵物",
+    "text": "套房 透天厝 大里區 大明路 4700元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 含水費網路費 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=392",
     "address": "台中市大里區大明路223巷26號",
     "room_type": "套房",
@@ -579,7 +579,7 @@
   },
   {
     "idx": 34,
-    "text": "住宅 大樓 南區 興大路4 27000元 距離1.0km 床 電視 寬頻網路 書櫃 冰箱 含管理費網路費 禁養寵物",
+    "text": "住宅 大樓 南區 興大路 27000元 距離1.0km 床 電視 寬頻網路 書櫃 冰箱 含管理費網路費 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=463",
     "address": "台中市南區興大路410號2F",
     "room_type": "住宅",
@@ -596,7 +596,7 @@
   },
   {
     "idx": 35,
-    "text": "套房 大樓 南區 興大路4 5500元 距離1.0km 床 衣櫃 寬頻網路 冰箱 陽台 含管理費網路費 禁養寵物",
+    "text": "套房 大樓 南區 興大路 5500元 距離1.0km 床 衣櫃 寬頻網路 冰箱 陽台 含管理費網路費 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=62",
     "address": "台中市南區興大路412號3F、8F",
     "room_type": "套房",
@@ -613,7 +613,7 @@
   },
   {
     "idx": 36,
-    "text": "住宅 公寓 南區 復新街4 6000元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含管理費網路費 限學生",
+    "text": "住宅 公寓 南區 復新街 6000元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含管理費網路費 限學生",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=494",
     "address": "台中市南區復新街49-2號2F",
     "room_type": "住宅",
@@ -630,7 +630,7 @@
   },
   {
     "idx": 37,
-    "text": "套房 大樓 南區 復新街8 8000元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 禁養寵物",
+    "text": "套房 大樓 南區 復新街 8000元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=698",
     "address": "台中市南區台中市南區復新街88號",
     "room_type": "套房",
@@ -664,7 +664,7 @@
   },
   {
     "idx": 39,
-    "text": "套/雅房 大樓 南區 中路2 18000元 距離1.0km 床 衣櫃 書櫃 冰箱 洗衣機 禁養寵物",
+    "text": "套/雅房 大樓 南區 中路 18000元 距離1.0km 床 衣櫃 書櫃 冰箱 洗衣機 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=626",
     "address": "台中市南區台中路292號11樓-1",
     "room_type": "套/雅房",
@@ -681,7 +681,7 @@
   },
   {
     "idx": 40,
-    "text": "套房 透天厝 南區 瑞光街2 7500元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含網路費 限學生 禁養寵物",
+    "text": "套房 透天厝 南區 瑞光街 7500元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含網路費 限學生 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=656",
     "address": "台中市南區瑞光街2-10號",
     "room_type": "套房",
@@ -698,7 +698,7 @@
   },
   {
     "idx": 41,
-    "text": "住宅 大樓 南區 五權南路6 15000元 距離1.0km 床 衣櫃 冰箱 陽台 洗衣機 含管理費 限學生",
+    "text": "住宅 大樓 南區 五權南路 15000元 距離1.0km 床 衣櫃 冰箱 陽台 洗衣機 含管理費 限學生",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=49",
     "address": "台中市南區五權南路604-7號5F",
     "room_type": "住宅",
@@ -715,7 +715,7 @@
   },
   {
     "idx": 42,
-    "text": "套房 透天厝 南區 永和街1 4500元 距離1.0km 床 衣櫃 電話 寬頻網路 洗衣機 含網路費 限學生",
+    "text": "套房 透天厝 南區 永和街 4500元 距離1.0km 床 衣櫃 電話 寬頻網路 洗衣機 含網路費 限學生",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=56",
     "address": "台中市南區永和街174-6號",
     "room_type": "套房",
@@ -732,7 +732,7 @@
   },
   {
     "idx": 43,
-    "text": "套房 華廈 南區 仁義街8 6000元 距離1.0km 床 衣櫃 寬頻網路 書桌 熱水器 限學生 禁養寵物",
+    "text": "套房 華廈 南區 仁義街 6000元 距離1.0km 床 衣櫃 寬頻網路 書桌 熱水器 限學生 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=580",
     "address": "台中市南區仁義街86-9號9F",
     "room_type": "套房",
@@ -749,7 +749,7 @@
   },
   {
     "idx": 44,
-    "text": "套房 透天厝 南區 興大路3 5800元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 禁養寵物",
+    "text": "套房 透天厝 南區 興大路 5800元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=697",
     "address": "台中市南區台中市南區興大路350巷19號",
     "room_type": "套房",
@@ -766,7 +766,7 @@
   },
   {
     "idx": 45,
-    "text": "套房 透天厝 南區 國光路3 6500元 距離1.0km 床 衣櫃 電視 寬頻網路 洗衣機 含網路費有線電視 限女性",
+    "text": "套房 透天厝 南區 國光路 6500元 距離1.0km 床 衣櫃 電視 寬頻網路 洗衣機 含網路費有線電視 限女性",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=554",
     "address": "台中市南區國光路363巷13號",
     "room_type": "套房",
@@ -800,7 +800,7 @@
   },
   {
     "idx": 47,
-    "text": "住宅 華廈 南區 興大路4 4800元 距離1.0km 床 衣櫃 寬頻網路 書桌 冷氣機 含水費",
+    "text": "住宅 華廈 南區 興大路 4800元 距離1.0km 床 衣櫃 寬頻網路 書桌 冷氣機 含水費",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=696",
     "address": "台中市南區台中市南區興大路416號3樓",
     "room_type": "住宅",
@@ -817,7 +817,7 @@
   },
   {
     "idx": 48,
-    "text": "套房 大樓 南區 興大路4 5000元 距離1.0km 床 衣櫃 寬頻網路 書櫃 冰箱 含管理費網路費 禁養寵物",
+    "text": "套房 大樓 南區 興大路 5000元 距離1.0km 床 衣櫃 寬頻網路 書櫃 冰箱 含管理費網路費 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=695",
     "address": "台中市南區台中市南區興大路416號7樓",
     "room_type": "套房",
@@ -834,7 +834,7 @@
   },
   {
     "idx": 49,
-    "text": "雅房 透天厝 東區 中路4 3000元 距離1.0km 床 衣櫃 寬頻網路 冰箱 洗衣機 含網路費 限學生 禁養寵物",
+    "text": "雅房 透天厝 東區 中路 3000元 距離1.0km 床 衣櫃 寬頻網路 冰箱 洗衣機 含網路費 限學生 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=145",
     "address": "台中市東區台中路403之4號",
     "room_type": "雅房",
@@ -851,7 +851,7 @@
   },
   {
     "idx": 50,
-    "text": "雅房 透天厝 南區 國光路3 3600元 距離1.0km 床 衣櫃 寬頻網路 書櫃 陽台 含水費網路費 限男性 限學生 禁養寵物",
+    "text": "雅房 透天厝 南區 國光路 3600元 距離1.0km 床 衣櫃 寬頻網路 書櫃 陽台 含水費網路費 限男性 限學生 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=89",
     "address": "台中市南區國光路363巷9號",
     "room_type": "雅房",
@@ -868,7 +868,7 @@
   },
   {
     "idx": 51,
-    "text": "套房 大樓 南區 瑞光街2 6900元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 含管理費網路費有線電視 禁養寵物",
+    "text": "套房 大樓 南區 瑞光街 6900元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 含管理費網路費有線電視 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=505",
     "address": "台中市南區瑞光街29號",
     "room_type": "套房",
@@ -885,7 +885,7 @@
   },
   {
     "idx": 52,
-    "text": "套房 透天厝 南區 明德街6 5500元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 含管理費網路費 禁養寵物",
+    "text": "套房 透天厝 南區 明德街 5500元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 含管理費網路費 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=499",
     "address": "台中市南區明德街62號",
     "room_type": "套房",
@@ -902,7 +902,7 @@
   },
   {
     "idx": 53,
-    "text": "套房 透天厝 南區 明德街6 4900元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 含管理費網路費 禁養寵物",
+    "text": "套房 透天厝 南區 明德街 4900元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 含管理費網路費 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=500",
     "address": "台中市南區明德街62-1號",
     "room_type": "套房",
@@ -919,7 +919,7 @@
   },
   {
     "idx": 54,
-    "text": "套房 透天厝 南區 爽文路7 8500元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含網路費 限女性",
+    "text": "套房 透天厝 南區 爽文路 8500元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含網路費 限女性",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=687",
     "address": "台中市南區台中市南區爽文路739號",
     "room_type": "套房",
@@ -936,7 +936,7 @@
   },
   {
     "idx": 55,
-    "text": "套房 透天厝 南區 合作街2 4000元 距離1.0km 床 衣櫃 電視 寬頻網路 陽台 含管理費網路費 限學生 禁養寵物",
+    "text": "套房 透天厝 南區 合作街 4000元 距離1.0km 床 衣櫃 電視 寬頻網路 陽台 含管理費網路費 限學生 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=192",
     "address": "台中市南區合作街242號",
     "room_type": "套房",
@@ -953,7 +953,7 @@
   },
   {
     "idx": 56,
-    "text": "套房 公寓 南區 忠明南路1 3600元 距離1.0km 床 衣櫃 寬頻網路 書櫃 冰箱 含網路費 限女性 限學生 禁養寵物",
+    "text": "套房 公寓 南區 忠明南路 3600元 距離1.0km 床 衣櫃 寬頻網路 書櫃 冰箱 含網路費 限女性 限學生 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=356",
     "address": "台中市南區忠明南路1270號5樓",
     "room_type": "套房",
@@ -987,7 +987,7 @@
   },
   {
     "idx": 58,
-    "text": "套/雅房 公寓 南區 興大路2 4200元 距離1.0km 床 衣櫃 寬頻網路 書櫃 冰箱 含網路費 限女性 限學生 禁養寵物",
+    "text": "套/雅房 公寓 南區 興大路 4200元 距離1.0km 床 衣櫃 寬頻網路 書櫃 冰箱 含網路費 限女性 限學生 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=455",
     "address": "台中市南區興大路200號6F-1",
     "room_type": "套/雅房",
@@ -1004,7 +1004,7 @@
   },
   {
     "idx": 59,
-    "text": "雅房 透天厝 南區 仁義街9 3400元 距離1.0km 床 衣櫃 寬頻網路 書櫃 洗衣機 含水費電費網路費",
+    "text": "雅房 透天厝 南區 仁義街 3400元 距離1.0km 床 衣櫃 寬頻網路 書櫃 洗衣機 含水費電費網路費",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=623",
     "address": "台中市南區仁義街9巷2號",
     "room_type": "雅房",
@@ -1021,7 +1021,7 @@
   },
   {
     "idx": 60,
-    "text": "套房 大樓 南區 積善里興大路3 4500元 距離1.0km 床 衣櫃 寬頻網路 冰箱 陽台 禁養寵物",
+    "text": "套房 大樓 南區 積善里興大路 4500元 距離1.0km 床 衣櫃 寬頻網路 冰箱 陽台 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=161",
     "address": "台中市南區積善里興大路301巷42-1號",
     "room_type": "套房",
@@ -1038,7 +1038,7 @@
   },
   {
     "idx": 61,
-    "text": "套房 透天厝 南區 永南街2 7000元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含水費網路費 限女性 禁養寵物",
+    "text": "套房 透天厝 南區 永南街 7000元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含水費網路費 限女性 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=568",
     "address": "台中市南區永南街20號",
     "room_type": "套房",
@@ -1072,7 +1072,7 @@
   },
   {
     "idx": 63,
-    "text": "套房 大樓 南區 建成路1 5000元 距離1.0km 床 衣櫃 寬頻網路 洗衣機 脫水機",
+    "text": "套房 大樓 南區 建成路 5000元 距離1.0km 床 衣櫃 寬頻網路 洗衣機 脫水機",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=69",
     "address": "台中市南區建成路1567號8-9F",
     "room_type": "套房",
@@ -1089,7 +1089,7 @@
   },
   {
     "idx": 64,
-    "text": "套/雅房 透天厝 大里區 永隆九街1 5000元 距離1.0km 床 衣櫃 寬頻網路 書櫃 洗衣機 含水費網路費瓦斯",
+    "text": "套/雅房 透天厝 大里區 永隆九街 5000元 距離1.0km 床 衣櫃 寬頻網路 書櫃 洗衣機 含水費網路費瓦斯",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=618",
     "address": "台中市大里區永隆九街136巷5號",
     "room_type": "套/雅房",
@@ -1106,7 +1106,7 @@
   },
   {
     "idx": 65,
-    "text": "套/雅房 大樓 南區 學府路1 4500元 距離1.0km 床 衣櫃 寬頻網路 冰箱 陽台 含水費管理費網路費 限男性 限學生 禁養寵物",
+    "text": "套/雅房 大樓 南區 學府路 4500元 距離1.0km 床 衣櫃 寬頻網路 冰箱 陽台 含水費管理費網路費 限男性 限學生 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=91",
     "address": "台中市南區學府路137號17樓",
     "room_type": "套/雅房",
@@ -1123,7 +1123,7 @@
   },
   {
     "idx": 66,
-    "text": "雅房 透天厝 大里區 東明路1 3000元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 含網路費有線電視 限學生 禁養寵物",
+    "text": "雅房 透天厝 大里區 東明路 3000元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 含網路費有線電視 限學生 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=573",
     "address": "台中市大里區東明路160號",
     "room_type": "雅房",
@@ -1140,7 +1140,7 @@
   },
   {
     "idx": 67,
-    "text": "雅房 公寓 南區 國光路8 3000元 距離1.0km 床 衣櫃 寬頻網路 脫水機 書桌 含水費電費網路費 限女性 禁養寵物",
+    "text": "雅房 公寓 南區 國光路 3000元 距離1.0km 床 衣櫃 寬頻網路 脫水機 書桌 含水費電費網路費 限女性 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=534",
     "address": "台中市南區國光路86號2F",
     "room_type": "雅房",
@@ -1157,7 +1157,7 @@
   },
   {
     "idx": 68,
-    "text": "住宅 公寓 南區 建成路1 12000元 距離1.0km 床 衣櫃 電視 書櫃 冰箱 限女性 限學生 禁養寵物",
+    "text": "住宅 公寓 南區 建成路 12000元 距離1.0km 床 衣櫃 電視 書櫃 冰箱 限女性 限學生 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=107",
     "address": "台中市南區建成路1775巷9之1號2樓",
     "room_type": "住宅",
@@ -1174,7 +1174,7 @@
   },
   {
     "idx": 69,
-    "text": "套房 透天厝 南區 仁和一街1 5000元 距離1.0km 床 衣櫃 寬頻網路 書櫃 冰箱 含網路費 限女性 限學生 禁養寵物",
+    "text": "套房 透天厝 南區 仁和一街 5000元 距離1.0km 床 衣櫃 寬頻網路 書櫃 冰箱 含網路費 限女性 限學生 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=155",
     "address": "台中市南區仁和一街10號",
     "room_type": "套房",
@@ -1191,7 +1191,7 @@
   },
   {
     "idx": 70,
-    "text": "雅房 透天厝 南區 忠明南路8 5500元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱",
+    "text": "雅房 透天厝 南區 忠明南路 5500元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=619",
     "address": "台中市南區忠明南路845巷3號",
     "room_type": "雅房",
@@ -1208,7 +1208,7 @@
   },
   {
     "idx": 71,
-    "text": "套/雅房 透天厝 南區 忠孝路6 7500元 距離1.0km 床 衣櫃 電視 冰箱 陽台 禁養寵物",
+    "text": "套/雅房 透天厝 南區 忠孝路 7500元 距離1.0km 床 衣櫃 電視 冰箱 陽台 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=538",
     "address": "台中市南區忠孝路62號",
     "room_type": "套/雅房",
@@ -1225,7 +1225,7 @@
   },
   {
     "idx": 72,
-    "text": "套房 透天厝 南區 仁德街2 4500元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含網路費 限學生 禁養寵物",
+    "text": "套房 透天厝 南區 仁德街 4500元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含網路費 限學生 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=561",
     "address": "台中市南區仁德街26號",
     "room_type": "套房",
@@ -1242,7 +1242,7 @@
   },
   {
     "idx": 73,
-    "text": "套房 透天厝 南區 國光路3 4000元 距離1.0km 床 衣櫃 寬頻網路 書櫃 冰箱 限學生 禁養寵物",
+    "text": "套房 透天厝 南區 國光路 4000元 距離1.0km 床 衣櫃 寬頻網路 書櫃 冰箱 限學生 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=611",
     "address": "台中市南區國光路389巷6號",
     "room_type": "套房",
@@ -1259,7 +1259,7 @@
   },
   {
     "idx": 74,
-    "text": "套房 透天厝 南區 國光路4 5500元 距離1.0km 床 衣櫃 寬頻網路 書櫃 冰箱 含水費網路費 限女性 禁養寵物",
+    "text": "套房 透天厝 南區 國光路 5500元 距離1.0km 床 衣櫃 寬頻網路 書櫃 冰箱 含水費網路費 限女性 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=469",
     "address": "台中市南區國光路479號",
     "room_type": "套房",
@@ -1276,7 +1276,7 @@
   },
   {
     "idx": 75,
-    "text": "套房 公寓 南區 復新街7 3000元 距離1.0km 床 衣櫃 寬頻網路 書櫃 冰箱 含管理費網路費 限學生 禁養寵物",
+    "text": "套房 公寓 南區 復新街 3000元 距離1.0km 床 衣櫃 寬頻網路 書櫃 冰箱 含管理費網路費 限學生 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=470",
     "address": "台中市南區復新街78巷3號4F",
     "room_type": "套房",
@@ -1293,7 +1293,7 @@
   },
   {
     "idx": 76,
-    "text": "套房 透天厝 南區 國光路3 3000元 距離1.0km 床 衣櫃 寬頻網路 書櫃 冰箱 含網路費 限學生 禁養寵物",
+    "text": "套房 透天厝 南區 國光路 3000元 距離1.0km 床 衣櫃 寬頻網路 書櫃 冰箱 含網路費 限學生 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=471",
     "address": "台中市南區國光路391號3-5F",
     "room_type": "套房",
@@ -1310,7 +1310,7 @@
   },
   {
     "idx": 77,
-    "text": "套房 大樓 南區 興大路3 6800元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含水費管理費網路費 禁養寵物",
+    "text": "套房 大樓 南區 興大路 6800元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含水費管理費網路費 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=605",
     "address": "台中市南區興大路396巷43號6F",
     "room_type": "套房",
@@ -1344,7 +1344,7 @@
   },
   {
     "idx": 79,
-    "text": "套房 透天厝 南區 五權南路3 5000元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 含有線電視",
+    "text": "套房 透天厝 南區 五權南路 5000元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 含有線電視",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=581",
     "address": "台中市南區五權南路334巷9號",
     "room_type": "套房",
@@ -1361,7 +1361,7 @@
   },
   {
     "idx": 80,
-    "text": "住宅 大樓 南區 興大路3 16000元 距離1.0km 床 衣櫃 脫水機 書桌 熱水器 含網路費 限男性 禁養寵物",
+    "text": "住宅 大樓 南區 興大路 16000元 距離1.0km 床 衣櫃 脫水機 書桌 熱水器 含網路費 限男性 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=460",
     "address": "台中市南區興大路301巷42號",
     "room_type": "住宅",
@@ -1395,7 +1395,7 @@
   },
   {
     "idx": 82,
-    "text": "套房 透天厝 南區 永東街7 5000元 距離1.0km 床 衣櫃 寬頻網路 冰箱 陽台 含水費網路費 限女性",
+    "text": "套房 透天厝 南區 永東街 5000元 距離1.0km 床 衣櫃 寬頻網路 冰箱 陽台 含水費網路費 限女性",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=147",
     "address": "台中市南區永東街75號",
     "room_type": "套房",
@@ -1412,7 +1412,7 @@
   },
   {
     "idx": 83,
-    "text": "套房 大樓 南區 學府路2 6000元 距離1.0km 床 衣櫃 寬頻網路 冰箱 洗衣機 含水費管理費網路費 禁養寵物",
+    "text": "套房 大樓 南區 學府路 6000元 距離1.0km 床 衣櫃 寬頻網路 冰箱 洗衣機 含水費管理費網路費 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=591",
     "address": "台中市南區學府路2號12F",
     "room_type": "套房",
@@ -1429,7 +1429,7 @@
   },
   {
     "idx": 84,
-    "text": "住宅 大樓 南區 國光路2 12000元 距離1.0km 床 衣櫃 寬頻網路 冰箱 陽台 限女性 限學生 禁養寵物",
+    "text": "住宅 大樓 南區 國光路 12000元 距離1.0km 床 衣櫃 寬頻網路 冰箱 陽台 限女性 限學生 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=242",
     "address": "台中市南區國光路216-6號4樓之1",
     "room_type": "住宅",
@@ -1480,7 +1480,7 @@
   },
   {
     "idx": 87,
-    "text": "套/雅房 透天厝 大里區 永興路1 3000元 距離1.0km 床 電視 冰箱 洗衣機 書桌",
+    "text": "套/雅房 透天厝 大里區 永興路 3000元 距離1.0km 床 電視 冰箱 洗衣機 書桌",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=628",
     "address": "台中市大里區永興路103號",
     "room_type": "套/雅房",
@@ -1497,7 +1497,7 @@
   },
   {
     "idx": 88,
-    "text": "套/雅房 大樓 南區 仁義街2 3500元 距離1.0km 床 衣櫃 寬頻網路 冰箱 洗衣機",
+    "text": "套/雅房 大樓 南區 仁義街 3500元 距離1.0km 床 衣櫃 寬頻網路 冰箱 洗衣機",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=629",
     "address": "台中市南區仁義街29號",
     "room_type": "套/雅房",
@@ -1514,7 +1514,7 @@
   },
   {
     "idx": 89,
-    "text": "住宅 大樓 南區 忠明南路1 30000元 距離1.0km 寬頻網路 陽台 有線電視 冷氣機 電梯",
+    "text": "住宅 大樓 南區 忠明南路 30000元 距離1.0km 寬頻網路 陽台 有線電視 冷氣機 電梯",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=630",
     "address": "台中市南區忠明南路1108號14樓之1",
     "room_type": "住宅",
@@ -1548,7 +1548,7 @@
   },
   {
     "idx": 91,
-    "text": "住宅 公寓 南區 國光路2 4500元 距離1.0km 床 衣櫃 寬頻網路 洗衣機 熱水器 含水費 限女性",
+    "text": "住宅 公寓 南區 國光路 4500元 距離1.0km 床 衣櫃 寬頻網路 洗衣機 熱水器 含水費 限女性",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=641",
     "address": "台中市東區台中市南區國光路218號3樓之2",
     "room_type": "住宅",
@@ -1565,7 +1565,7 @@
   },
   {
     "idx": 92,
-    "text": "雅房 大樓 南區 南和路4 15000元 距離1.0km 床 衣櫃 冰箱 洗衣機 書桌 禁養寵物",
+    "text": "雅房 大樓 南區 南和路 15000元 距離1.0km 床 衣櫃 冰箱 洗衣機 書桌 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=639",
     "address": "台中市南區南和路40號8F-40",
     "room_type": "雅房",
@@ -1582,7 +1582,7 @@
   },
   {
     "idx": 93,
-    "text": "套房 公寓 南區 仁義街6 5000元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 含網路費 限學生 禁養寵物",
+    "text": "套房 公寓 南區 仁義街 5000元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 含網路費 限學生 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=524",
     "address": "台中市南區仁義街6號4F",
     "room_type": "套房",
@@ -1599,7 +1599,7 @@
   },
   {
     "idx": 94,
-    "text": "套房 透天厝 南區 忠孝路1 6000元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含水費網路費有線電視",
+    "text": "套房 透天厝 南區 忠孝路 6000元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含水費網路費有線電視",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=645",
     "address": "台中市南區忠孝路148巷22號",
     "room_type": "套房",
@@ -1616,7 +1616,7 @@
   },
   {
     "idx": 95,
-    "text": "套房 透天厝 南區 美村南路5 4500元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含網路費 限學生 禁養寵物",
+    "text": "套房 透天厝 南區 美村南路 4500元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含網路費 限學生 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=555",
     "address": "台中市南區美村南路51巷12號",
     "room_type": "套房",
@@ -1633,7 +1633,7 @@
   },
   {
     "idx": 96,
-    "text": "套房 大樓 南區 興大路4 7500元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱",
+    "text": "套房 大樓 南區 興大路 7500元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=646",
     "address": "台中市南區興大路418號1F",
     "room_type": "套房",
@@ -1650,7 +1650,7 @@
   },
   {
     "idx": 97,
-    "text": "住宅 華廈 南區 忠明南路8 12000元 距離1.0km 床 衣櫃 冰箱 陽台 洗衣機 禁養寵物",
+    "text": "住宅 華廈 南區 忠明南路 12000元 距離1.0km 床 衣櫃 冰箱 陽台 洗衣機 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=560",
     "address": "台中市南區忠明南路803號2F-6",
     "room_type": "住宅",
@@ -1667,7 +1667,7 @@
   },
   {
     "idx": 98,
-    "text": "雅房 透天厝 大里區 永隆九街2 3200元 距離1.0km 床 衣櫃 寬頻網路 洗衣機 有線電視 含水費電費網路費 限女性",
+    "text": "雅房 透天厝 大里區 永隆九街 3200元 距離1.0km 床 衣櫃 寬頻網路 洗衣機 有線電視 含水費電費網路費 限女性",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=421",
     "address": "台中市大里區永隆九街211號",
     "room_type": "雅房",
@@ -1684,7 +1684,7 @@
   },
   {
     "idx": 99,
-    "text": "雅房 公寓 南區 忠明南路1 14000元 距離1.0km 床 電視 寬頻網路 洗衣機 書桌",
+    "text": "雅房 公寓 南區 忠明南路 14000元 距離1.0km 床 電視 寬頻網路 洗衣機 書桌",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=647",
     "address": "台中市南區忠明南路1242號5F",
     "room_type": "雅房",
@@ -1701,7 +1701,7 @@
   },
   {
     "idx": 100,
-    "text": "套房 公寓 南區 五權南路2 5900元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 含水費管理費網路費 禁養寵物",
+    "text": "套房 公寓 南區 五權南路 5900元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 含水費管理費網路費 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=648",
     "address": "台中市南區五權南路248之1巷11之3號4F",
     "room_type": "套房",
@@ -1735,7 +1735,7 @@
   },
   {
     "idx": 102,
-    "text": "住宅 大樓 南區 學府路1 15000元 距離1.0km 床 陽台 書桌 熱水器 冷氣機",
+    "text": "住宅 大樓 南區 學府路 15000元 距離1.0km 床 陽台 書桌 熱水器 冷氣機",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=650",
     "address": "台中市南區學府路13號7F之2",
     "room_type": "住宅",
@@ -1769,7 +1769,7 @@
   },
   {
     "idx": 104,
-    "text": "雅房 公寓 大里區 元正路8 4000元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含管理費",
+    "text": "雅房 公寓 大里區 元正路 4000元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含管理費",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=652",
     "address": "台中市大里區元正路81號6F",
     "room_type": "雅房",
@@ -1786,7 +1786,7 @@
   },
   {
     "idx": 105,
-    "text": "套/雅房 華廈 南區 南和一街6 6000元 距離1.0km 床 衣櫃 電視 冰箱 陽台 禁養寵物",
+    "text": "套/雅房 華廈 南區 南和一街 6000元 距離1.0km 床 衣櫃 電視 冰箱 陽台 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=660",
     "address": "台中市南區南和一街6巷17號8樓之2",
     "room_type": "套/雅房",
@@ -1803,7 +1803,7 @@
   },
   {
     "idx": 106,
-    "text": "雅房 公寓 南區 福新街1 2500元 距離1.0km 床 衣櫃 電視 電話 寬頻網路 含網路費 限學生 禁養寵物",
+    "text": "雅房 公寓 南區 福新街 2500元 距離1.0km 床 衣櫃 電視 電話 寬頻網路 含網路費 限學生 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=32",
     "address": "台中市南區福新街132號2F-2",
     "room_type": "雅房",
@@ -1820,7 +1820,7 @@
   },
   {
     "idx": 107,
-    "text": "套房 透天厝 南區 復新街6 3500元 距離1.0km 床 衣櫃 寬頻網路 陽台 洗衣機 含網路費 限學生 禁養寵物",
+    "text": "套房 透天厝 南區 復新街 3500元 距離1.0km 床 衣櫃 寬頻網路 陽台 洗衣機 含網路費 限學生 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=157",
     "address": "台中市南區復新街64號",
     "room_type": "套房",
@@ -1837,7 +1837,7 @@
   },
   {
     "idx": 108,
-    "text": "套/雅房 透天厝 大里區 永興路2 4000元 距離1.0km 床 衣櫃 寬頻網路 冰箱 陽台 含水費 限女性",
+    "text": "套/雅房 透天厝 大里區 永興路 4000元 距離1.0km 床 衣櫃 寬頻網路 冰箱 陽台 含水費 限女性",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=673",
     "address": "台中市大里區台中市大里區永興路207號",
     "room_type": "套/雅房",
@@ -1854,7 +1854,7 @@
   },
   {
     "idx": 109,
-    "text": "住宅 大樓 南區 信義南街1 8000元 距離1.0km 床 衣櫃 電視 冰箱 書桌 限女性",
+    "text": "住宅 大樓 南區 信義南街 8000元 距離1.0km 床 衣櫃 電視 冰箱 書桌 限女性",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=667",
     "address": "台中市南區台中市南區信義南街132號8樓之1",
     "room_type": "住宅",
@@ -1871,7 +1871,7 @@
   },
   {
     "idx": 110,
-    "text": "套房 華廈 東區 建成路7 5500元 距離1.0km 床 衣櫃 冰箱 洗衣機 書桌 含水費管理費 禁養寵物",
+    "text": "套房 華廈 東區 建成路 5500元 距離1.0km 床 衣櫃 冰箱 洗衣機 書桌 含水費管理費 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=668",
     "address": "台中市東區台中市東區建成路737號4樓之6",
     "room_type": "套房",
@@ -1888,7 +1888,7 @@
   },
   {
     "idx": 111,
-    "text": "套房 公寓 南區 學府路1 4200元 距離1.0km 床 衣櫃 電視 寬頻網路 洗衣機 含水費網路費",
+    "text": "套房 公寓 南區 學府路 4200元 距離1.0km 床 衣櫃 電視 寬頻網路 洗衣機 含水費網路費",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=669",
     "address": "台中市南區台中市學府路12巷8號",
     "room_type": "套房",
@@ -1905,7 +1905,7 @@
   },
   {
     "idx": 112,
-    "text": "套房 公寓 南區 復新街7 3500元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含水費網路費 限學生",
+    "text": "套房 公寓 南區 復新街 3500元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含水費網路費 限學生",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=670",
     "address": "台中市南區台中市復新街78巷3號",
     "room_type": "套房",
@@ -1922,7 +1922,7 @@
   },
   {
     "idx": 113,
-    "text": "住宅 公寓 南區 南和路1 15000元 距離1.0km 床 衣櫃 陽台 洗衣機 書桌 限女性",
+    "text": "住宅 公寓 南區 南和路 15000元 距離1.0km 床 衣櫃 陽台 洗衣機 書桌 限女性",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=671",
     "address": "台中市南區台中市南區南和路14號2樓",
     "room_type": "住宅",
@@ -1939,7 +1939,7 @@
   },
   {
     "idx": 114,
-    "text": "套房 透天厝 南區 新華街2 5800元 距離1.0km 床 衣櫃 電視 陽台 書桌 含水費",
+    "text": "套房 透天厝 南區 新華街 5800元 距離1.0km 床 衣櫃 電視 陽台 書桌 含水費",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=672",
     "address": "台中市南區台中市南區新華街22巷20號",
     "room_type": "套房",
@@ -1956,7 +1956,7 @@
   },
   {
     "idx": 115,
-    "text": "住宅 透天厝 東區 建功街9 4000元 距離1.0km 床 衣櫃 寬頻網路 書櫃 冰箱 含水費網路費瓦斯 限女性 禁養寵物",
+    "text": "住宅 透天厝 東區 建功街 4000元 距離1.0km 床 衣櫃 寬頻網路 書櫃 冰箱 含水費網路費瓦斯 限女性 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=456",
     "address": "台中市東區建功街9號",
     "room_type": "住宅",
@@ -1973,7 +1973,7 @@
   },
   {
     "idx": 116,
-    "text": "住宅 大樓 南區 工學路6 17000元 距離1.0km 床 衣櫃 洗衣機 書桌 熱水器 含管理費 限男性",
+    "text": "住宅 大樓 南區 工學路 17000元 距離1.0km 床 衣櫃 洗衣機 書桌 熱水器 含管理費 限男性",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=680",
     "address": "台中市南區台中市南區工學路62號3樓",
     "room_type": "住宅",
@@ -2007,7 +2007,7 @@
   },
   {
     "idx": 118,
-    "text": "住宅 大樓 南區 工學路5 14000元 距離1.0km 床 衣櫃 電視 書櫃 冰箱 含管理費 限學生 禁養寵物",
+    "text": "住宅 大樓 南區 工學路 14000元 距離1.0km 床 衣櫃 電視 書櫃 冰箱 含管理費 限學生 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=238",
     "address": "台中市南區工學路59巷41號",
     "room_type": "住宅",
@@ -2024,7 +2024,7 @@
   },
   {
     "idx": 119,
-    "text": "住宅 大樓 南區 工學路5 15000元 距離1.0km 床 衣櫃 陽台 洗衣機 脫水機 含管理費 禁養寵物",
+    "text": "住宅 大樓 南區 工學路 15000元 距離1.0km 床 衣櫃 陽台 洗衣機 脫水機 含管理費 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=191",
     "address": "台中市南區工學路59巷5號2F-1",
     "room_type": "住宅",
@@ -2041,7 +2041,7 @@
   },
   {
     "idx": 120,
-    "text": "住宅 大樓 南區 學府路2 28000元 距離1.0km 床 衣櫃 書櫃 冰箱 陽台 禁養寵物",
+    "text": "住宅 大樓 南區 學府路 28000元 距離1.0km 床 衣櫃 書櫃 冰箱 陽台 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=676",
     "address": "台中市南區台中市學府路208號4樓之3",
     "room_type": "住宅",
@@ -2058,7 +2058,7 @@
   },
   {
     "idx": 121,
-    "text": "套房 透天厝 南區 南和路1 4300元 距離1.0km 床 衣櫃 電視 寬頻網路 洗衣機 含網路費 禁養寵物",
+    "text": "套房 透天厝 南區 南和路 4300元 距離1.0km 床 衣櫃 電視 寬頻網路 洗衣機 含網路費 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=609",
     "address": "台中市南區南和路138號",
     "room_type": "套房",
@@ -2075,7 +2075,7 @@
   },
   {
     "idx": 122,
-    "text": "雅房 公寓 南區 國光路4 3500元 距離1.0km 床 衣櫃 寬頻網路 洗衣機 書桌 含網路費 限男性 禁養寵物",
+    "text": "雅房 公寓 南區 國光路 3500元 距離1.0km 床 衣櫃 寬頻網路 洗衣機 書桌 含網路費 限男性 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=684",
     "address": "台中市南區台中市南區國光路469巷3號5樓",
     "room_type": "雅房",
@@ -2092,7 +2092,7 @@
   },
   {
     "idx": 123,
-    "text": "住宅 公寓 南區 永東街4 2200元 距離1.0km 床 衣櫃 電視 寬頻網路 陽台 限女性",
+    "text": "住宅 公寓 南區 永東街 2200元 距離1.0km 床 衣櫃 電視 寬頻網路 陽台 限女性",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=211",
     "address": "台中市南區永東街41號4F",
     "room_type": "住宅",
@@ -2109,7 +2109,7 @@
   },
   {
     "idx": 124,
-    "text": "套/雅房 公寓 南區 忠孝路1 5500元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含網路費有線電視",
+    "text": "套/雅房 公寓 南區 忠孝路 5500元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含網路費有線電視",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=678",
     "address": "台中市南區台中市南區忠孝路123巷4弄9之4號3樓",
     "room_type": "套/雅房",
@@ -2126,7 +2126,7 @@
   },
   {
     "idx": 125,
-    "text": "套/雅房 大樓 南區 南和路1 18000元 距離1.0km 床 衣櫃 電視 書櫃 冰箱 含管理費",
+    "text": "套/雅房 大樓 南區 南和路 18000元 距離1.0km 床 衣櫃 電視 書櫃 冰箱 含管理費",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=685",
     "address": "台中市南區台中市南區南和路175-2號17樓-1",
     "room_type": "套/雅房",
@@ -2143,7 +2143,7 @@
   },
   {
     "idx": 126,
-    "text": "雅房 大樓 南區 德富路3 13000元 距離1.0km 床 衣櫃 電視 書櫃 冰箱 含管理費 禁養寵物",
+    "text": "雅房 大樓 南區 德富路 13000元 距離1.0km 床 衣櫃 電視 書櫃 冰箱 含管理費 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=688",
     "address": "台中市南區台中市南區德富路368號11樓之1",
     "room_type": "雅房",
@@ -2160,7 +2160,7 @@
   },
   {
     "idx": 127,
-    "text": "住宅 大樓 南區 信義南街1 46000元 距離1.0km 床 衣櫃 書櫃 冰箱 陽台",
+    "text": "住宅 大樓 南區 信義南街 46000元 距離1.0km 床 衣櫃 書櫃 冰箱 陽台",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=692",
     "address": "台中市南區台中市南區信義南街128號10樓之2",
     "room_type": "住宅",
@@ -2194,7 +2194,7 @@
   },
   {
     "idx": 129,
-    "text": "套房 大樓 南區 學府路7 7900元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 含水費管理費網路費 限女性",
+    "text": "套房 大樓 南區 學府路 7900元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 含水費管理費網路費 限女性",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=690",
     "address": "台中市南區台中市南區學府路79號7樓之2",
     "room_type": "套房",
@@ -2211,7 +2211,7 @@
   },
   {
     "idx": 130,
-    "text": "套/雅房 透天厝 南區 濟世街1 2200元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含網路費",
+    "text": "套/雅房 透天厝 南區 濟世街 2200元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含網路費",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=365",
     "address": "台中市南區濟世街101-1號",
     "room_type": "套/雅房",
@@ -2228,7 +2228,7 @@
   },
   {
     "idx": 131,
-    "text": "套房 透天厝 南區 公理街6 6000元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 含水費管理費網路費 限女性",
+    "text": "套房 透天厝 南區 公理街 6000元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 含水費管理費網路費 限女性",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=368",
     "address": "台中市南區公理街68號",
     "room_type": "套房",
@@ -2245,7 +2245,7 @@
   },
   {
     "idx": 132,
-    "text": "套房 大樓 南區 忠明南路1 5000元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 含水費網路費 禁養寵物",
+    "text": "套房 大樓 南區 忠明南路 5000元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 含水費網路費 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=372",
     "address": "台中市南區忠明南路1147號5F",
     "room_type": "套房",
@@ -2262,7 +2262,7 @@
   },
   {
     "idx": 133,
-    "text": "套房 透天厝 南區 仁義街9 4500元 距離1.0km 床 衣櫃 寬頻網路 冰箱 洗衣機 含管理費網路費 限學生 禁養寵物",
+    "text": "套房 透天厝 南區 仁義街 4500元 距離1.0km 床 衣櫃 寬頻網路 冰箱 洗衣機 含管理費網路費 限學生 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=415",
     "address": "台中市南區仁義街9巷4號",
     "room_type": "套房",
@@ -2279,7 +2279,7 @@
   },
   {
     "idx": 134,
-    "text": "套房 透天厝 南區 忠孝路6 5000元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含網路費有線電視",
+    "text": "套房 透天厝 南區 忠孝路 5000元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含網路費有線電視",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=616",
     "address": "台中市南區忠孝路68巷24號",
     "room_type": "套房",
@@ -2296,7 +2296,7 @@
   },
   {
     "idx": 135,
-    "text": "套房 大樓 南區 永和一街3 6000元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 含水費電費管理費 禁養寵物",
+    "text": "套房 大樓 南區 永和一街 6000元 距離1.0km 床 衣櫃 電視 寬頻網路 書櫃 含水費電費管理費 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=614",
     "address": "台中市南區永和一街30號6F-2",
     "room_type": "套房",
@@ -2313,7 +2313,7 @@
   },
   {
     "idx": 136,
-    "text": "住宅 公寓 南區 五權南路2 4500元 距離1.0km 床 衣櫃 電視 書櫃 陽台 限學生",
+    "text": "住宅 公寓 南區 五權南路 4500元 距離1.0km 床 衣櫃 電視 書櫃 陽台 限學生",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=578",
     "address": "台中市南區五權南路267巷23-5號2F",
     "room_type": "住宅",
@@ -2330,7 +2330,7 @@
   },
   {
     "idx": 137,
-    "text": "套房 透天厝 南區 仁德街3 6500元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含水費公設（電）費 限學生 禁養寵物",
+    "text": "套房 透天厝 南區 仁德街 6500元 距離1.0km 床 衣櫃 電視 寬頻網路 冰箱 含水費公設（電）費 限學生 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=585",
     "address": "台中市南區仁德街3巷24號",
     "room_type": "套房",
@@ -2347,7 +2347,7 @@
   },
   {
     "idx": 138,
-    "text": "套房 透天厝 南區 南平一街1 5000元 距離1.0km 床 衣櫃 電視 陽台 洗衣機 禁養寵物",
+    "text": "套房 透天厝 南區 南平一街 5000元 距離1.0km 床 衣櫃 電視 陽台 洗衣機 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=592",
     "address": "台中市南區南平一街129號",
     "room_type": "套房",
@@ -2364,7 +2364,7 @@
   },
   {
     "idx": 139,
-    "text": "套/雅房 公寓 南區 永東街1 3000元 距離1.0km 床 衣櫃 寬頻網路 冰箱 陽台 限學生 禁養寵物",
+    "text": "套/雅房 公寓 南區 永東街 3000元 距離1.0km 床 衣櫃 寬頻網路 冰箱 陽台 限學生 禁養寵物",
     "url": "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid=596",
     "address": "台中市南區永東街19號3樓",
     "room_type": "套/雅房",

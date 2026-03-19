@@ -88,7 +88,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         mainContent.scrollTop = 0;
 
         try {
-            const housingKeywords = ['房', '租', '預算', '萬', '千', 'k', '元', '近', '走', '分', '坪', '樓', '東區', '南區', '西區', '大里', '中興', '興大'];
+            const housingKeywords = [
+                '房', '租', '預算', '萬', '千', 'k', '元', '近', '走', '分', '坪', '樓', 
+                '東區', '南區', '西區', '大里', '中興', '興大', '路', '街', '巷', '大道', 
+                '套', '雅', '工', '學', '國光', '學府', '忠明'
+            ];
             const isRelevant = housingKeywords.some(key => inputText.toLowerCase().includes(key)) || /\d+/.test(inputText);
 
             if (!isRelevant && inputText.length > 1) {
