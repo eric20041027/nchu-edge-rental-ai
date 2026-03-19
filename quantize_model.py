@@ -41,7 +41,7 @@ quantize_dynamic(
 if os.path.exists(model_wiped):
     os.remove(model_wiped)
 
-print("\n✅ 量化完成！")
+print("\n 量化完成！")
 print(f"原始模型: {os.path.getsize(model_fp32) / 1024 / 1024:.2f} MB")
 if os.path.exists(model_quant):
     print(f"量化模型: {os.path.getsize(model_quant) / 1024 / 1024:.2f} MB")
