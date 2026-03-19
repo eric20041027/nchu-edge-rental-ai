@@ -11,29 +11,17 @@ import { AutoTokenizer, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transfo
 
 let tokenizer = null;
 let session = null;
-let propertyData = [];
-
-const MAX_LENGTH = 64;
-
-// ============================================================
-// Data Loading
-// ============================================================
-
+// --- Property Data Synchronization ---
 export async function initData() {
     const response = await fetch('/property_data.json?v=20260310');
     propertyData = await response.json();
     console.log(`Loaded ${propertyData.length} property descriptions`);
 }
 
-// ============================================================
-// Model Loading
-// ============================================================
-
+// --- NLP Engine Initialization ---
 export async function initNLP(onProgress) {
     if (!tokenizer || !session) {
-        // 配置 ONNX Runtime WASM 路徑 (若從 CDN 載入且有報錯才需手動指定)
-        // 此處移除手動指定，讓 CDN 版本的 ort.min.js 自動尋找相應版本的 .wasm
-        
+        // Configure ONNX Runtime environment
         env.allowRemoteModels = false;
         env.allowLocalModels = true;
         env.useBrowserCache = true;
@@ -86,10 +74,7 @@ export async function initNLP(onProgress) {
     }
 }
 
-// ============================================================
-// Single Pair Inference
-// ============================================================
-
+// --- Core Inference: Semantic Similarity Calculation ---
 async function scorePair(query, propertyText) {
     const encoded = await tokenizer(query, {
         text_pair: propertyText,
@@ -97,7 +82,7 @@ async function scorePair(query, propertyText) {
         truncation: true,
         max_length: MAX_LENGTH,
         return_tensors: 'np',
-        return_token_type_ids: true, // 重要：必須有這個，模型才能區分 query 與 property
+        return_token_type_ids: true, // Enable segment IDs for sentence-pair classification
     });
 
     const inputs = {};
@@ -120,10 +105,7 @@ async function scorePair(query, propertyText) {
     return exp1 / (exp0 + exp1);
 }
 
-// ============================================================
-// Constraint Parsing (for hard exclusion only)
-// ============================================================
-
+// --- Constraint Parsing & Normalization ---
 function parseConstraintsFromText(text) {
     let budget = null;
     let limit = null;
@@ -181,10 +163,7 @@ function parseConstraintsFromText(text) {
 
 let inferenceLock = false;
 
-// ============================================================
-// Main Recommendation Function
-// ============================================================
-
+// --- Main Recommendation Pipeline ---
 export async function recommend(text, top_k = 20) {
     if (inferenceLock) {
         console.warn("New recommendation ignored: Previous inference still in progress.");
@@ -215,14 +194,13 @@ export async function recommend(text, top_k = 20) {
             candidates.push(prop);
         }
 
-        // Step 2: Two-Stage Retrieval
-        // 提取關鍵字並過濾掉常見動詞/介詞
+        // Define stop words for keyword extraction
         const stopWords = [
             '近', '靠近', '想找', '尋找', '住在', '一間', '想要', '預算', '大約', '希望',
             '位於', '位在', '位處', '在', '含', '有', '附', '座落於', '座落'
         ];
         
-        // 額外定義地址後綴，用於提取核心地址
+        // Address suffixes for core location extraction
         const locSuffixes = ['路', '街', '大道', '區'];
 
         let queryKeywords = text.split(/\s+|[,，、。]/)

@@ -1,25 +1,21 @@
 """
-precompute_embeddings.py — 預先計算所有房源的模型 logits 分數
-
-針對每筆 CSV 房源，使用訓練好的 ONNX 模型計算推薦分數的基準特徵。
-前端只需將使用者查詢送進 ONNX model 配對每間房屋即可。
-
-由於 sentence-pair classification 模型需要 query+property 一起輸入，
-這裡預先將房源描述文本存好，前端在推論時逐一配對計算。
+precompute_embeddings.py - Precompute property metadata and descriptions for frontend inference.
+Parses rental CSV, extracts core features (road names, regions), and generates normalized 
+description strings used as secondary input for the sentence-pair classification model.
 """
 import json
 import csv
 import re
 
 def load_properties(csv_path="nchu_rental_info.csv"):
-    """載入 CSV 並產生每筆房源的描述文本"""
+    """Load property data from CSV and generate normalized description text."""
     with open(csv_path, "r", encoding="utf-8-sig") as f:
         reader = csv.DictReader(f)
         rows = list(reader)
 
     properties = []
     for row in rows:
-        # 解析租金
+        # Parse rental price
         rent_str = row.get("租金", "")
         rent_match = re.search(r"(\d[\d,]*)", rent_str.replace(",", ""))
         rent_num = int(rent_match.group(1)) if rent_match else 0
@@ -43,11 +39,11 @@ def load_properties(csv_path="nchu_rental_info.csv"):
         
         # 提取路名
         road = ""
-        # 優化路名抓取：匹配 路/街/大道 + 數字段(如二段)，但排除後續的門牌號碼
+        # Extract road name: Match Road/Street/Avenue + section, excluding house numbers
         road_match = re.search(r"([^區市台]*(?:路|街|大道)(?:[一二三四五六七八九十]|[\d])?段?)", addr)
         if road_match:
             road = road_match.group(1).strip()
-            # 二次清理：移除可能誤抓到的門牌號碼起始數字 (例如 "學府路1" -> "學府路")
+            # Cleanup: Remove trailing digits from house numbers (e.g. "Road1" -> "Road")
             road = re.sub(r"\d+$", "", road)
 
         if room_type: parts.append(room_type)

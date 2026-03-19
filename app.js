@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let visibleCount = 0;
     const PAGE_SIZE = 5;
 
-    // 初始化加載提示
+    // Initialize loading status indicator
     const loadStatus = document.createElement('div');
     loadStatus.style.padding = '10px';
     loadStatus.style.color = '#64ffda';
@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // 將 API 傳回的資料轉譯為 HTML 卡片
+    // Render recommendation results as property cards
     function renderCards(reset = false) {
         if (reset) {
             recommendationList.innerHTML = '';
@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         nextBatch.forEach((house, index) => {
             const card = document.createElement('div');
             card.className = 'property-card';
-            // 添加 staggered animation delay (based on relative index in batch)
+            // Add staggered entrance animation delay
             card.style.animationDelay = `${index * 0.1}s`;
 
             let badgeClass = '';
@@ -230,6 +230,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateLoadMoreButton();
     }
 
+    // Logic to show/hide 'Load More' button based on remaining results
     function updateLoadMoreButton() {
         // 移除舊的按鈕
         const oldBtn = document.getElementById('btnLoadMore');
@@ -245,7 +246,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // 發送按鈕的點擊
+    // Analysis button click handler
     const btnAnalyze = document.getElementById('btnAnalyze');
     if (btnAnalyze) {
         btnAnalyze.addEventListener('click', () => {
