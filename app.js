@@ -182,9 +182,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </div>
                     </details>
                     
-                    <div style="font-size: 0.85rem; color: #64ffda; margin-bottom: 10px; font-weight: 500;">
+                    <div style="font-size: 0.85rem; color: #64ffda; margin-bottom: 12px; font-weight: 500;">
                         ${commuteHtml}
                     </div>
+
+                    <div class="contact-info" style="margin-bottom: 15px; padding: 10px; background: rgba(255, 255, 255, 0.03); border-radius: 12px; border: 1px solid var(--border-glass);">
+                        <div style="font-size: 0.85rem; color: #94A3B8; margin-bottom: 5px; display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-user-tie" style="color: var(--primary-color);"></i>
+                            <span>聯絡人：${house.contact || '不具名'}</span>
+                        </div>
+                        <div style="font-size: 0.95rem; color: #F8FAFC; display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-phone" style="color: var(--accent-color);"></i>
+                            <a href="tel:${house.phone}" style="color: inherit; text-decoration: none; font-weight: 600;">${house.phone || '無資料'}</a>
+                        </div>
+                    </div>
+
                     <div class="map-container" style="margin-bottom: 15px; border-radius: 8px; overflow: hidden; height: 120px;">
                         <iframe 
                             width="100%" 

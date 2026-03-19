@@ -87,6 +87,8 @@ def load_properties(csv_path="nchu_rental_info.csv"):
             "distance": dist,
             "img": row.get("圖片網址", ""),
             "notes": notes,
+            "contact": row.get("聯絡人", ""),
+            "phone": row.get("電話", ""),
         })
 
     return properties
@@ -116,6 +118,8 @@ def main():
             "furniture": prop["furniture_str"],
             "distance": prop["distance"],
             "img": prop["img"],
+            "contact": prop["contact"],
+            "phone": prop["phone"],
         })
 
     with open("property_data.json", "w", encoding="utf-8") as f:
