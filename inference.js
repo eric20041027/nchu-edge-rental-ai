@@ -185,7 +185,7 @@ let inferenceLock = false;
 // Main Recommendation Function
 // ============================================================
 
-export async function recommend(text, top_k = 5) {
+export async function recommend(text, top_k = 20) {
     if (inferenceLock) {
         console.warn("New recommendation ignored: Previous inference still in progress.");
         return null; // app.js handles null/empty

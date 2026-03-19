@@ -9,6 +9,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const recommendationList = document.getElementById('recommendationList');
     const mainContent = document.getElementById('mainContent');
     const chips = document.querySelectorAll('.chip');
+    
+    // Pagination State
+    let allRecommendedHouses = [];
+    let visibleCount = 0;
+    const PAGE_SIZE = 5;
 
     // 初始化加載提示
     const loadStatus = document.createElement('div');
@@ -104,10 +109,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            const data = await recommend(inputText, 5);
+            const data = await recommend(inputText, 20);
 
             if (data && data.length >= 0) {
-                renderCards(data);
+                allRecommendedHouses = data;
+                visibleCount = 0;
+                renderCards(true); // Initial render
             } else {
                 throw new Error("回傳格式不正確");
             }
@@ -121,45 +128,43 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // 將 API 傳回的資料轉譯為 HTML 卡片
-    function renderCards(houses) {
-        recommendationList.innerHTML = '';
+    function renderCards(reset = false) {
+        if (reset) {
+            recommendationList.innerHTML = '';
+            visibleCount = 0;
+        }
 
-        if (houses.length === 0) {
+        if (allRecommendedHouses.length === 0) {
             recommendationList.innerHTML = `<div style="text-align: center; color: white; padding: 2rem;">找不到符合條件的房屋，試著放寬預算或是區域限制吧！</div>`;
             return;
         }
 
-        houses.forEach((house, index) => {
+        const nextBatch = allRecommendedHouses.slice(visibleCount, visibleCount + PAGE_SIZE);
+        
+        nextBatch.forEach((house, index) => {
             const card = document.createElement('div');
             card.className = 'property-card';
-            // 添加 staggered animation delay
+            // 添加 staggered animation delay (based on relative index in batch)
             card.style.animationDelay = `${index * 0.1}s`;
 
             let badgeClass = '';
-            // 由於已經在後端轉化為 0~100 的數字，直接取用
             let displayScore = Math.round(house.score);
 
-            if (index === 0) {
+            if (visibleCount === 0 && index === 0) {
                 card.classList.add('top-match');
                 badgeClass = 'premium';
             }
 
-            // 使用後端傳來的真實圖片網址，如果沒有就給個預設圖片
             const imgUrl = house.imgUrl ? house.imgUrl : "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=600&q=80";
 
             let commuteHtml = '';
             let dist = parseFloat(house.distance);
             if (!isNaN(dist) && dist > 0) {
-                // 走路時速約 4.5 km/h → 每分鐘走 0.075 km
                 let walkMins = Math.round(dist / 0.075);
-                // 機車市區均速約 25 km/h → 每分鐘走 0.417 km
                 let scooterMins = Math.max(1, Math.round(dist / 0.417));
-
                 if (walkMins <= 10) {
-                    // 步行 10 分鐘以內顯示走路
                     commuteHtml = `<i class="fa-solid fa-person-walking"></i> 走路約 ${walkMins} 分鐘 (${dist} 公里)`;
                 } else {
-                    // 超過 10 分鐘步行改顯示機車
                     commuteHtml = `<i class="fa-solid fa-motorcycle"></i> 機車約 ${scooterMins} 分鐘 (${dist} 公里)`;
                 }
             } else {
@@ -220,6 +225,24 @@ document.addEventListener('DOMContentLoaded', async () => {
             `;
             recommendationList.appendChild(card);
         });
+
+        visibleCount += nextBatch.length;
+        updateLoadMoreButton();
+    }
+
+    function updateLoadMoreButton() {
+        // 移除舊的按鈕
+        const oldBtn = document.getElementById('btnLoadMore');
+        if (oldBtn) oldBtn.remove();
+
+        if (visibleCount < allRecommendedHouses.length) {
+            const loadMoreBtn = document.createElement('button');
+            loadMoreBtn.id = 'btnLoadMore';
+            loadMoreBtn.className = 'btn-load-more';
+            loadMoreBtn.innerHTML = '<i class="fa-solid fa-chevron-down"></i> 載入更多推薦';
+            loadMoreBtn.onclick = () => renderCards(false);
+            recommendationList.appendChild(loadMoreBtn);
+        }
     }
 
     // 發送按鈕的點擊

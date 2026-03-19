@@ -119,6 +119,38 @@ body, html {
     border-radius: 10px;
 }
 
+/* Load More Button */
+.btn-load-more {
+    display: block;
+    width: 200px;
+    margin: 30px auto;
+    padding: 12px 24px;
+    background: rgba(100, 255, 218, 0.05);
+    border: 1px solid rgba(100, 255, 218, 0.2);
+    border-radius: 30px;
+    color: var(--primary-color);
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: center;
+    backdrop-filter: blur(10px);
+}
+
+.btn-load-more:hover {
+    background: rgba(100, 255, 218, 0.1);
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(100, 255, 218, 0.1);
+}
+
+.btn-load-more:active {
+    transform: translateY(0);
+}
+
+.btn-load-more i {
+    margin-right: 8px;
+}
 /* ===== Welcome Screen ===== */
 .welcome-screen {
     flex: 1;
