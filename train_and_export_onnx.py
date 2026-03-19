@@ -1,8 +1,7 @@
 """
-train_and_export_onnx.py — 訓練 Sentence-Pair Classification 推薦模型並匯出 ONNX
-
-模型學習判斷 "使用者查詢" 與 "房屋描述" 是否匹配 (二分類)。
-訓練資料由 generate_dataset.py 自動從 CSV 房源資料生成。
+train_and_export_onnx.py - Train Sentence-Pair Classification model and export to ONNX.
+Fine-tunes ALBERT on query-property pairs for binary matching (MATCH/NOT_MATCH).
+Training data is synthesized by generate_dataset.py.
 """
 import os
 import json
@@ -33,7 +32,7 @@ with open("recommendation_dev.json", "r", encoding="utf-8") as f:
     dev_data = json.load(f)
 print(f"  Dev:   {len(dev_data)} samples")
 
-# 統計並平衡類別分布
+# --- Data Balancing & Shuffle ---
 import random
 random.seed(42)
 
@@ -63,7 +62,7 @@ print("\n[Step 2] Tokenizing sentence pairs...")
 MAX_LENGTH = 128
 
 def tokenize_function(examples):
-    """Tokenize as [CLS] query [SEP] property [SEP]"""
+    """Tokenize as [CLS] query [SEP] property [SEP] for similarity classification."""
     tokenized = tokenizer(
         examples["query"],
         examples["property"],

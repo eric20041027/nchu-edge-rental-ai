@@ -1,8 +1,7 @@
 """
-generate_dataset.py — 從 nchu_rental_info.csv 自動生成推薦模型的 train/dev/test 資料集
-
-讀取真實房源 CSV，模擬中興大學學生的自然語言查詢輸入，
-產生 query-property 配對資料 (正例 + 負例) 用於 sentence-pair classification 訓練。
+generate_dataset.py - Synthesize training, validation, and test datasets from rental CSV.
+Parses property data and simulates student natural language queries to generate 
+query-property pairs (positive/negative) for sentence-pair classification training.
 """
 import csv
 import json
@@ -12,9 +11,7 @@ import os
 
 random.seed(42)
 
-# ============================================================
-# 1. 讀取 CSV 房源資料
-# ============================================================
+# --- 1. Load property data from CSV ---
 def load_properties(csv_path="nchu_rental_info.csv"):
     with open(csv_path, "r", encoding="utf-8-sig") as f:
         reader = csv.DictReader(f)
@@ -72,11 +69,9 @@ def load_properties(csv_path="nchu_rental_info.csv"):
     return properties
 
 
-# ============================================================
-# 2. 將房屋資訊轉為模型可讀的文本描述 (Canonical Property Text)
-# ============================================================
+# --- 2. Normalize property into canonical description text ---
 def property_to_text(prop):
-    """將一筆房源轉成簡潔的文字描述，作為 sentence-pair 的 property 端"""
+    """Convert a property record into a compact string for sentence-pair matching."""
     parts = []
 
     if prop["room_type"]:

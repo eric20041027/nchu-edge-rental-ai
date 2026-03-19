@@ -1,3 +1,7 @@
+"""
+rent_info_catcher.py - Scraper for NCHU rental information.
+Collects property details from the OSA website and saves them to a CSV file.
+"""
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
@@ -9,12 +13,12 @@ def scrape_rent():
     base_index_url = 'https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/index.php'
     base_house_url = "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/"
     
-    all_house_data = [] # 存儲所有物件的詳細資訊
+    all_house_data = [] # Detailed property information storage
     detail_urls = []
     
-    # 1. 取得所有物件的詳細頁面 URL
-    PAGE_NUM = 7 # 預計抓取的頁數
-    print(f"正在獲取前 {PAGE_NUM} 頁的連結...")
+    # --- 1. Collect detail page URLs ---
+    PAGE_NUM = 7 # Number of pages to scrape
+    print(f"Collecting links from the first {PAGE_NUM} pages...")
     
     for i in range(PAGE_NUM):
         page_to_use = f"{base_index_url}?start={i * 20}"
@@ -38,7 +42,7 @@ def scrape_rent():
 
     print(f"\n找到 {len(detail_urls)} 筆租屋資訊，準備開始爬取詳細內容...\n")
 
-    # 2. 進入每一個詳細頁面抓取資訊
+    # --- 2. Scrape detailed information from each page ---
     for index, url in enumerate(detail_urls):
         try:
             print(f"[{index+1}/{len(detail_urls)}] 正在抓取: {url}")
@@ -78,7 +82,7 @@ def scrape_rent():
         except Exception as e:
             print(f"抓取詳細頁面失敗 {url}: {e}")
 
-    # 3. 轉換為 Pandas DataFrame 並寫入 CSV
+    # --- 3. Export to CSV via Pandas ---
     if all_house_data:
         df = pd.DataFrame(all_house_data)
         

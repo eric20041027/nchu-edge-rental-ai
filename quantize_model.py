@@ -3,7 +3,7 @@ from onnxruntime.quantization import quantize_dynamic, QuantType
 import os
 
 def wipe_onnx_shapes(model_path):
-    """移除模型中的形狀資訊，避免量化時的 ShapeInferenceError 衝突"""
+    """Remove shape information from the ONNX model to prevent ShapeInferenceError during quantization."""
     model = onnx.load(model_path)
     while len(model.graph.value_info) > 0:
         model.graph.value_info.pop()
@@ -18,7 +18,7 @@ def wipe_onnx_shapes(model_path):
     onnx.save(model, wiped_path)
     return wiped_path
 
-# 設定路徑
+# --- Path Configuration ---
 model_fp32 = "my_custom_model.onnx"
 model_quant = "my_custom_model_quant.onnx"
 
@@ -41,7 +41,7 @@ quantize_dynamic(
 if os.path.exists(model_wiped):
     os.remove(model_wiped)
 
-print("\n 量化完成！")
+print("\nQuantization complete.")
 print(f"原始模型: {os.path.getsize(model_fp32) / 1024 / 1024:.2f} MB")
 if os.path.exists(model_quant):
     print(f"量化模型: {os.path.getsize(model_quant) / 1024 / 1024:.2f} MB")
