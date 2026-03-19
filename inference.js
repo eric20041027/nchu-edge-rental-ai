@@ -127,11 +127,17 @@ async function scorePair(query, propertyText) {
 function parseConstraintsFromText(text) {
     let budget = null;
     let limit = null;
-    let genderUnrestricted = false; // true if user specifically says "不限女"
+    let genderUnrestricted = false;
+    let hasGenderMention = false;
+    let hasBudgetMention = false;
+    let hasRoomTypeMention = false;
 
     // Detection for "unrestricted gender"
     if (text.includes('不限女') || text.includes('不限性別') || text.includes('男生') || text.includes('男士')) {
         genderUnrestricted = true;
+        hasGenderMention = true;
+    } else if (text.includes('限女') || text.includes('限男')) {
+        hasGenderMention = true;
     }
 
     if (text.includes('以上')) limit = 'above';
@@ -143,12 +149,18 @@ function parseConstraintsFromText(text) {
 
     if (rt.includes('萬')) {
         let m = rt.match(/(\d+)萬(\d*)/);
-        if (m) budget = parseInt(m[1]) * 10000 + (m[2] ? parseInt(m[2]) * 1000 : 0);
+        if (m) {
+            budget = parseInt(m[1]) * 10000 + (m[2] ? parseInt(m[2]) * 1000 : 0);
+            hasBudgetMention = true;
+        }
     }
     if (!budget) {
         rt = rt.replace(/千/g, '000').replace(/[kK]/g, '000');
         let m2 = rt.match(/(\d{4,})/);
-        if (m2) budget = parseInt(m2[1]);
+        if (m2) {
+            budget = parseInt(m2[1]);
+            hasBudgetMention = true;
+        }
     }
     if (!budget) {
         let m3 = rt.match(/(\d+)/);
@@ -156,10 +168,15 @@ function parseConstraintsFromText(text) {
             let val = parseInt(m3[1]);
             if (val < 100) budget = val * 1000;
             else if (val >= 1000) budget = val;
+            hasBudgetMention = true;
         }
     }
 
-    return { budget, limit, genderUnrestricted };
+    if (text.includes('套房') || text.includes('雅房') || text.includes('工作室')) {
+        hasRoomTypeMention = true;
+    }
+
+    return { budget, limit, genderUnrestricted, hasGenderMention, hasBudgetMention, hasRoomTypeMention };
 }
 
 let inferenceLock = false;
@@ -179,28 +196,24 @@ export async function recommend(text, top_k = 5) {
         console.log("User Query:", text);
         const startTime = performance.now();
 
-        const { budget: userBudget, limit: budgetLimit, genderUnrestricted } = parseConstraintsFromText(text);
-        console.log("Parsed constraints:", { userBudget, budgetLimit, genderUnrestricted });
-
-        // Step 1: Apply hard exclusions first
+        const { budget: userBudget, limit: budgetLimit, genderUnrestricted, hasGenderMention, hasBudgetMention, hasRoomTypeMention } = parseConstraintsFromText(text);
+        
+        // Step 1: Apply hard exclusions (Only for explicit constraints)
         const candidates = [];
         for (let i = 0; i < propertyData.length; i++) {
             const prop = propertyData[i];
 
-            // Gender exclusion: If user says "男生" or "不限女", skip female-only rooms
-            if (genderUnrestricted) {
+            if (hasGenderMention && genderUnrestricted) {
                 const isFemaleOnly = prop.text.includes('限女') || (prop.furniture && prop.furniture.includes('限女'));
                 if (isFemaleOnly) continue;
             }
 
-            // Budget exclusion (only if limit word like "以下" is present)
-            if (userBudget && budgetLimit) {
+            if (hasBudgetMention && budgetLimit) {
                 if (budgetLimit === 'below' && prop.rent > userBudget) continue;
                 if (budgetLimit === 'above' && prop.rent < userBudget) continue;
             }
             candidates.push(prop);
         }
-        console.log(`After hard exclusion: ${candidates.length} / ${propertyData.length} candidates`);
 
         // Step 2: Two-Stage Retrieval
         // 提取關鍵字並過濾掉常見動詞/介詞
@@ -214,73 +227,74 @@ export async function recommend(text, top_k = 5) {
             })
             .filter(k => k.length > 1);
 
+        const hasLocationMention = queryKeywords.some(kw => 
+            kw.endsWith('路') || kw.endsWith('街') || kw.endsWith('大道') || 
+            kw.includes('區') || kw.includes('正門') || kw.includes('側門') || kw.includes('男宿')
+        );
+
         const preScoredCandidates = candidates.map(prop => {
             let kScore = 0;
-            let locationWeight = 0;
-            
-            // 關鍵字匹配
-            queryKeywords.forEach(kw => {
-                const isRoad = kw.endsWith('路') || kw.endsWith('街') || kw.endsWith('大道');
-                const isRegion = kw.includes('區');
-                const isSchoolSpot = kw.includes('正門') || kw.includes('側門') || kw.includes('男宿');
-                
-                if (prop.text.includes(kw)) {
-                    if (isRoad) {
-                        kScore += 15; // 路名相符權重極高
-                        locationWeight += 1;
-                    } else if (isSchoolSpot) {
-                        kScore += 10; // 學校具體位置
-                        locationWeight += 1;
-                    } else if (isRegion) {
-                        kScore += 5;
-                        locationWeight += 0.5;
-                    } else {
-                        kScore += 2;
+            let matchCount = 0;
+            let totalRequirements = 0;
+
+            // 1. Location Matching
+            if (hasLocationMention) {
+                totalRequirements++;
+                let locMatch = false;
+                queryKeywords.forEach(kw => {
+                    if (prop.text.includes(kw)) {
+                        if (kw.endsWith('路') || kw.endsWith('街') || kw.endsWith('大道')) kScore += 15, locMatch = true;
+                        if (kw.includes('區')) kScore += 5, locMatch = true;
+                        if (kw.includes('正門') || kw.includes('側門')) kScore += 10, locMatch = true;
                     }
-                }
-            });
-
-            // 檢查是否輸入了地點但房源完全不對 (路名不符)
-            const queryRoads = queryKeywords.filter(kw => kw.endsWith('路') || kw.endsWith('街') || kw.endsWith('大道'));
-            if (queryRoads.length > 0 && locationWeight === 0) {
-                kScore -= 10; // 嚴厲懲罰路名不符
+                });
+                if (locMatch) matchCount++;
             }
 
-            // 價格接近程度匹配 (如果您輸入的是 6000 而沒有 "以下")
-            if (userBudget && !budgetLimit) {
+            // 2. Room Type Matching
+            if (hasRoomTypeMention) {
+                totalRequirements++;
+                let rtMatch = false;
+                ['套房', '雅房', '工作室'].forEach(rt => {
+                    if (text.includes(rt) && prop.text.includes(rt)) rtMatch = true;
+                });
+                if (rtMatch) matchCount++, kScore += 10;
+            }
+
+            // 3. Budget Matching
+            if (hasBudgetMention) {
+                totalRequirements++;
                 const diff = Math.abs(prop.rent - userBudget);
-                // 擴散公式：越接近分數越高，差 500 元以內得分較高
-                const priceSimilarity = 10.0 / (1.0 + diff / 500.0);
-                kScore += priceSimilarity;
+                if (diff < 500) matchCount++, kScore += 5;
+                else if (prop.rent <= userBudget) matchCount += 0.5, kScore += 2;
             }
 
-            return { prop, kScore };
+            // Calculate Requirement Match Score (RMS)
+            // Rule: "Not mentioned = Match"
+            let rms = totalRequirements > 0 ? (matchCount / totalRequirements) : 1.0;
+
+            return { prop, kScore, rms };
         });
 
-        // Sort by keyword score and take top 30
-        preScoredCandidates.sort((a, b) => b.kScore - a.kScore);
+        // Take top 30
+        preScoredCandidates.sort((a, b) => (b.kScore + b.rms * 20) - (a.kScore + a.rms * 20));
         const topCandidates = preScoredCandidates.slice(0, 30);
-        console.log(`Stage 1 complete: Selected top ${topCandidates.length} candidates for AI re-ranking.`);
 
-        // Stage 2.2: AI Re-ranking (Cross-Encoder)
+        // Stage 2: AI Re-ranking
         const scoredResults = [];
-        console.log(`Stage 2: Starting AI re-ranking for ${topCandidates.length} candidates...`);
-
         for (let i = 0; i < topCandidates.length; i++) {
-            const { prop, kScore } = topCandidates[i];
+            const { prop, rms } = topCandidates[i];
             try {
-                // S2: AI Semantic Score (0.0 ~ 1.0)
                 const aiScore = await scorePair(text, prop.text); 
                 
-                // 綜合評分：核心以 AI 為主 (權重 50)，並加上關鍵字匹配分 (kScore)
-                // 基礎偏移量 20 讓合格房源看起來都有一定配對度
-                const rawScore = 20 + kScore + (aiScore * 50);
+                // Final Score Blend: Bias towards 100 if RMS is high
+                // Score = (RMS * 40) + (AI * 60)
+                let finalPercentage = Math.round((rms * 40) + (aiScore * 60));
                 
-                const percentage = Math.round(Math.min(Math.max(rawScore, 0), 100));
-                
-                if (percentage > 5) {
-                    scoredResults.push({ property: prop, score: percentage });
-                }
+                // Fine-tune: If it's a perfect requirement match (RMS=1), ensure a high floor
+                if (rms === 1.0 && finalPercentage < 85) finalPercentage = 85 + (aiScore * 15);
+
+                scoredResults.push({ property: prop, score: Math.min(100, Math.round(finalPercentage)) });
             } catch (err) {
                 console.error(`AI scoring error for property ${i}:`, err);
             }
