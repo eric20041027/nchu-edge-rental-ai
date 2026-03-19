@@ -346,6 +346,8 @@ export async function recommend(text, top_k = 5) {
             furniture: item.property.furniture || "無特殊設施提供",
             distance: item.property.distance,
             address: item.property.address,
+            contact: item.property.contact || "不具名",
+            phone: item.property.phone || "無資料",
         }));
     } finally {
         inferenceLock = false;
