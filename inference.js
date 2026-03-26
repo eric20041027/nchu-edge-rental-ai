@@ -11,6 +11,10 @@ import { AutoTokenizer, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transfo
 
 let tokenizer = null;
 let session = null;
+let propertyData = [];
+
+const MAX_LENGTH = 64;
+
 // --- Property Data Synchronization ---
 export async function initData() {
     const response = await fetch('/property_data.json?v=20260310');
