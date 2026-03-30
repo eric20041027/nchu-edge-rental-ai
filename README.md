@@ -148,4 +148,3 @@ graph TD
 
 ## 備註
 - 模型採用 Sentence-Pair 模式，輸入格式為 `[CLS] 查詢 [SEP] 房屋描述 [SEP]`。
-- 由於 ONNX 模型權重較大，建議使用支援 LFS 的 Git 託管。
