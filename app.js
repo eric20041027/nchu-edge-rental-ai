@@ -1,4 +1,3 @@
-console.log(">>> APP_VERSION: 20260311_V2 <<<");
 import { initData, initNLP, recommend } from './inference.js?v=20260311_V2';
 
 document.addEventListener('DOMContentLoaded', async () => {
