@@ -10,19 +10,17 @@
 - **直覺式介面**: 現代化、響應式設計，支援行動裝置。
 - **完整的訓練管線**: 包含自動化合成資料集、模型訓練、匯出與路名清理量化流程。
 
-## 核心技術棧
+## 核心技術
 
 - **Frontend**:
   - 原生 JavaScript (ES6+)
   - [ONNX Runtime Web](https://onnxruntime.ai/docs/tutorials/web/) (WASM 加速)
-  - CSS3 (現代化佈局與動畫)
 - **Machine Learning**:
-  - Python 3.10+
   - PyTorch
   - Hugging Face Transformers (ALBERT Tiny)
   - Hugging Face Datasets
 - **Deployment**:
-  - 支援 Vercel, GitHub Pages 等靜態託管平台。
+  - 支援 Vercel, GitHub Pages
 
 ## 快速開始
 
@@ -71,11 +69,11 @@ graph TD
 
 ### 1. 資料準備 (Data Preparation)
 *   **原始資料**: 從 `nchu_rental_info.csv` 讀取房源資訊。
-*   **描述生成**: `precompute_embeddings.py` 會讀取 CSV 並生成 `property_data.json`，其中包含每筆房源的「標準化描述文本」，這是 AI 進行比對的基準。
+*   **描述生成**: `precompute_embeddings.py` 會讀取 CSV 並生成 `property_data.json`，其中包含每筆房源的「標準化描述文本」。
 
 ### 2. 模型訓練 (Model Training)
 *   **合成資料**: `generate_dataset.py` 模擬學生口語（如：「預算 5k」、「套房」）生成正負配對樣本。
-*   **微調與匯出**: `train_and_export_onnx.py` 基於 `albert-chinese-tiny` 進行二分類微調，並匯出為 `model.onnx`。可以使用 `quantize_model.py` 進一步壓縮模型體積。
+*   **微調與匯出**: `train_and_export_onnx.py` 基於 `albert-chinese-tiny` 進行二分類微調，並匯出為 `model.onnx` 使用 `quantize_model.py` 進一步壓縮模型體積。
 
 ### 3. Web 推論 (Runtime Inference)
 當使用者輸入需求時，系統會啟動「兩階段推論系統」：
