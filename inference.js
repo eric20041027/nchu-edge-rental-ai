@@ -34,20 +34,19 @@ export async function initNLP(onProgress) {
         try {
             console.log("Starting model initialization...");
             if (onProgress) onProgress({ status: 'progress', file: 'tokenizer.json', loaded: 10, total: 100 });
-            
-            // 1. 加載 Tokenizer
+
+            // 1. Load Tokenizer
             tokenizer = await AutoTokenizer.from_pretrained('custom_onnx_model_dir');
             console.log("Tokenizer loaded.");
             if (onProgress) onProgress({ status: 'progress', file: 'tokenizer.json', loaded: 30, total: 100 });
 
-            // 2. 加載 ONNX 模型
+            // 2. Load ONNX Model
             if (onProgress) onProgress({ status: 'progress', file: 'model.onnx', loaded: 40, total: 100 });
             const modelUrl = window.location.origin + '/custom_onnx_model_dir/model.onnx?v=20260318_v1';
-            
+
             console.log("Creating InferenceSession for:", modelUrl);
-            
-            // 簡化 Session 創建：如果模型 >= 7MB 通常已經包含權重，
-            // 除非它特別是 split format。我們先嘗試不帶 externalData 載入。
+
+            // Standard Session Setup: Attempt single-file load first.
             session = await window.ort.InferenceSession.create(modelUrl, {
                 executionProviders: ['wasm'],
                 graphOptimizationLevel: 'all'
@@ -57,14 +56,14 @@ export async function initNLP(onProgress) {
             console.log('ONNX Sentence-Pair model loaded successfully');
         } catch (err) {
             console.error('Model loading error details:', err);
-            // 如果第一次失敗，嘗試帶上 externalData (以防萬一)
+            // Fallback: Retry with externalData for split format models.
             try {
                 console.log("Retrying with externalData...");
                 const modelUrl = window.location.origin + '/custom_onnx_model_dir/model.onnx?v=20260318_v1';
                 session = await window.ort.InferenceSession.create(modelUrl, {
                     executionProviders: ['wasm'],
                     externalData: [{
-                        path: 'model.onnx.data', // 統一名稱為 model.onnx.data
+                        path: 'model.onnx.data', // Unified data resource name
                         data: window.location.origin + '/custom_onnx_model_dir/model.onnx.data?v=20260318_v1'
                     }]
                 });
@@ -180,7 +179,7 @@ export async function recommend(text, top_k = 20) {
         const startTime = performance.now();
 
         const { budget: userBudget, limit: budgetLimit, genderUnrestricted, hasGenderMention, hasBudgetMention, hasRoomTypeMention } = parseConstraintsFromText(text);
-        
+
         // Step 1: Apply hard exclusions (Only for explicit constraints)
         const candidates = [];
         for (let i = 0; i < propertyData.length; i++) {
@@ -203,7 +202,7 @@ export async function recommend(text, top_k = 20) {
             '近', '靠近', '想找', '尋找', '住在', '一間', '想要', '預算', '大約', '希望',
             '位於', '位在', '位處', '在', '含', '有', '附', '座落於', '座落'
         ];
-        
+
         // Address suffixes for core location extraction
         const locSuffixes = ['路', '街', '大道', '區'];
 
@@ -211,14 +210,13 @@ export async function recommend(text, top_k = 20) {
             .filter(k => k.length > 1 && !k.match(/^\d+$/))
             .map(k => {
                 let clean = k;
-                // 1. 移除開頭的 stopWords
+                // 1. Remove leading stop words
                 stopWords.forEach(sw => { if (clean.startsWith(sw)) clean = clean.substring(sw.length); });
-                
-                // 2. 如果是地址類關鍵字（以路、街等結尾），嘗試進一步清理開頭
-                // 例如：從 "位於國光路" 提取出 "國光路"
+
+                // 2. Normalize location keywords
                 locSuffixes.forEach(suffix => {
                     if (clean.endsWith(suffix) && clean.length > suffix.length) {
-                        // 移除常見的方位或連字
+                        // Strip common prepositional prefixes
                         const locPrefixes = ['位', '於', '在', '處'];
                         locPrefixes.forEach(p => { if (clean.startsWith(p)) clean = clean.substring(p.length); });
                     }
@@ -227,8 +225,8 @@ export async function recommend(text, top_k = 20) {
             })
             .filter(k => k.length > 1);
 
-        const hasLocationMention = queryKeywords.some(kw => 
-            kw.endsWith('路') || kw.endsWith('街') || kw.endsWith('大道') || 
+        const hasLocationMention = queryKeywords.some(kw =>
+            kw.endsWith('路') || kw.endsWith('街') || kw.endsWith('大道') ||
             kw.includes('區') || kw.includes('正門') || kw.includes('側門') || kw.includes('男宿')
         );
 
@@ -270,7 +268,6 @@ export async function recommend(text, top_k = 20) {
             }
 
             // Calculate Requirement Match Score (RMS)
-            // Rule: "Not mentioned = Match"
             let rms = totalRequirements > 0 ? (matchCount / totalRequirements) : 1.0;
 
             return { prop, kScore, rms };
@@ -285,12 +282,12 @@ export async function recommend(text, top_k = 20) {
         for (let i = 0; i < topCandidates.length; i++) {
             const { prop, rms } = topCandidates[i];
             try {
-                const aiScore = await scorePair(text, prop.text); 
-                
+                const aiScore = await scorePair(text, prop.text);
+
                 // Final Score Blend: Bias towards 100 if RMS is high
                 // Score = (RMS * 40) + (AI * 60)
                 let finalPercentage = Math.round((rms * 40) + (aiScore * 60));
-                
+
                 // Fine-tune: If it's a perfect requirement match (RMS=1), ensure a high floor
                 if (rms === 1.0 && finalPercentage < 85) finalPercentage = 85 + (aiScore * 15);
 

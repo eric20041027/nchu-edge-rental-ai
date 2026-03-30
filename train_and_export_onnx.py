@@ -110,25 +110,25 @@ def compute_metrics(p):
 
 training_args = TrainingArguments(
     output_dir="./recommendation_model_output",
-    # 每 100 步顯示一次驗證結果 (含 accuracy)
+    # Log validation metrics (including accuracy) every 100 steps
     eval_strategy="steps",
     eval_steps=200,
-    learning_rate=5e-5,              # 提高學習率以助於從 0 分處跳出
-    per_device_train_batch_size=32,   # 加大 batch size
+    learning_rate=5e-5,               # Increase LR to escape local minima at initialization
+    per_device_train_batch_size=32,   # Increased batch size for stability
     per_device_eval_batch_size=32,
-    num_train_epochs=8,               # 8 個 epoch
+    num_train_epochs=8,               # Total epochs
     weight_decay=0.01,
-    warmup_ratio=0.1,                 # 前 10% 步數慢慢增加學習率
-    label_smoothing_factor=0.0,       # 關閉標籤平滑，確保 matching 分數能推高
-    logging_steps=50,                 # 每 50 步顯示 loss
-    logging_first_step=True,          # 第一步就顯示
+    warmup_ratio=0.1,                 # Linear warmup for the first 10% of steps
+    label_smoothing_factor=0.0,       # Disable label smoothing to maximize matching confidence
+    logging_steps=50,                 # Log training loss every 50 steps
+    logging_first_step=True,          # Log the initial step
     save_strategy="steps",
     save_steps=200,
     load_best_model_at_end=True,
     metric_for_best_model="accuracy",
     greater_is_better=True,
     report_to="none",
-    # 早停：如果 3 次評估都沒改善就停止
+    # Early stopping configuration limit
     save_total_limit=3,
 )
 
@@ -206,7 +206,4 @@ torch.onnx.export(
 
 print(f"\n  Model exported to: {onnx_output_path}")
 print("=" * 60)
-print("Training complete! Next steps:")
-print("  1. Run: python3 precompute_embeddings.py")
-print("  2. Copy model files to custom_onnx_model_dir/")
-print("  3. Refresh browser to test")
+

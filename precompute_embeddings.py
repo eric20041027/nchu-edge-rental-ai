@@ -1,7 +1,7 @@
 """
-precompute_embeddings.py - Precompute property metadata and descriptions for frontend inference.
-Parses rental CSV, extracts core features (road names, regions), and generates normalized 
-description strings used as secondary input for the sentence-pair classification model.
+precompute_embeddings.py
+Precomputes and normalizes property metadata from CSV for frontend inference.
+Extracts core features (e.g., regions, roads) into descriptive strings for Sentence-Pair classification.
 """
 import json
 import csv
@@ -32,12 +32,12 @@ def load_properties(csv_path="nchu_rental_info.csv"):
                 region = r
                 break
 
-        # 組合描述文本 (與 generate_dataset.py 的 property_to_text 一致)
+        # Construct normalized description matching property_to_text in generate_dataset.py
         parts = []
         room_type = row.get("格局", "")
         building_type = row.get("類型", "")
         
-        # 提取路名
+        # Extract thoroughfare (Road/Street/Avenue)
         road = ""
         # Extract road name: Match Road/Street/Avenue + section, excluding house numbers
         road_match = re.search(r"([^區市台]*(?:路|街|大道)(?:[一二三四五六七八九十]|[\d])?段?)", addr)
@@ -49,7 +49,7 @@ def load_properties(csv_path="nchu_rental_info.csv"):
         if room_type: parts.append(room_type)
         if building_type: parts.append(building_type)
         if region: parts.append(region)
-        if road: parts.append(road) # 新增路名到描述中
+        if road: parts.append(road) # Append thoroughfare to description
         if rent_num: parts.append(f"{rent_num}元")
         if dist: parts.append(f"距離{dist}km")
 
@@ -100,7 +100,7 @@ def main():
     properties = load_properties()
     print(f"  Loaded {len(properties)} properties")
 
-    # 儲存前端需要的房源資料 (包含描述文本)
+    # Export processed properties to JSON format for frontend utilization
     output = []
     for i, prop in enumerate(properties):
         output.append({
@@ -128,13 +128,6 @@ def main():
     print("\n--- Sample Descriptions ---")
     for p in output[:3]:
         print(f"  [{p['idx']}] {p['text'][:80]}...")
-
-    print("\n" + "=" * 60)
-    print("Done! Frontend will use:")
-    print("  - ONNX model for sentence-pair classification")
-    print("  - property_data.json for property descriptions")
-    print("  - Each query will be paired with all properties at inference time")
-
 
 if __name__ == "__main__":
     main()

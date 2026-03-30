@@ -26,10 +26,10 @@ if not os.path.exists(model_fp32):
     print(f"錯誤：找不到 {model_fp32}。")
     exit(1)
 
-print(f"1. 正在清理模型形狀資訊 (防止 InferenceError)...")
+print(f"1. Wiping model shape data (preventing InferenceError)...")
 model_wiped = wipe_onnx_shapes(model_fp32)
 
-print(f"2. 正在量化 {model_wiped} -> {model_quant}...")
+print(f"2. Quantizing {model_wiped} -> {model_quant}...")
 quantize_dynamic(
     model_input=model_wiped,
     model_output=model_quant,
@@ -37,7 +37,7 @@ quantize_dynamic(
     extra_options={'disable_shape_inference': True}
 )
 
-# 清理中間產物
+# Clean up intermediate wiped model
 if os.path.exists(model_wiped):
     os.remove(model_wiped)
 

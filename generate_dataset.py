@@ -1,7 +1,8 @@
 """
-generate_dataset.py - Synthesize training, validation, and test datasets from rental CSV.
-Parses property data and simulates student natural language queries to generate 
-query-property pairs (positive/negative) for sentence-pair classification training.
+generate_dataset.py
+Synthesizes training, validation, and test datasets from rental CSV data.
+Generates simulated natural language queries and constructs positive/negative 
+query-property pairs for Sentence-Pair classification model training.
 """
 import csv
 import json
@@ -19,24 +20,24 @@ def load_properties(csv_path="nchu_rental_info.csv"):
 
     properties = []
     for row in rows:
-        # 解析租金數字
+        # Parse and extract rental price
         rent_str = row.get("租金", "")
         rent_match = re.search(r"(\d[\d,]*)", rent_str.replace(",", ""))
         rent_num = int(rent_match.group(1)) if rent_match else 0
 
-        # 解析距離
+        # Parse distance in kilometers
         dist = float(row.get("距離(km)", "0") or "0")
 
-        # 解析家具清單
+        # Parse amenities, inclusions, and security features
         furniture = [s.strip() for s in row.get("家具設施", "").split("/") if s.strip()]
         included = [s.strip() for s in row.get("租金包含", "").split("/") if s.strip()]
         security = [s.strip() for s in row.get("安全管理", "").split("/") if s.strip()]
         notes = [s.strip() for s in row.get("備註", "").split("/") if s.strip()]
 
-        # 解析地址中的路/街/巷
+        # Extract thoroughfare (Road/Street/Avenue) from address
         addr = row.get("地址", "")
         road = ""
-        # 匹配 路/街/大道
+        # Regex match for Road/Street/Avenue
         road_match = re.search(r"([^區市台]*(?:路|街|大道)(?:[一二三四五六七八九十]|[\d])?段?)", addr)
         if road_match:
             road = road_match.group(1).strip()
@@ -87,7 +88,7 @@ def property_to_text(prop):
     if prop["distance"]:
         parts.append(f"距離{prop['distance']}km")
 
-    # 取前 5 個主要家具
+    # Extract up to 5 key amenities
     key_furniture = []
     for f in prop["furniture"]:
         short = f.replace("（電）", "").replace("機車停車位", "機車位").replace("書桌椅", "書桌")
@@ -101,7 +102,7 @@ def property_to_text(prop):
     if prop["included"]:
         parts.append("含" + "".join(prop["included"][:3]))
 
-    # 備註中的重要資訊
+    # Extract critical terms from notes (e.g., pet-friendly or gender restrictions)
     for note in prop["notes"]:
         if "寵物" in note or "限" in note:
             parts.append(note)
@@ -110,7 +111,7 @@ def property_to_text(prop):
 
 
 # ============================================================
-# 3. 生成模擬中興學生的自然語言查詢
+# 3. Generate Simulated Natural Language Queries
 # ============================================================
 
 # 預算表達模板
@@ -347,7 +348,7 @@ def generate_queries_for_property(prop, num_queries=40):
 
 
 # ============================================================
-# 4. 判斷查詢與房源是否相容 (用於確保負例真的是負例)
+# 4. Verify Query/Property Compatibility (For Negative Mining)
 # ============================================================
 def is_compatible(query, prop):
     """
@@ -399,7 +400,7 @@ def is_compatible(query, prop):
 
 
 # ============================================================
-# 5. 產生正負配對資料
+# 5. Generate Positive/Negative Pair Dataset
 # ============================================================
 def generate_dataset(properties, num_neg_per_pos=1):
     """
@@ -451,7 +452,7 @@ def generate_dataset(properties, num_neg_per_pos=1):
 
 
 # ============================================================
-# 5. 主程式：分割並儲存 train/dev/test
+# 6. Main: Split and Save Dataset (Train/Dev/Test)
 # ============================================================
 def main():
     print("=" * 60)

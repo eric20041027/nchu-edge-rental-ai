@@ -1,6 +1,7 @@
 """
-export_to_onnx.py - Export trained PyTorch ALBERT model to ONNX format.
-Handles model loading, dummy input generation, and ONNX export with dynamic axes.
+export_to_onnx.py
+Exports the fine-tuned PyTorch ALBERT model to ONNX format.
+Configures dynamic axes for batch size and sequence length to support variable inputs.
 """
 import torch
 from transformers import BertTokenizerFast, AutoModelForSequenceClassification
