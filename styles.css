@@ -181,8 +181,8 @@ body, html {
 .property-grid {
     display: flex;
     flex-direction: column;
-    gap: 2.5rem;
-    padding-bottom: 5rem;
+    gap: 1.5rem;
+    padding-bottom: 4rem;
 }
 
 /* Property Card - Structured Layout */
@@ -210,7 +210,7 @@ body, html {
 
 .card-image {
     position: relative;
-    width: 360px;
+    width: 260px;
     overflow: hidden;
     flex-shrink: 0;
     border-right: 1px solid var(--border-glass);
@@ -252,7 +252,7 @@ body, html {
 }
 
 .card-content {
-    padding: 2.5rem;
+    padding: 1.5rem 2rem;
     display: flex;
     flex-direction: column;
     flex: 1;
@@ -260,25 +260,25 @@ body, html {
 }
 
 .card-price {
-    font-size: 2.5rem;
+    font-size: 1.8rem;
     font-weight: 800;
     color: var(--primary-color);
-    margin-bottom: 0.5rem;
-    letter-spacing: -1px;
+    margin-bottom: 0.3rem;
+    letter-spacing: -0.5px;
 }
 
 .card-title {
-    font-size: 1.4rem;
-    margin-bottom: 1.5rem;
+    font-size: 1.15rem;
+    margin-bottom: 1rem;
     font-weight: 600;
     color: var(--text-main);
 }
 
 .card-details {
     display: flex;
-    gap: 1.5rem;
+    gap: 1rem;
     color: var(--text-muted);
-    font-size: 0.95rem;
+    font-size: 0.85rem;
 }
 
 .card-details i {
