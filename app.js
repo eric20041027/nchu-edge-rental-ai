@@ -183,14 +183,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <span><i class="fa-solid fa-building"></i> ${house.floor}</span>
                     </div>
                     
-                    <details style="font-size: 0.8rem; color: #ccc; margin-bottom: 10px; cursor: pointer; background: rgba(15,23,42,0.4); padding: 5px 8px; border-radius: 6px;">
+                    <details style="font-size: 0.8rem; color: #ccc; margin-bottom: 10px; cursor: pointer; background: rgba(255,255,255,0.03); padding: 5px 8px; border-radius: 6px;">
                         <summary style="outline: none; font-weight: 500;"><i class="fa-solid fa-couch"></i> 查看附屬家具設施</summary>
                         <div style="margin-top: 5px; line-height: 1.4; padding-left: 18px;">
                             ${house.furniture.split('/').join(', ')}
                         </div>
                     </details>
                     
-                    <div style="font-size: 0.85rem; color: #64ffda; margin-bottom: 12px; font-weight: 500;">
+                    <div style="font-size: 0.85rem; color: var(--primary-color); margin-bottom: 12px; font-weight: 500;">
                         ${commuteHtml}
                     </div>
 
