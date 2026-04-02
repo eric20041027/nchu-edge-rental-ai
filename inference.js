@@ -25,7 +25,6 @@ export async function initData() {
 // --- NLP Engine Initialization ---
 export async function initNLP(onProgress) {
     if (!tokenizer || !session) {
-        // Configure ONNX Runtime environment
         env.allowRemoteModels = false;
         env.allowLocalModels = true;
         env.useBrowserCache = true;
@@ -35,18 +34,14 @@ export async function initNLP(onProgress) {
             console.log("Starting model initialization...");
             if (onProgress) onProgress({ status: 'progress', file: 'tokenizer.json', loaded: 10, total: 100 });
 
-            // 1. Load Tokenizer
             tokenizer = await AutoTokenizer.from_pretrained('custom_onnx_model_dir');
             console.log("Tokenizer loaded.");
             if (onProgress) onProgress({ status: 'progress', file: 'tokenizer.json', loaded: 30, total: 100 });
 
-            // 2. Load ONNX Model
             if (onProgress) onProgress({ status: 'progress', file: 'model.onnx', loaded: 40, total: 100 });
             const modelUrl = window.location.origin + '/custom_onnx_model_dir/model.onnx?v=20260318_v1';
 
             console.log("Creating InferenceSession for:", modelUrl);
-
-            // Standard Session Setup: Attempt single-file load first.
             session = await window.ort.InferenceSession.create(modelUrl, {
                 executionProviders: ['wasm'],
                 graphOptimizationLevel: 'all'
@@ -56,7 +51,6 @@ export async function initNLP(onProgress) {
             console.log('ONNX Sentence-Pair model loaded successfully');
         } catch (err) {
             console.error('Model loading error details:', err);
-            // Fallback: Retry with externalData for split format models.
             try {
                 console.log("Retrying with externalData...");
                 const modelUrl = window.location.origin + '/custom_onnx_model_dir/model.onnx?v=20260318_v1';
@@ -85,13 +79,11 @@ async function scorePair(query, propertyText) {
         truncation: true,
         max_length: MAX_LENGTH,
         return_tensors: 'np',
-        return_token_type_ids: true, // Enable segment IDs for sentence-pair classification
+        return_token_type_ids: true,
     });
 
     const inputs = {};
-    const modelInputs = session.inputNames; // ["input_ids", "attention_mask", "token_type_ids"]
-
-    for (const key of modelInputs) {
+    for (const key of session.inputNames) {
         if (encoded[key]) {
             inputs[key] = new ort.Tensor('int64',
                 BigInt64Array.from(encoded[key].data.map(v => BigInt(v))),
@@ -110,14 +102,9 @@ async function scorePair(query, propertyText) {
 
 // --- Constraint Parsing & Normalization ---
 function parseConstraintsFromText(text) {
-    let budget = null;
-    let limit = null;
-    let genderUnrestricted = false;
-    let hasGenderMention = false;
-    let hasBudgetMention = false;
-    let hasRoomTypeMention = false;
+    let budget = null, limit = null;
+    let genderUnrestricted = false, hasGenderMention = false, hasBudgetMention = false, hasRoomTypeMention = false;
 
-    // Detection for "unrestricted gender"
     if (text.includes('不限女') || text.includes('不限性別') || text.includes('男生') || text.includes('男士')) {
         genderUnrestricted = true;
         hasGenderMention = true;
@@ -164,13 +151,121 @@ function parseConstraintsFromText(text) {
     return { budget, limit, genderUnrestricted, hasGenderMention, hasBudgetMention, hasRoomTypeMention };
 }
 
+// --- Hard Exclusion Filtering ---
+function filterHardExclusions(properties, constraints) {
+    const { budget, limit, genderUnrestricted, hasGenderMention, hasBudgetMention } = constraints;
+    const candidates = [];
+    
+    for (const prop of properties) {
+        if (hasGenderMention && genderUnrestricted) {
+            const isFemaleOnly = prop.text.includes('限女') || (prop.furniture && prop.furniture.includes('限女'));
+            if (isFemaleOnly) continue;
+        }
+        if (hasBudgetMention && limit) {
+            if (limit === 'below' && prop.rent > budget) continue;
+            if (limit === 'above' && prop.rent < budget) continue;
+        }
+        candidates.push(prop);
+    }
+    return candidates;
+}
+
+// --- Keyword Extraction ---
+function extractKeywords(text) {
+    const stopWords = ['近', '靠近', '想找', '尋找', '住在', '一間', '想要', '預算', '大約', '希望', '位於', '位在', '位處', '在', '含', '有', '附', '座落於', '座落'];
+    const locSuffixes = ['路', '街', '大道', '區'];
+
+    return text.split(/\s+|[,，、。]/)
+        .filter(k => k.length > 1 && !k.match(/^\d+$/))
+        .map(k => {
+            let clean = k;
+            stopWords.forEach(sw => { if (clean.startsWith(sw)) clean = clean.substring(sw.length); });
+            locSuffixes.forEach(suffix => {
+                if (clean.endsWith(suffix) && clean.length > suffix.length) {
+                    const locPrefixes = ['位', '於', '在', '處'];
+                    locPrefixes.forEach(p => { if (clean.startsWith(p)) clean = clean.substring(p.length); });
+                }
+            });
+            return clean;
+        })
+        .filter(k => k.length > 1);
+}
+
+// --- Rule-based Pre-Scoring ---
+function calculateRuleBasedScore(candidates, queryKeywords, text, constraints) {
+    const { budget: userBudget, hasBudgetMention, hasRoomTypeMention } = constraints;
+    const hasLocationMention = queryKeywords.some(kw =>
+        kw.endsWith('路') || kw.endsWith('街') || kw.endsWith('大道') ||
+        kw.includes('區') || kw.includes('正門') || kw.includes('側門') || kw.includes('男宿')
+    );
+
+    const preScored = candidates.map(prop => {
+        let kScore = 0, matchCount = 0, totalRequirements = 0;
+
+        if (hasLocationMention) {
+            totalRequirements++;
+            let locMatch = false;
+            queryKeywords.forEach(kw => {
+                if (prop.text.includes(kw)) {
+                    if (kw.endsWith('路') || kw.endsWith('街') || kw.endsWith('大道')) kScore += 15, locMatch = true;
+                    if (kw.includes('區')) kScore += 5, locMatch = true;
+                    if (kw.includes('正門') || kw.includes('側門')) kScore += 10, locMatch = true;
+                }
+            });
+            if (locMatch) matchCount++;
+        }
+
+        if (hasRoomTypeMention) {
+            totalRequirements++;
+            let rtMatch = false;
+            ['套房', '雅房', '工作室'].forEach(rt => {
+                if (text.includes(rt) && prop.text.includes(rt)) rtMatch = true;
+            });
+            if (rtMatch) matchCount++, kScore += 10;
+        }
+
+        if (hasBudgetMention) {
+            totalRequirements++;
+            const diff = Math.abs(prop.rent - userBudget);
+            if (diff < 500) matchCount++, kScore += 5;
+            else if (prop.rent <= userBudget) matchCount += 0.5, kScore += 2;
+        }
+
+        const rms = totalRequirements > 0 ? (matchCount / totalRequirements) : 1.0;
+        return { prop, kScore, rms };
+    });
+
+    preScored.sort((a, b) => (b.kScore + b.rms * 20) - (a.kScore + a.rms * 20));
+    return preScored.slice(0, 30);
+}
+
+// --- Response Formatting ---
+function formatResponse(scoredResults, top_k) {
+    return scoredResults.slice(0, top_k).map(item => ({
+        id: item.property.url,
+        title: `${item.property.room_type} | ${item.property.address}`,
+        price_str: item.property.rent_str,
+        url: item.property.url,
+        imgUrl: item.property.img || null,
+        score: item.score,
+        match_details: "",
+        size: item.property.size || "坪數未提供",
+        floor: item.property.floor || "樓層未提供",
+        furniture: item.property.furniture || "無特殊設施提供",
+        distance: item.property.distance,
+        address: item.property.address,
+        contact: item.property.contact || "不具名",
+        phone: item.property.phone || "無資料",
+    }));
+}
+
 let inferenceLock = false;
 
 // --- Main Recommendation Pipeline ---
 export async function recommend(text, top_k = 20) {
     if (inferenceLock) {
         console.warn("New recommendation ignored: Previous inference still in progress.");
-        return null; // app.js handles null/empty
+        return null;
     }
     inferenceLock = true;
 
@@ -178,156 +273,40 @@ export async function recommend(text, top_k = 20) {
         console.log("User Query:", text);
         const startTime = performance.now();
 
-        const { budget: userBudget, limit: budgetLimit, genderUnrestricted, hasGenderMention, hasBudgetMention, hasRoomTypeMention } = parseConstraintsFromText(text);
+        // 1. Data Parsing & Filtering
+        const constraints = parseConstraintsFromText(text);
+        const candidates = filterHardExclusions(propertyData, constraints);
+        
+        // 2. Keyword & Rule-based Pre-scoring
+        const queryKeywords = extractKeywords(text);
+        const topCandidates = calculateRuleBasedScore(candidates, queryKeywords, text, constraints);
 
-        // Step 1: Apply hard exclusions (Only for explicit constraints)
-        const candidates = [];
-        for (let i = 0; i < propertyData.length; i++) {
-            const prop = propertyData[i];
-
-            if (hasGenderMention && genderUnrestricted) {
-                const isFemaleOnly = prop.text.includes('限女') || (prop.furniture && prop.furniture.includes('限女'));
-                if (isFemaleOnly) continue;
-            }
-
-            if (hasBudgetMention && budgetLimit) {
-                if (budgetLimit === 'below' && prop.rent > userBudget) continue;
-                if (budgetLimit === 'above' && prop.rent < userBudget) continue;
-            }
-            candidates.push(prop);
-        }
-
-        // Define stop words for keyword extraction
-        const stopWords = [
-            '近', '靠近', '想找', '尋找', '住在', '一間', '想要', '預算', '大約', '希望',
-            '位於', '位在', '位處', '在', '含', '有', '附', '座落於', '座落'
-        ];
-
-        // Address suffixes for core location extraction
-        const locSuffixes = ['路', '街', '大道', '區'];
-
-        let queryKeywords = text.split(/\s+|[,，、。]/)
-            .filter(k => k.length > 1 && !k.match(/^\d+$/))
-            .map(k => {
-                let clean = k;
-                // 1. Remove leading stop words
-                stopWords.forEach(sw => { if (clean.startsWith(sw)) clean = clean.substring(sw.length); });
-
-                // 2. Normalize location keywords
-                locSuffixes.forEach(suffix => {
-                    if (clean.endsWith(suffix) && clean.length > suffix.length) {
-                        // Strip common prepositional prefixes
-                        const locPrefixes = ['位', '於', '在', '處'];
-                        locPrefixes.forEach(p => { if (clean.startsWith(p)) clean = clean.substring(p.length); });
-                    }
-                });
-                return clean;
-            })
-            .filter(k => k.length > 1);
-
-        const hasLocationMention = queryKeywords.some(kw =>
-            kw.endsWith('路') || kw.endsWith('街') || kw.endsWith('大道') ||
-            kw.includes('區') || kw.includes('正門') || kw.includes('側門') || kw.includes('男宿')
-        );
-
-        const preScoredCandidates = candidates.map(prop => {
-            let kScore = 0;
-            let matchCount = 0;
-            let totalRequirements = 0;
-
-            // 1. Location Matching
-            if (hasLocationMention) {
-                totalRequirements++;
-                let locMatch = false;
-                queryKeywords.forEach(kw => {
-                    if (prop.text.includes(kw)) {
-                        if (kw.endsWith('路') || kw.endsWith('街') || kw.endsWith('大道')) kScore += 15, locMatch = true;
-                        if (kw.includes('區')) kScore += 5, locMatch = true;
-                        if (kw.includes('正門') || kw.includes('側門')) kScore += 10, locMatch = true;
-                    }
-                });
-                if (locMatch) matchCount++;
-            }
-
-            // 2. Room Type Matching
-            if (hasRoomTypeMention) {
-                totalRequirements++;
-                let rtMatch = false;
-                ['套房', '雅房', '工作室'].forEach(rt => {
-                    if (text.includes(rt) && prop.text.includes(rt)) rtMatch = true;
-                });
-                if (rtMatch) matchCount++, kScore += 10;
-            }
-
-            // 3. Budget Matching
-            if (hasBudgetMention) {
-                totalRequirements++;
-                const diff = Math.abs(prop.rent - userBudget);
-                if (diff < 500) matchCount++, kScore += 5;
-                else if (prop.rent <= userBudget) matchCount += 0.5, kScore += 2;
-            }
-
-            // Calculate Requirement Match Score (RMS)
-            let rms = totalRequirements > 0 ? (matchCount / totalRequirements) : 1.0;
-
-            return { prop, kScore, rms };
-        });
-
-        // Take top 30
-        preScoredCandidates.sort((a, b) => (b.kScore + b.rms * 20) - (a.kScore + a.rms * 20));
-        const topCandidates = preScoredCandidates.slice(0, 30);
-
-        // Stage 2: AI Re-ranking
+        // 3. AI Re-ranking
         const scoredResults = [];
         for (let i = 0; i < topCandidates.length; i++) {
             const { prop, rms } = topCandidates[i];
             try {
                 const aiScore = await scorePair(text, prop.text);
-
-                // Final Score Blend: Bias towards 100 if RMS is high
-                // Score = (RMS * 40) + (AI * 60)
                 let finalPercentage = Math.round((rms * 40) + (aiScore * 60));
-
-                // Fine-tune: If it's a perfect requirement match (RMS=1), ensure a high floor
+                
+                // Enhance percentage if requirement match is perfect
                 if (rms === 1.0 && finalPercentage < 85) finalPercentage = 85 + (aiScore * 15);
-
+                
                 scoredResults.push({ property: prop, score: Math.min(100, Math.round(finalPercentage)) });
             } catch (err) {
                 console.error(`AI scoring error for property ${i}:`, err);
             }
         }
 
-        // Step 3: Sort and return
+        // 4. Return formatted top results
         scoredResults.sort((a, b) => b.score - a.score);
+        console.log(`Inference complete: ${scoredResults.length} results in ${(performance.now() - startTime).toFixed(0)}ms`);
 
-        // Debug: Log top result detail
         if (scoredResults.length > 0) {
-            console.log("Top Match Details:", {
-                query: text,
-                property: scoredResults[0].property.text,
-                score: scoredResults[0].score + "%"
-            });
+            console.log("Top Match:", { query: text, property: scoredResults[0].property.text, score: scoredResults[0].score + "%" });
         }
 
-        const elapsed = (performance.now() - startTime).toFixed(0);
-        console.log(`Inference complete: ${scoredResults.length} results in ${elapsed}ms`);
-
-        return scoredResults.slice(0, top_k).map(item => ({
-            id: item.property.url,
-            title: `${item.property.room_type} | ${item.property.address}`,
-            price_str: item.property.rent_str,
-            url: item.property.url,
-            imgUrl: item.property.img || null,
-            score: item.score,
-            match_details: "",
-            size: item.property.size || "坪數未提供",
-            floor: item.property.floor || "樓層未提供",
-            furniture: item.property.furniture || "無特殊設施提供",
-            distance: item.property.distance,
-            address: item.property.address,
-            contact: item.property.contact || "不具名",
-            phone: item.property.phone || "無資料",
-        }));
+        return formatResponse(scoredResults, top_k);
     } finally {
         inferenceLock = false;
     }

@@ -5,94 +5,89 @@ Training data is synthesized by generate_dataset.py.
 """
 import os
 import json
+import random
 import torch
 import numpy as np
+from typing import Tuple, Dict, Any, List
 from transformers import (
     BertTokenizerFast,
     AutoModelForSequenceClassification,
     TrainingArguments,
     Trainer,
+    PreTrainedModel,
+    PreTrainedTokenizer
 )
 from datasets import Dataset
 
-# ==========================================
-# Step 1: Load Data
-# ==========================================
-print("=" * 60)
-print("[Step 1] Loading datasets...")
-
-model_checkpoint = "clue/albert_chinese_tiny"
-tokenizer = BertTokenizerFast.from_pretrained(model_checkpoint)
-
-with open("recommendation_train.json", "r", encoding="utf-8") as f:
-    train_data = json.load(f)
-print(f"  Train: {len(train_data)} samples")
-
-with open("recommendation_dev.json", "r", encoding="utf-8") as f:
-    dev_data = json.load(f)
-print(f"  Dev:   {len(dev_data)} samples")
-
-# --- Data Balancing & Shuffle ---
-import random
-random.seed(42)
-
-pos_samples = [d for d in train_data if d["label"] == 1]
-neg_samples = [d for d in train_data if d["label"] == 0]
-print(f"  Original distribution: POS={len(pos_samples)}, NEG={len(neg_samples)}")
-
-if len(neg_samples) > len(pos_samples):
-    neg_samples = random.sample(neg_samples, len(pos_samples))
-    print(f"  Balanced NEG down to {len(neg_samples)}")
-elif len(pos_samples) > len(neg_samples):
-    pos_samples = random.sample(pos_samples, len(neg_samples))
-    print(f"  Balanced POS down to {len(pos_samples)}")
-
-train_data = pos_samples + neg_samples
-random.shuffle(train_data)
-print(f"  Final balanced train set: {len(train_data)} samples")
-
-train_dataset_raw = Dataset.from_list(train_data)
-eval_dataset_raw = Dataset.from_list(dev_data)
-
-# ==========================================
-# Step 2: Tokenize as Sentence Pairs
-# ==========================================
-print("\n[Step 2] Tokenizing sentence pairs...")
-
+# Global Configurations
+MODEL_CHECKPOINT = "clue/albert_chinese_tiny"
 MAX_LENGTH = 128
+ONNX_OUTPUT_PATH = "my_custom_model.onnx"
+SAVED_MODEL_DIR = "./my_trained_albert"
 
-def tokenize_function(examples):
-    """Tokenize as [CLS] query [SEP] property [SEP] for similarity classification."""
-    tokenized = tokenizer(
-        examples["query"],
-        examples["property"],
-        padding="max_length",
-        max_length=MAX_LENGTH,
-        truncation=True,
-    )
-    tokenized["labels"] = examples["label"]
-    return tokenized
+def load_and_balance_data(train_path: str, dev_path: str) -> Tuple[Dataset, Dataset]:
+    """Loads JSON datasets and balances the training classes."""
+    print("=" * 60)
+    print("[Step 1] Loading and balancing datasets...")
 
-train_dataset = train_dataset_raw.map(tokenize_function, batched=True)
-eval_dataset = eval_dataset_raw.map(tokenize_function, batched=True)
+    with open(train_path, "r", encoding="utf-8") as f:
+        train_data = json.load(f)
+    print(f"  Raw Train: {len(train_data)} samples")
 
-# ==========================================
-# Step 3: Load Model & Train
-# ==========================================
-print("\n[Step 3] Loading model and starting fine-tuning...")
+    with open(dev_path, "r", encoding="utf-8") as f:
+        dev_data = json.load(f)
+    print(f"  Raw Dev:   {len(dev_data)} samples")
 
-model = AutoModelForSequenceClassification.from_pretrained(
-    model_checkpoint,
-    num_labels=2,
-    id2label={0: "NOT_MATCH", 1: "MATCH"},
-    label2id={"NOT_MATCH": 0, "MATCH": 1},
-)
+    random.seed(42)
+    pos_samples = [d for d in train_data if d["label"] == 1]
+    neg_samples = [d for d in train_data if d["label"] == 0]
+    print(f"  Original distribution: POS={len(pos_samples)}, NEG={len(neg_samples)}")
 
-def compute_metrics(p):
+    if len(neg_samples) > len(pos_samples):
+        neg_samples = random.sample(neg_samples, len(pos_samples))
+        print(f"  Balanced NEG down to {len(neg_samples)}")
+    elif len(pos_samples) > len(neg_samples):
+        pos_samples = random.sample(pos_samples, len(neg_samples))
+        print(f"  Balanced POS down to {len(pos_samples)}")
+
+    train_data = pos_samples + neg_samples
+    random.shuffle(train_data)
+    print(f"  Final balanced train set: {len(train_data)} samples")
+
+    return Dataset.from_list(train_data), Dataset.from_list(dev_data)
+
+
+def tokenize_datasets(
+    train_dataset: Dataset, 
+    eval_dataset: Dataset, 
+    tokenizer: PreTrainedTokenizer
+) -> Tuple[Dataset, Dataset]:
+    """Tokenizes datasets as sentence pairs [CLS] query [SEP] property [SEP]."""
+    print("\n[Step 2] Tokenizing sentence pairs...")
+
+    def tokenize_function(examples: Dict[str, list]) -> Dict[str, list]:
+        tokenized = tokenizer(
+            examples["query"],
+            examples["property"],
+            padding="max_length",
+            max_length=MAX_LENGTH,
+            truncation=True,
+        )
+        tokenized["labels"] = examples["label"]
+        return tokenized
+
+    train_tokenized = train_dataset.map(tokenize_function, batched=True)
+    eval_tokenized = eval_dataset.map(tokenize_function, batched=True)
+    
+    return train_tokenized, eval_tokenized
+
+
+def compute_metrics(p: Tuple[np.ndarray, np.ndarray]) -> Dict[str, float]:
+    """Computes binary classification metrics for the Trainer."""
     predictions, labels = p
     preds = np.argmax(predictions, axis=1)
+    
     accuracy = (preds == labels).mean()
-
     tp = ((preds == 1) & (labels == 1)).sum()
     fp = ((preds == 1) & (labels == 0)).sum()
     fn = ((preds == 0) & (labels == 1)).sum()
@@ -101,109 +96,138 @@ def compute_metrics(p):
     recall = tp / (tp + fn) if (tp + fn) > 0 else 0
     f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
 
-    return {
-        "accuracy": accuracy,
-        "precision": precision,
-        "recall": recall,
-        "f1": f1,
-    }
+    return {"accuracy": accuracy, "precision": precision, "recall": recall, "f1": f1}
 
-training_args = TrainingArguments(
-    output_dir="./recommendation_model_output",
-    # Log validation metrics (including accuracy) every 100 steps
-    eval_strategy="steps",
-    eval_steps=200,
-    learning_rate=5e-5,               # Increase LR to escape local minima at initialization
-    per_device_train_batch_size=32,   # Increased batch size for stability
-    per_device_eval_batch_size=32,
-    num_train_epochs=8,               # Total epochs
-    weight_decay=0.01,
-    warmup_ratio=0.1,                 # Linear warmup for the first 10% of steps
-    label_smoothing_factor=0.0,       # Disable label smoothing to maximize matching confidence
-    logging_steps=50,                 # Log training loss every 50 steps
-    logging_first_step=True,          # Log the initial step
-    save_strategy="steps",
-    save_steps=200,
-    load_best_model_at_end=True,
-    metric_for_best_model="accuracy",
-    greater_is_better=True,
-    report_to="none",
-    # Early stopping configuration limit
-    save_total_limit=3,
-)
 
-trainer = Trainer(
-    model=model,
-    args=training_args,
-    train_dataset=train_dataset,
-    eval_dataset=eval_dataset,
-    compute_metrics=compute_metrics,
-)
+def train_model(train_dataset: Dataset, eval_dataset: Dataset) -> Tuple[Trainer, PreTrainedModel]:
+    """Initializes model, configures Trainer, and fine-tunes ALBERT."""
+    print("\n[Step 3] Loading model and starting fine-tuning...")
 
-trainer.train()
+    model = AutoModelForSequenceClassification.from_pretrained(
+        MODEL_CHECKPOINT,
+        num_labels=2,
+        id2label={0: "NOT_MATCH", 1: "MATCH"},
+        label2id={"NOT_MATCH": 0, "MATCH": 1},
+    )
 
-# ==========================================
-# Step 4: Evaluate on Test Set
-# ==========================================
-print("\n[Step 4] Evaluating on test set...")
+    training_args = TrainingArguments(
+        output_dir="./recommendation_model_output",
+        eval_strategy="steps",
+        eval_steps=200,
+        learning_rate=5e-5,               
+        per_device_train_batch_size=32,   
+        per_device_eval_batch_size=32,
+        num_train_epochs=8,               
+        weight_decay=0.01,
+        warmup_ratio=0.1,                 
+        label_smoothing_factor=0.0,       
+        logging_steps=50,                 
+        logging_first_step=True,          
+        save_strategy="steps",
+        save_steps=200,
+        load_best_model_at_end=True,
+        metric_for_best_model="accuracy",
+        greater_is_better=True,
+        report_to="none",
+        save_total_limit=3,
+    )
 
-with open("recommendation_test.json", "r", encoding="utf-8") as f:
-    test_data = json.load(f)
+    trainer = Trainer(
+        model=model,
+        args=training_args,
+        train_dataset=train_dataset,
+        eval_dataset=eval_dataset,
+        compute_metrics=compute_metrics,
+    )
 
-test_dataset_raw = Dataset.from_list(test_data)
-test_dataset = test_dataset_raw.map(tokenize_function, batched=True)
-test_results = trainer.evaluate(test_dataset)
+    trainer.train()
+    return trainer, model
 
-print(f"  Test Accuracy:  {test_results['eval_accuracy']:.4f}")
-print(f"  Test Precision: {test_results['eval_precision']:.4f}")
-print(f"  Test Recall:    {test_results['eval_recall']:.4f}")
-print(f"  Test F1:        {test_results['eval_f1']:.4f}")
 
-# ==========================================
-# Step 5: Save & Export to ONNX
-# ==========================================
-print("\n[Step 5] Saving model and exporting to ONNX...")
+def evaluate_on_test(trainer: Trainer, tokenizer: PreTrainedTokenizer, test_path: str):
+    """Evaluates the trained model against a holdout test dataset."""
+    print("\n[Step 4] Evaluating on test set...")
+    
+    with open(test_path, "r", encoding="utf-8") as f:
+        test_data = json.load(f)
 
-save_path = "./my_trained_albert"
-model.save_pretrained(save_path)
-tokenizer.save_pretrained(save_path)
+    test_dataset_raw = Dataset.from_list(test_data)
+    
+    def tokenize_function(examples):
+        tokenized = tokenizer(
+            examples["query"], examples["property"],
+            padding="max_length", max_length=MAX_LENGTH, truncation=True,
+        )
+        tokenized["labels"] = examples["label"]
+        return tokenized
+        
+    test_dataset = test_dataset_raw.map(tokenize_function, batched=True)
+    test_results = trainer.evaluate(test_dataset)
 
-onnx_output_path = "my_custom_model.onnx"
+    print(f"  Test Accuracy:  {test_results['eval_accuracy']:.4f}")
+    print(f"  Test Precision: {test_results['eval_precision']:.4f}")
+    print(f"  Test Recall:    {test_results['eval_recall']:.4f}")
+    print(f"  Test F1:        {test_results['eval_f1']:.4f}")
 
-dummy_query = "預算五千套房"
-dummy_property = "套房 南區 5000元"
-inputs = tokenizer(
-    dummy_query, dummy_property,
-    return_tensors="pt",
-    max_length=MAX_LENGTH,
-    padding="max_length",
-    truncation=True,
-)
 
-model.to("cpu")
-model.eval()
+def export_to_onnx(model: PreTrainedModel, tokenizer: PreTrainedTokenizer):
+    """Saves PyTorch model and tokenizers, then exports architecture to ONNX format."""
+    print("\n[Step 5] Saving model and exporting to ONNX...")
 
-torch.onnx.export(
-    model,
-    (
-        inputs["input_ids"].to("cpu"),
-        inputs["attention_mask"].to("cpu"),
-        inputs["token_type_ids"].to("cpu"),
-    ),
-    onnx_output_path,
-    export_params=True,
-    opset_version=18,
-    do_constant_folding=True,
-    input_names=["input_ids", "attention_mask", "token_type_ids"],
-    output_names=["logits"],
-    dynamic_axes={
-        "input_ids": {0: "batch_size", 1: "sequence_length"},
-        "attention_mask": {0: "batch_size", 1: "sequence_length"},
-        "token_type_ids": {0: "batch_size", 1: "sequence_length"},
-        "logits": {0: "batch_size", 1: "num_labels"},
-    },
-)
+    model.save_pretrained(SAVED_MODEL_DIR)
+    tokenizer.save_pretrained(SAVED_MODEL_DIR)
 
-print(f"\n  Model exported to: {onnx_output_path}")
-print("=" * 60)
+    dummy_query = "預算五千套房"
+    dummy_property = "套房 南區 5000元"
+    inputs = tokenizer(
+        dummy_query, dummy_property,
+        return_tensors="pt",
+        max_length=MAX_LENGTH,
+        padding="max_length",
+        truncation=True,
+    )
 
+    model.to("cpu")
+    model.eval()
+
+    torch.onnx.export(
+        model,
+        (
+            inputs["input_ids"].to("cpu"),
+            inputs["attention_mask"].to("cpu"),
+            inputs["token_type_ids"].to("cpu"),
+        ),
+        ONNX_OUTPUT_PATH,
+        export_params=True,
+        opset_version=18,
+        do_constant_folding=True,
+        input_names=["input_ids", "attention_mask", "token_type_ids"],
+        output_names=["logits"],
+        dynamic_axes={
+            "input_ids": {0: "batch_size", 1: "sequence_length"},
+            "attention_mask": {0: "batch_size", 1: "sequence_length"},
+            "token_type_ids": {0: "batch_size", 1: "sequence_length"},
+            "logits": {0: "batch_size", 1: "num_labels"},
+        },
+    )
+    print(f"\n  Model exported to: {ONNX_OUTPUT_PATH}")
+    print("=" * 60)
+
+
+def main():
+    tokenizer = BertTokenizerFast.from_pretrained(MODEL_CHECKPOINT)
+    
+    train_dataset_raw, eval_dataset_raw = load_and_balance_data(
+        "recommendation_train.json", "recommendation_dev.json"
+    )
+    
+    train_dataset, eval_dataset = tokenize_datasets(train_dataset_raw, eval_dataset_raw, tokenizer)
+    
+    trainer, model = train_model(train_dataset, eval_dataset)
+    
+    evaluate_on_test(trainer, tokenizer, "recommendation_test.json")
+    export_to_onnx(model, tokenizer)
+
+
+if __name__ == "__main__":
+    main()
