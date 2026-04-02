@@ -10,7 +10,8 @@ import sys
 def wipe_onnx_shapes(model_path: str) -> str:
     """Removes shape info from ONNX to prevent ShapeInferenceError during quantization."""
     model = onnx.load(model_path)
-    model.graph.value_info.clear()
+    while len(model.graph.value_info) > 0:
+        model.graph.value_info.pop()
     
     for i in model.graph.input:
         if i.type.tensor_type.HasField("shape"):
