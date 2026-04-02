@@ -42,7 +42,7 @@ graph TD
 ```
 
 ### 1. 資料轉換與合成 (Data Preparation)
-系統的第一步需要將原本死板的表格資料轉換成能讓 Transformer 理解的形式：
+系統的第一步需要將原本的表格資料轉換成能讓 Transformer 理解的形式：
 * **清洗與萃取 (`precompute_embeddings.py`)**: 提取 `nchu_rental_info.csv` 中的資訊（租金、物件名稱、距離、家具），將其串接成自然語言的一段「房屋客觀描述字串」，並轉出 `property_data.json` 供網站載入查閱。
 * **合成訓練樣本 (`generate_dataset.py`)**: 為了訓練模型具備推論能力，此腳本會模擬各式各樣的學生口語（如：「預算 5k」、「想要單人套房」），並透過動態模板建立高達 10,000 筆的正/負配對樣本，拆分為 Train, Dev, Test 資料集供訓練使用。
 
