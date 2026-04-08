@@ -44,10 +44,10 @@ graph TD
 ### 1. 資料轉換與合成 (Data Preparation)
 系統的第一步需要將原本的表格資料轉換成能讓 Transformer 理解的形式：
 * **清洗與萃取 (`precompute_embeddings.py`)**: 提取 `nchu_rental_info.csv` 中的資訊（租金、物件名稱、距離、家具），將其串接成自然語言的一段「房屋客觀描述字串」，並轉出 `property_data.json` 供網站載入查閱。
-* **合成訓練樣本 (`generate_dataset.py`)**: 為了訓練模型具備推論能力，此腳本會模擬各式各樣的學生口語（如：「預算 5k」、「想要單人套房」），並透過動態模板建立高達 10,000 筆的正/負配對樣本，拆分為 Train, Dev, Test 資料集供訓練使用。
+* **合成訓練樣本 (`generate_dataset.py`)**: 腳本模擬各式各樣的學生口語（如：「預算 5k」、「想要單人套房」），並透過動態模板建立高達 10,000 筆的正/負配對樣本，拆分為 Train, Dev, Test 資料集供訓練使用。
 
 ### 2. 模型核心訓練 (Model Training & Quantization)
-我們採用 `clue/albert_chinese_tiny` 作為預訓練基底模型，因為它參數少但中文語義理解極佳。
+我們採用 `clue/albert_chinese_tiny` 作為預訓練基底模型。
 * **二元語意分類 (`train_and_export_onnx.py`)**: 讀入上述的 JSON 樣本，透過 `Trainer` 微調。模型主要學會將輸入的句子透過 `[CLS] 查詢 [SEP] 房屋描述 [SEP]` 的結構，判斷這段要求與房源是否匹配。
 * **量化壓縮與防禦 (`quantize_model.py`)**: 訓練完成後，為使前端瀏覽器不過度占用記憶體，我們會將 ONNX 架構進行權重量化 (Int8)。此腳本還會負責抹除 `ONNX Protocol Buffers` 中殘留的動態 Shape，藉此防止前端推理時觸發 `ShapeInferenceError`。量化後模型體積由原先近 16MB 壓縮至約 7.8MB 左右。
 
@@ -64,16 +64,15 @@ graph TD
 
 #### B. 第二階段：神經網路語意重排 (Neural Re-ranking)
 1. **ALBERT 深度比對**: 前端使用 `@xenova/transformers` 的 WASM Web Assembly 對 Top 30 房源與使用者的搜查字眼進行 Tokenize 切詞，然後餵給量化後的 ONNX Runtime。
-2. **對數轉換 (Logits to Probability)**: 讀取 `logits`，利用 Softmax 取出 `True / MATCH` 的語意機率指數。模型會識別「近興大」與「學校旁邊」在語法上的等價關係。
+2. **對數轉換(Logits to Probability)**: 讀取 `logits`，利用 Softmax 取出 `True / MATCH` 的語意機率指數。模型會識別「近興大」與「學校旁邊」在語法上的等價關係。
 3. **混合加權機制 (Score Blending)**:
    - 最終配對相符分數 = **(規則得分 RMS * 40%) + (AI 語義得分 * 60%)**。
-   - 保底機制：若 RMS 滿分且判讀正確，該房源分數至少保證在 85 分以上，從而確保系統不會產生反直覺排序。
+   - 保底機制：若 RMS 滿分且判讀正確，該房源分數至少保證在 85 分以上，確保不會產生反直覺排序。
 ---
 
 ## 本地部署與開發指南
 
 ### 1. 執行網頁推薦系統
-本專案為靜態網頁架構，僅需一個支援靜態服務的本機伺服器即可完美執行：
 ```bash
 # 開啟終端機並在專案根目錄下執行 (Mac/Linux/Windows):
 python3 -m http.server 8000
@@ -92,17 +91,16 @@ source .venv/bin/activate
 pip install torch transformers datasets numpy onnx onnxruntime
 ```
 
-#### 完整重訓工作流操作
-請嚴格依序執行下方腳本來重置並佈署新模型：
+#### 完整工作流操作
 
 ```bash
-# 步驟 1: 生成自然語言問答合成訓練資料庫
+# 步驟 1: 生成訓練資料庫
 python generate_dataset.py
 
 # 步驟 2: 微調 ALBERT 模型並打包為原版 ONNX
 python train_and_export_onnx.py
 
-# 步驟 3: 抹除衝突 Shape 並壓縮權重至 Int8 (生成 my_custom_model_quant.onnx)
+# 步驟 3: 壓縮權重至 Int8
 python quantize_model.py
 
 # 步驟 4: 取代舊有模型檔案 (手動覆蓋至前端載入區)
