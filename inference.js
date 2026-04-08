@@ -198,6 +198,10 @@ function calculateRuleBasedScore(candidates, queryKeywords, text, constraints) {
         kw.endsWith('路') || kw.endsWith('街') || kw.endsWith('大道') ||
         kw.includes('區') || kw.includes('正門') || kw.includes('側門') || kw.includes('男宿')
     );
+    
+    // Extracted facilities and features for hard rule tracking
+    const facilitiesList = ['冷氣', '洗衣', '冰箱', '電視', '書桌', '床', '衣櫃', '熱水', '電梯', '陽台', '機車', '車位', '網路', '網路費', '第四台', '寵物', '貓', '狗', '水費', '電費', '瓦斯', '管理費'];
+    const mentionedFacilities = facilitiesList.filter(f => text.includes(f));
 
     const preScored = candidates.map(prop => {
         let kScore = 0, matchCount = 0, totalRequirements = 0;
@@ -229,6 +233,17 @@ function calculateRuleBasedScore(candidates, queryKeywords, text, constraints) {
             const diff = Math.abs(prop.rent - userBudget);
             if (diff < 500) matchCount++, kScore += 5;
             else if (prop.rent <= userBudget) matchCount += 0.5, kScore += 2;
+        }
+        
+        if (mentionedFacilities.length > 0) {
+            let fMatches = 0;
+            mentionedFacilities.forEach(f => {
+                if (prop.text.includes(f) || (prop.furniture && prop.furniture.includes(f)) || (prop.notes && prop.notes.includes(f))) fMatches++;
+            });
+            // Each requested facility acts as an individual requirement
+            totalRequirements += mentionedFacilities.length;
+            matchCount += fMatches;
+            kScore += fMatches * 3;
         }
 
         const rms = totalRequirements > 0 ? (matchCount / totalRequirements) : 1.0;
