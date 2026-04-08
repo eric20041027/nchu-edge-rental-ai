@@ -225,10 +225,20 @@ function calculateRuleBasedScore(candidates, queryKeywords, text, constraints) {
         }
 
         if (hasBudgetMention) {
-            totalRequirements++;
-            const diff = Math.abs(prop.rent - userBudget);
-            if (diff < 500) matchCount++, kScore += 5;
-            else if (prop.rent <= userBudget) matchCount += 0.5, kScore += 2;
+            // Budget is a critical metric, weighted 2x heavier than other requirements
+            totalRequirements += 2;
+            const diff = prop.rent - userBudget;
+            if (Math.abs(diff) <= 500) {
+                matchCount += 2; // Perfect or within +/- 500 tolerance
+                kScore += 10;
+            } else if (prop.rent < userBudget) {
+                matchCount += 1.5; // Well below budget, technically good but less relevant if looking for a specific tier
+                kScore += 3;
+            } else if (diff <= 1500) {
+                matchCount += 0.5; // Slightly over budget
+                kScore += 1;
+            }
+            // If diff > 1500 over budget, matchCount gets 0 (heavy penalty to the RMS)
         }
 
         const rms = totalRequirements > 0 ? (matchCount / totalRequirements) : 1.0;
