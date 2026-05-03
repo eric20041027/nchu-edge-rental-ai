@@ -19,6 +19,8 @@ from transformers import (
     PreTrainedTokenizer
 )
 from datasets import Dataset
+from torch import nn
+
 
 # Global Configurations
 MODEL_CHECKPOINT = "hfl/rbt3"   # Upgraded: 3-layer Chinese RoBERTa (better semantic understanding)
@@ -28,8 +30,8 @@ SAVED_MODEL_DIR = os.path.join(os.path.dirname(__file__), "../../saved_models/rb
 
 def load_and_balance_data(train_path: str, dev_path: str) -> Tuple[Dataset, Dataset]:
     """Loads JSON datasets and balances the training classes."""
-    print("=" * 60)
-    print("[Step 1] Loading and balancing datasets...")
+    print("[Load Data] Loading and balancing datasets...")
+
 
     with open(train_path, "r", encoding="utf-8") as f:
         train_data = json.load(f)
@@ -58,6 +60,27 @@ def load_and_balance_data(train_path: str, dev_path: str) -> Tuple[Dataset, Data
     return Dataset.from_list(train_data), Dataset.from_list(dev_data)
 
 
+class WeightedTrainer(Trainer):
+    """Custom Trainer to support sample weighting based on graded relevance."""
+    def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
+        labels = inputs.get("labels")
+        weights = inputs.pop("sample_weight", None)
+        
+        outputs = model(**inputs)
+        logits = outputs.get("logits")
+        
+        if weights is not None:
+            # CrossEntropyLoss with reduction='none' to apply per-sample weights
+            loss_fct = nn.CrossEntropyLoss(reduction='none')
+            loss = loss_fct(logits.view(-1, self.model.config.num_labels), labels.view(-1))
+            loss = (loss * weights).mean()
+        else:
+            loss = outputs.get("loss")
+            
+        return (loss, outputs) if return_outputs else loss
+
+
+
 def tokenize_datasets(
     train_dataset: Dataset, 
     eval_dataset: Dataset, 
@@ -75,12 +98,19 @@ def tokenize_datasets(
             truncation=True,
         )
         tokenized["labels"] = examples["label"]
+        
+        # Map relevance (0-3) to sample weights
+        # Perfect Match (3) = 2.0, Good (2) = 1.5, Partial (1) = 1.0, Neg (0) = 1.0
+        rel_map = {3: 2.0, 2: 1.5, 1: 1.0, 0: 1.0}
+        tokenized["sample_weight"] = [float(rel_map.get(r, 1.0)) for r in examples["relevance"]]
+        
         return tokenized
 
     train_tokenized = train_dataset.map(tokenize_function, batched=True)
     eval_tokenized = eval_dataset.map(tokenize_function, batched=True)
     
     return train_tokenized, eval_tokenized
+
 
 
 def compute_metrics(p: Tuple[np.ndarray, np.ndarray]) -> Dict[str, float]:
@@ -97,12 +127,19 @@ def compute_metrics(p: Tuple[np.ndarray, np.ndarray]) -> Dict[str, float]:
     recall = tp / (tp + fn) if (tp + fn) > 0 else 0
     f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
 
-    return {"accuracy": accuracy, "precision": precision, "recall": recall, "f1": f1}
+    return {
+        "accuracy": round(float(accuracy), 3),
+        "precision": round(float(precision), 3),
+        "recall": round(float(recall), 3),
+        "f1": round(float(f1), 3)
+    }
+
 
 
 def train_model(train_dataset: Dataset, eval_dataset: Dataset) -> Tuple[Trainer, PreTrainedModel]:
     """Initializes model, configures Trainer, and fine-tunes ALBERT."""
-    print("\n[Step 3] Loading model and starting fine-tuning...")
+    print("\n[Train] Starting fine-tuning (RBT3)...")
+
 
     model = AutoModelForSequenceClassification.from_pretrained(
         MODEL_CHECKPOINT,
@@ -133,7 +170,7 @@ def train_model(train_dataset: Dataset, eval_dataset: Dataset) -> Tuple[Trainer,
         save_total_limit=3,
     )
 
-    trainer = Trainer(
+    trainer = WeightedTrainer(
         model=model,
         args=training_args,
         train_dataset=train_dataset,
@@ -147,13 +184,14 @@ def train_model(train_dataset: Dataset, eval_dataset: Dataset) -> Tuple[Trainer,
         ]
     )
 
+
     trainer.train()
     return trainer, model
 
 
 def evaluate_on_test(trainer: Trainer, tokenizer: PreTrainedTokenizer, test_path: str):
     """Evaluates the trained model against a holdout test dataset."""
-    print("\n[Step 4] Evaluating on test set...")
+    print("\n[Evaluate] Testing on holdout set...")
     
     with open(test_path, "r", encoding="utf-8") as f:
         test_data = json.load(f)
@@ -169,17 +207,19 @@ def evaluate_on_test(trainer: Trainer, tokenizer: PreTrainedTokenizer, test_path
         return tokenized
         
     test_dataset = test_dataset_raw.map(tokenize_function, batched=True)
-    test_results = trainer.evaluate(test_dataset)
+    results = trainer.evaluate(test_dataset)
 
-    print(f"  Test Accuracy:  {test_results['eval_accuracy']:.4f}")
-    print(f"  Test Precision: {test_results['eval_precision']:.4f}")
-    print(f"  Test Recall:    {test_results['eval_recall']:.4f}")
-    print(f"  Test F1:        {test_results['eval_f1']:.4f}")
+    print(f"  Accuracy:  {results['eval_accuracy']:.3f}")
+    print(f"  Precision: {results['eval_precision']:.3f}")
+    print(f"  Recall:    {results['eval_recall']:.3f}")
+    print(f"  F1 Score:  {results['eval_f1']:.3f}")
+
 
 
 def export_to_onnx(model: PreTrainedModel, tokenizer: PreTrainedTokenizer):
     """Saves PyTorch model and tokenizers, then exports architecture to ONNX format."""
-    print("\n[Step 5] Saving model and exporting to ONNX...")
+    print("\n[Export] Saving model and exporting to ONNX...")
+
 
     model.save_pretrained(SAVED_MODEL_DIR)
     tokenizer.save_pretrained(SAVED_MODEL_DIR)

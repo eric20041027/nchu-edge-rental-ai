@@ -306,6 +306,83 @@ def is_compatible(query: str, prop: Dict[str, Any]) -> bool:
     return True
 
 
+def compute_relevance_score(query: str, prop: Dict[str, Any]) -> int:
+    """Computes a graded relevance score (0-3) based on 4 verifiable dimensions.
+    Allows for 'Soft Mismatches' to enable meaningful NDCG evaluation.
+    
+    Grading Logic:
+      - 0: Hard Conflict (Gender mismatch, Room type mismatch, explicit exclusions)
+      - 1: Partial Match (Only location or 1 dimension matches)
+      - 2: Good Match (Matches most dimensions, minor mismatch like slightly over budget)
+      - 3: Perfect Match (All specified constraints satisfied)
+    """
+    
+    # --- Part A: Hard Conflicts (Must be 0) ---
+    
+    # 1. Gender Restriction
+    for note in prop.get("notes", []):
+        if "限女" in note and "限男" in query: return 0
+        if "限男" in note and "限女" in query: return 0
+        if "限男" in note and "限妹子" in query: return 0 # Colloquial
+
+    # 2. Room Type Mismatch (Fundamental)
+    room_types = ["套房", "雅房", "住宅"]
+    query_room = next((rt for rt in room_types if rt in query), None)
+    if query_room and query_room not in prop.get("room_type", ""):
+        return 0
+
+    # 3. Explicit Exclusions
+    if re.search(r"(謝絕|不要|拒絕|禁|❌|不接受)[^。！？\n]*(頂加|加蓋|頂樓)", query):
+        if "頂加" in prop.get("building_type", "") or "加蓋" in prop.get("floor", "") or "加蓋" in " ".join(prop.get("notes", [])):
+            return 0
+            
+    # --- Part B: Dimension Scoring (Soft Matching) ---
+    satisfied = 0
+    total_specified = 0
+
+    # 1. Budget (Soft: 10% buffer for score 2)
+    budget_match = re.search(r"(\d+)(?:元)?(?:以下|以內|內)", query)
+    if budget_match:
+        total_specified += 1
+        ceiling = int(budget_match.group(1))
+        if prop["rent"] <= ceiling:
+            satisfied += 1
+        elif prop["rent"] <= ceiling * 1.15: # Soft match
+            satisfied += 0.5 
+
+    # 2. Features / Furniture
+    features_needed = [feat for feat, terms in Templates.FURNITURE.items() if any(t in query for t in terms)]
+    if features_needed:
+        total_specified += 1
+        found_count = sum(1 for feat in features_needed if any(feat in f for f in prop.get("furniture", [])))
+        satisfied += (found_count / len(features_needed))
+
+    # 3. Location / Region
+    region_specified = next((reg for reg in ["南區", "大里", "東區", "西區", "北區", "烏日"] if reg in query), None)
+    roads_in_query = re.findall(r"([^區市台]*(?:路|街|大道)(?:[一二三四五六七八九十]|[\d])?段?)", query)
+    
+    if region_specified or roads_in_query:
+        total_specified += 1
+        loc_match = False
+        if region_specified and (region_specified in prop.get("address", "") or region_specified in prop.get("region", "")):
+            loc_match = True
+        if roads_in_query and any(road in prop.get("address", "") for road in roads_in_query):
+            loc_match = True
+        
+        if loc_match: satisfied += 1
+
+    # --- Part C: Final Mapping ---
+    if total_specified == 0:
+        return 3 # No specific constraints, default to perfect
+        
+    score_ratio = satisfied / total_specified
+    
+    if score_ratio >= 0.95: return 3
+    if score_ratio >= 0.6:  return 2
+    if score_ratio >= 0.2:  return 1
+    return 0
+
+
 def create_dataset_pairs(properties: List[Dict[str, Any]], neg_per_pos: int = 1) -> List[Dict[str, Any]]:
     """Constructs matching and non-matching pairs for sequence classification."""
     samples = []
@@ -315,7 +392,8 @@ def create_dataset_pairs(properties: List[Dict[str, Any]], neg_per_pos: int = 1)
         queries = QueryGenerator.build_queries(prop)
 
         for query in queries:
-            samples.append({"query": query, "property": prop_texts[idx], "label": 1, "property_idx": idx})
+            relevance = compute_relevance_score(query, prop)
+            samples.append({"query": query, "property": prop_texts[idx], "label": 1, "relevance": relevance, "property_idx": idx})
             
             neg_found = 0
             other_indices = [i for i in range(len(properties)) if i != idx]
@@ -340,7 +418,7 @@ def create_dataset_pairs(properties: List[Dict[str, Any]], neg_per_pos: int = 1)
                 random.shuffle(hard_candidates)
                 
                 for neg_idx in hard_candidates[:neg_per_pos]:
-                    samples.append({"query": query, "property": prop_texts[neg_idx], "label": 0, "property_idx": neg_idx})
+                    samples.append({"query": query, "property": prop_texts[neg_idx], "label": 0, "relevance": 0, "property_idx": neg_idx})
 
     random.shuffle(samples)
     return samples
@@ -374,7 +452,8 @@ def main():
             for idx, prop in enumerate(properties):
                 # 如果符合相容性，視為正樣本
                 if is_compatible(query, prop):
-                    fb_samples.append({"query": query, "property": prop_texts[idx], "label": 1})
+                    rel = compute_relevance_score(query, prop)
+                    fb_samples.append({"query": query, "property": prop_texts[idx], "label": 1, "relevance": rel})
                     pos_found = True
                     break
             
@@ -384,7 +463,7 @@ def main():
                 random.shuffle(other_indices)
                 for neg_idx in other_indices:
                     if not is_compatible(query, properties[neg_idx]):
-                        fb_samples.append({"query": query, "property": prop_texts[neg_idx], "label": 0})
+                        fb_samples.append({"query": query, "property": prop_texts[neg_idx], "label": 0, "relevance": 0})
                         break
                         
         print(f"  Generated {len(fb_samples)} pairs from FB queries.")
@@ -400,7 +479,7 @@ def main():
     train_data, dev_data, test_data = all_samples[:train_bound], all_samples[train_bound:dev_bound], all_samples[dev_bound:]
 
     print(f"\nStep 3: Saving datasets...")
-    def clean(samples): return [{"query": s["query"], "property": s["property"], "label": s["label"]} for s in samples]
+    def clean(samples): return [{"query": s["query"], "property": s["property"], "label": s["label"], "relevance": s.get("relevance", s["label"])} for s in samples]
 
     for filename, subset in zip(
         ["../../data/processed/recommendation_train.json", "../../data/processed/recommendation_dev.json", "../../data/processed/recommendation_test.json"], 
