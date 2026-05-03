@@ -5,7 +5,7 @@ Reduces model size and speeds up CPU inference with minimal accuracy drop.
 """
 import os
 import onnx
-from onnxruntime.quantization import quantize_dynamic, QuantType
+from onnxruntime.quantization import quantize_dynamic, QuantType, preprocess
 
 BASE_DIR     = os.path.dirname(__file__)
 INPUT_MODEL  = os.path.join(BASE_DIR, "../../frontend/models/custom_onnx_model_dir/my_custom_model.onnx")
@@ -15,14 +15,19 @@ def main():
     print("=" * 60)
     print("Quantizing ONNX model (FP32 -> INT8 Dynamic)...")
 
-    # quantize_dynamic with op_types_to_quantize limits to MatMul only,
-    # which avoids the shape-inference issue triggered on LayerNorm/Gather nodes.
+    # 解決 (768) vs (2) 衝突：手動清除模型中的舊有形狀資訊
+    print("  Cleaning model shape info to avoid conflicts...")
+    model = onnx.load(INPUT_MODEL)
+    for _ in range(len(model.graph.value_info)):
+        model.graph.value_info.pop()
+    onnx.save(model, INPUT_MODEL)
+
     quantize_dynamic(
         model_input=INPUT_MODEL,
         model_output=OUTPUT_MODEL,
         op_types_to_quantize=["MatMul", "Gemm"],
         weight_type=QuantType.QInt8,
-        use_external_data_format=True,   # Model has external data (*.onnx.data)
+        use_external_data_format=False, # 產生單一檔案，方便前端部署
         extra_options={"MatMulConstBOnly": True},
     )
 

@@ -34,3 +34,6 @@ _agent/
 # 訓練相關 (非網頁運行必要)
 test_custom_model.html
 architecture.txt
+
+# Temporary checkpoints
+temp_checkpoints/

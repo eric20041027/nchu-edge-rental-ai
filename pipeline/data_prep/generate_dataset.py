@@ -436,7 +436,25 @@ def main():
     print(f"  Loaded {len(properties)} properties")
 
     print("\nStep 2: Generating query-property pairs...")
-    all_samples = create_dataset_pairs(properties, neg_per_pos=1)
+    # 增加 num_queries 從 40 到 60，neg_per_pos 從 1 到 2
+    all_samples = []
+    prop_texts = [property_to_text(p) for p in properties]
+    for idx, prop in enumerate(properties):
+        queries = QueryGenerator.build_queries(prop, num_queries=60)
+        for query in queries:
+            relevance = compute_relevance_score(query, prop)
+            all_samples.append({"query": query, "property": prop_texts[idx], "label": 1, "relevance": relevance, "property_idx": idx})
+            
+            # 增加負樣本數量
+            other_indices = [i for i in range(len(properties)) if i != idx]
+            random.shuffle(other_indices)
+            neg_count = 0
+            for neg_idx in other_indices:
+                if not is_compatible(query, properties[neg_idx]):
+                    all_samples.append({"query": query, "property": prop_texts[neg_idx], "label": 0, "relevance": 0, "property_idx": neg_idx})
+                    neg_count += 1
+                if neg_count >= 2: # 每個正樣本配 2 個負樣本
+                    break
     
     # 載入 FB 真實貼文
     fb_queries_path = os.path.join(os.path.dirname(__file__), "../../data/raw/fb_queries.json")

@@ -23,8 +23,11 @@ from transformers import (
     PreTrainedModel,
 
 
-    PreTrainedTokenizer
+    PreTrainedTokenizer,
+    logging
 )
+logging.set_verbosity_error() # Suppress "Some weights were not initialized" and config logs
+
 from datasets import Dataset
 from torch import nn
 
@@ -153,15 +156,15 @@ class CleanLogCallback(TrainerCallback):
             lr = logs.get("learning_rate", 0)
             loss = logs.get("loss", 0)
             epoch = logs.get("epoch", 0)
-            print(f"  Epoch {epoch:>4.1f} | Loss: {loss:>6.3f} | LR: {lr:>8.2e}")
+            print(f"  Epoch {epoch:>5.2f} | Loss: {loss:>8.5f} | LR: {lr:>9.2e}")
         
         elif "eval_loss" in logs:
             e_loss = logs.get("eval_loss", 0)
             e_acc = logs.get("eval_accuracy", 0)
             e_f1 = logs.get("eval_f1", 0)
-            print("-" * 45)
-            print(f"  VALIDATION | Loss: {e_loss:>6.3f} | Acc: {e_acc:>6.3f} | F1: {e_f1:>6.3f}")
-            print("-" * 45)
+            print("-" * 55)
+            print(f"  VALIDATION | Loss: {e_loss:>8.5f} | Acc: {e_acc:>8.5f} | F1: {e_f1:>8.5f}")
+            print("-" * 55)
 
 
 def train_model(train_dataset: Dataset, eval_dataset: Dataset) -> Tuple[Trainer, PreTrainedModel]:
@@ -197,7 +200,8 @@ def train_model(train_dataset: Dataset, eval_dataset: Dataset) -> Tuple[Trainer,
         greater_is_better=True,
         report_to="none",
         save_total_limit=3,
-        disable_tqdm=False,               # Progress bar restored as requested
+        disable_tqdm=False,               # 恢復進度條
+        log_level="error",                # 隱藏內部日誌
     )
 
 
@@ -212,13 +216,6 @@ def train_model(train_dataset: Dataset, eval_dataset: Dataset) -> Tuple[Trainer,
             CleanLogCallback()
         ]
     )
-
-    # Remove the default printer to keep logs clean
-    trainer.remove_callback(PrinterCallback)
-
-
-
-
 
     trainer.train()
     return trainer, model
@@ -241,13 +238,13 @@ def evaluate_on_test(trainer: Trainer, tokenizer: PreTrainedTokenizer, test_path
         tokenized["labels"] = examples["label"]
         return tokenized
         
-    test_dataset = test_dataset_raw.map(tokenize_function, batched=True)
+    test_dataset = test_dataset_raw.map(tokenize_function, batched=True, remove_columns=test_dataset_raw.column_names)
     results = trainer.evaluate(test_dataset)
 
-    print(f"  Accuracy:  {results['eval_accuracy']:.3f}")
-    print(f"  Precision: {results['eval_precision']:.3f}")
-    print(f"  Recall:    {results['eval_recall']:.3f}")
-    print(f"  F1 Score:  {results['eval_f1']:.3f}")
+    print(f"  Accuracy:  {results.get('eval_accuracy', 0):.5f}")
+    print(f"  Precision: {results.get('eval_precision', 0):.5f}")
+    print(f"  Recall:    {results.get('eval_recall', 0):.5f}")
+    print(f"  F1 Score:  {results.get('eval_f1', 0):.5f}")
 
 
 

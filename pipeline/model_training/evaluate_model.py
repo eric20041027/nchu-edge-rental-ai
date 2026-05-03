@@ -62,8 +62,9 @@ def main():
     session = ort.InferenceSession(MODEL_PATH)
 
     # Phase 1: Binary Classification
-    print("[Phase 1] Binary Classification Metrics (n=200)")
-    sample_test = random.sample(test_data, 200)
+    print("[Phase 1] Binary Classification Metrics (n=1000)")
+    sample_size = min(len(test_data), 1000)
+    sample_test = random.sample(test_data, sample_size)
 
     test_queries = [d["query"] for d in sample_test]
     test_props = [d["property"] for d in sample_test]
@@ -80,14 +81,15 @@ def main():
     recall = tp / (tp + fn) if (tp + fn) > 0 else 0
     f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
     
-    print(f"  Accuracy: {acc:.3f} | F1: {f1:.3f}")
+    print(f"  Accuracy: {acc:.5f} | F1: {f1:.5f}")
 
     # Phase 2: Ranking Pipeline
     print("\n[Phase 2] Ranking Metrics (Top-30 Re-ranking Simulation)")
 
     pos_queries = list(set([d["query"] for d in test_data if d["label"] == 1]))
     random.seed(42)
-    eval_queries = random.sample(pos_queries, 50) # Sample 50 queries for speed
+    num_eval_queries = min(len(pos_queries), 200)
+    eval_queries = random.sample(pos_queries, num_eval_queries) # Increased to 200 queries
     
     ndcg_list, mrr_list = [], []
     ndcg_graded_list = []
@@ -95,7 +97,7 @@ def main():
     sat_at_3, sat_at_5 = 0, 0
     
     for i, query in enumerate(eval_queries):
-        if i % 10 == 0: print(f"  Evaluating query {i+1}/50...")
+        if i % 20 == 0: print(f"  Evaluating query {i+1}/{num_eval_queries}...")
 
         
         # Step A: Pre-filter (Plausible candidates)
@@ -155,10 +157,10 @@ def main():
 
     print("-" * 40)
     print("Final Ranking Report:")
-    print(f"  Binary NDCG @ 5:   {np.mean(ndcg_list):.3f}")
-    print(f"  Graded NDCG @ 5:   {np.mean(ndcg_graded_list):.3f}")
-    print(f"  Mean MRR:          {np.mean(mrr_list):.3f}")
-    print(f"  Avg Satisfaction:  {sat_at_3/50:.3f}")
+    print(f"  Binary NDCG @ 5:   {np.mean(ndcg_list):.5f}")
+    print(f"  Graded NDCG @ 5:   {np.mean(ndcg_graded_list):.5f}")
+    print(f"  Mean MRR:          {np.mean(mrr_list):.5f}")
+    print(f"  Avg Satisfaction:  {(sat_at_3 + sat_at_5)/(2 * num_eval_queries):.5f}")
     
     total_labels = sum(label_counts.values())
     print("-" * 40)
