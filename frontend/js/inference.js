@@ -39,7 +39,7 @@ export async function initNLP(onProgress) {
             if (onProgress) onProgress({ status: 'progress', file: 'tokenizer.json', loaded: 30, total: 100 });
 
             if (onProgress) onProgress({ status: 'progress', file: 'my_custom_model_quant.onnx', loaded: 40, total: 100 });
-            const modelUrl = 'models/custom_onnx_model_dir/my_custom_model_quant.onnx?v=20260503';
+            const modelUrl = 'models/custom_onnx_model_dir/my_custom_model_quant.onnx?v=20260503_V15';
 
             console.log("Creating InferenceSession...");
             session = await window.ort.InferenceSession.create(modelUrl, {

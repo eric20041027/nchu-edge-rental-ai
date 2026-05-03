@@ -283,7 +283,7 @@ def export_to_onnx(model: PreTrainedModel, tokenizer: PreTrainedTokenizer):
         ),
         ONNX_OUTPUT_PATH,
         export_params=True,
-        opset_version=18,
+        opset_version=15,
         do_constant_folding=True,
         input_names=["input_ids", "attention_mask", "token_type_ids"],
         output_names=["logits"],
