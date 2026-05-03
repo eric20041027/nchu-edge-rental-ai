@@ -80,14 +80,7 @@ pip install torch transformers datasets numpy onnx onnxruntime requests onnxrunt
 ```
 
 ### 3. 數據刷新與重訓全流程 (End-to-End Workflow)
-若修改了原始資料或需要更新模型，建議直接執行自動化腳本：
-```bash
-python run_pipeline.py
-```
-該腳本會依序完成：更新通勤時間 ➔ 生成前端 JSON ➔ 數據集擴張 ➔ 模型訓練與 ONNX 導出 ➔ INT8 量化 ➔ 最終效能評估。
-
-#### 🛠 手動分步執行
-若需調試特定步驟，可依序執行：
+若修改了原始資料或需要更新模型，請依序執行：
 ```bash
 # 1. 更新真實路網距離與時間 (使用 OSRM)
 python pipeline/data_prep/update_commute_data.py
