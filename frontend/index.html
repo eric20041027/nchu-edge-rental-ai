@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="中興大學 AI 租屋推薦系統，輸入需求即可獲得最適合的租屋選項。">
+    <title>興大 AI 租屋推薦</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="data:,">
+
+</head>
+
+<body>
+    <div class="bg-gradient-mesh"></div>
+    <div class="app-container">
+        <nav class="navbar">
+            <div class="nav-container">
+                <h1 class="logo"><i class="fa-solid fa-house-chimney"></i> 興大 AI 租屋推薦</h1>
+            </div>
+        </nav>
+
+        <main class="main-content" id="mainContent">
+
+            <div class="welcome-screen" id="welcomeScreen">
+                <h2>告訴 AI 你的找房需求</h2>
+                <p>簡單輸入幾個條件，AI 將即時為你配對中興最佳租屋</p>
+
+                <div class="suggestion-chips">
+                    <span class="chip">預算 6000 以下</span>
+                    <span class="chip">位於學府路</span>
+                    <span class="chip">有冰箱陽台的套房</span>
+                </div>
+            </div>
+
+            <div class="results-screen" id="resultsScreen" style="display: none;">
+
+                <div class="status-header" id="processingStatus" style="display: none;">
+                    <div class="spinner-small"></div>
+                    <span>AI 正在即時分析您的需求...</span>
+                </div>
+
+                <div class="property-grid" id="recommendationList">
+                    <!-- Javascript 會將 property-card 插入此處 -->
+                </div>
+            </div>
+        </main>
+
+        <footer class="input-footer">
+            <div class="input-container">
+                <div class="ai-prompt-box">
+                    <textarea id="userRequirement" placeholder="輸入租屋需求，例如：預算 6000 以內、有冷氣..."></textarea>
+                    <button class="btn-send" id="btnAnalyze" aria-label="傳送"><i
+                            class="fa-solid fa-arrow-up"></i></button>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- AI Computing / Loading Overlay -->
+    <div id="aiLoadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="overlay-content">
+            <div class="premium-spinner">
+                <div class="inner-ring"></div>
+                <div class="outer-ring"></div>
+                <i class="fa-solid fa-brain brain-icon"></i>
+            </div>
+            <h3 id="loadingText">AI 正在尋找最適合的房源...</h3>
+            <p id="loadingSubtext">正在進行深度語意匹配</p>
+            <div class="loading-progress-bar">
+                <div id="loadingProgressFill" class="progress-fill" style="width: 0%"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
+    <script type="module" src="js/app.js?v=20260311_V4_HYBRID"></script>
+
+</body>
+
+</html>

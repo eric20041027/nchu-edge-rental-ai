@@ -11,25 +11,15 @@ venv/
 *.log
 
 # 訓練中間產物 (checkpoints / Training intermediate outputs)
-custom_model_output/
-recommendation_model_output/
-my_custom_model.onnx
-my_custom_model.onnx.data
-my_trained_albert/
+saved_models/recommendation_model_output/
+saved_models/rbt3_finetuned/
+
+# ONNX Models (Large files > 100MB should be ignored or use Git LFS)
+*.onnx.data
+*.onnx
 
 # Generated datasets (regenerable from CSV)
-recommendation_train.json
-recommendation_dev.json
-recommendation_test.json
-property_texts.json
-
-# 舊版公版模型
-onnx_model_dir/
-
-# 舊版訓練資料
-nchu_rental_ner_500.json
-train_10k.json
-test_10k.json
+data/processed/*.json
 
 # Agents / Skills (開發工具，非專案本體)
 .agents/
@@ -43,3 +33,4 @@ _agent/
 
 # 訓練相關 (非網頁運行必要)
 test_custom_model.html
+architecture.txt

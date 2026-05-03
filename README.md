@@ -1,128 +1,105 @@
-# 興大 AI 租屋推薦 (NCHU AI Rental Recommendation)
+# 興大 AI 租屋推薦系統 (NCHU AI Rental Recommendation)
 
-這是一個專為中興大學學生設計的 AI 租屋推薦系統。使用者只需輸入自然語言需求（例如：「預算 6000 以內、近正門、有冷氣」），系統即可透過微調後的 ALBERT 模型進行語意匹配，提供最適合的房源建議。
+這是一個專為中興大學學生設計的 **Edge AI 租屋推薦系統**。使用者只需輸入自然語言需求（例如：「預算 6000 以內、走路 5 分鐘、要採光好有冷氣」），系統即可透過微調後的 **RoBERTa (rbt3)** 模型進行深度語意匹配，提供精準的房源建議。
 
-## 核心特徵
+## 專案亮點
 
-- **自然語言辨識**: 採用 Sentence-Pair Classification 模式，精準理解使用者需求。
-- **路名/地點感知**: 模型現在能識別具體路名（如：「國光路」、「復新街」），並自動在第一階段初篩與第二階段精篩中強化位置關聯。
-- **邊緣端推論 (Edge AI)**: 使用 ONNX Runtime Web，模型直接在使用者瀏覽器運行不需將資料回傳伺服器，反應迅速且保護隱私。
-- **完整的訓練管線**: 包含自動化合成資料集、模型訓練、ONNX 形狀清理與動態量化 (Dynamic Quantization) 壓縮流程。
-
-## 核心技術棧
-
-- **前端介面 (Frontend)**: 原生 JavaScript (ES6+), HTML5, Vanilla CSS
-- **邊緣推論引擎 (Inference)**: [ONNX Runtime Web](https://onnxruntime.ai/docs/tutorials/web/) (WASM 加速)
-- **機器學習建構 (Machine Learning)**: PyTorch, Hugging Face Transformers (`clue/albert_chinese_tiny`), Datasets
-- **部署環境 (Deployment)**: 支援純靜態網頁託管 (Vercel, GitHub Pages)
+- **深度語意理解 (RoBERTa)**: 從輕量級 ALBERT 升級至 **hfl/rbt3** (3 層 RoBERTa)，顯著提升對口語化需求（如：「不想追垃圾車」、「怕吵」）的理解能力。
+- **真實路網導航 (OSRM)**: 捨棄直線距離估算，全面接入 **OSRM (Open Source Routing Machine)** 與 **ArcGIS Geocoding**。所有通勤時間皆為真實路網的步行/行車時間。
+- **漸進式渲染 (Progressive Rendering)**: 採用「規則預覽 + AI 重排」雙階段渲染。使用者輸入後 **0.1 秒內** 顯示初步結果，AI 在背景運算完成後動態重排，消除等待延遲感。
+- **邊緣端推論 (Edge AI)**: 使用 **ONNX Runtime Web (WASM)**，模型直接在瀏覽器運行，支援 **多執行緒 (Multi-threading)** 加速，反應迅速且隱私無虞。
+- **極致視覺體驗**: 採用 Premium Dark Mode 設計，並實作了 **AI 運算遮罩 (Computing Overlay)**。在深度語意匹配期間提供流暢的視覺回饋，避免使用者產生系統卡頓的錯覺。
 
 ---
 
-## 專案架構與核心資料流
+## 技術架構
 
-本專案將機器學習與預測流程嚴謹地切分為「資料準備」、「模型訓練」、以「前端即時推論」三個核心生態系。
+- **前端介面 (Frontend)**: 原生 JavaScript (ES6+), HTML5, Vanilla CSS (Premium Dark Mode)
+- **邊緣推論引擎 (Inference)**: [ONNX Runtime Web](https://onnxruntime.ai/) (啟用 WASM SIMD & Multi-threading)
+- **語意模型 (Model)**: `hfl/rbt3` (Sentence-Pair Classification)，採單一匯出路徑至前端目錄，確保權重一致性。
+- **路徑引擎 (Routing)**: OpenStreetMap (OSRM) + ArcGIS Geocoding API。
 
-### 核心工作流圖 (Workflow Diagram)
+---
+
+##  專案架構與資料流
 
 ```mermaid
 graph TD
-    A[nchu_rental_info.csv] --> B(generate_dataset.py)
-    A --> C(precompute_embeddings.py)
-    B --> D[Training Dataset .json]
-    D --> E(train_and_export_onnx.py)
-    E --> F[model.onnx]
-    F --> G(quantize_model.py)
-    G --> H[custom_onnx_model_dir/]
-    C --> I[property_data.json]
-    H --> J[inference.js]
-    I --> J
-    K[User Input] --> J
-    J --> L[Recommended Listings]
+    A[nchu_rental_info.csv] --> B(update_commute_data.py)
+    B --> C(generate_dataset.py)
+    B --> D(precompute_embeddings.py)
+    C --> E(train_and_export_onnx.py)
+    E --> F[frontend/models/custom_onnx_model_dir/]
+    D --> G[property_data.json]
+    H[User Input] --> I[app.js]
+    F --> J[inference.js]
+    G --> I
+    I -- 1. Rule Match --> K[Instant UI Result]
+    J -- 2. AI Re-rank --> K[Final Ranked Result]
 ```
 
-### 1. 資料轉換與合成 (Data Preparation)
-系統的第一步需要將原本的表格資料轉換成能讓 Transformer 理解的形式：
-* **清洗與萃取 (`precompute_embeddings.py`)**: 提取 `nchu_rental_info.csv` 中的資訊（租金、物件名稱、距離、家具），將其串接成自然語言的一段「房屋客觀描述字串」，並轉出 `property_data.json` 供網站載入查閱。
-* **合成訓練樣本 (`generate_dataset.py`)**: 腳本模擬各式各樣的學生口語（如：「預算 5k」、「想要單人套房」），並透過動態模板建立高達 10,000 筆的正/負配對樣本，拆分為 Train, Dev, Test 資料集供訓練使用。
-
-### 2. 模型核心訓練 (Model Training & Quantization)
-我們採用 `clue/albert_chinese_tiny` 作為預訓練基底模型。
-* **二元語意分類 (`train_and_export_onnx.py`)**: 讀入上述的 JSON 樣本，透過 `Trainer` 微調。模型主要學會將輸入的句子透過 `[CLS] 查詢 [SEP] 房屋描述 [SEP]` 的結構，判斷這段要求與房源是否匹配。
-* **量化壓縮與防禦 (`quantize_model.py`)**: 訓練完成後，為使前端瀏覽器不過度占用記憶體，我們會將 ONNX 架構進行權重量化 (Int8)。此腳本還會負責抹除 `ONNX Protocol Buffers` 中殘留的動態 Shape，藉此防止前端推理時觸發 `ShapeInferenceError`。量化後模型體積由原先近 16MB 壓縮至約 7.8MB 左右。
-
-### 3. Web 邊緣推論引擎 (Browser Runtime Inference)
-在網站上，當使用者輸入需求並按下送出時，全套運算都會在瀏覽器內利用 `inference.js` 的兩階段演算法完成：
-
-#### A. 第一階段：預處理與啟發式比對 (Heuristic Match)
-1. **條件解析 (Constraint Parsing)**:
-   - 動態解析並辨別極端限制 (例如：預算上限為「6K」、「六千」，限制「限女」、「狗」等)。這部分會立刻把完全不達標的房屋移除 (Hard Exclusion)。
-2. **路名的實體解析**:
-   - 把「位於學府路上」中的過渡詞（如：位於、在）剝離，擷取核心地址路段「學府路」。
-3. **需求達成得分計算 (RMS - Requirement Match Score)**:
-   - 採用**「未提到即符合」**邏輯。這代表如果用戶沒提到預算，預算維度自動滿分；有提到的將基於容差（例如誤差 500 元內）給予評分計算。最終根據綜合 RMS 得出最具潛力的 **Top 30 候選名單**。
-
-#### B. 第二階段：神經網路語意重排 (Neural Re-ranking)
-1. **ALBERT 深度比對**: 前端使用 `@xenova/transformers` 的 WASM Web Assembly 對 Top 30 房源與使用者的搜查字眼進行 Tokenize 切詞，然後餵給量化後的 ONNX Runtime。
-2. **對數轉換(Logits to Probability)**: 讀取 `logits`，利用 Softmax 取出 `True / MATCH` 的語意機率指數。模型會識別「近興大」與「學校旁邊」在語法上的等價關係。
-3. **混合加權機制 (Score Blending)**:
-   - 最終配對相符分數 = **(規則得分 RMS * 40%) + (AI 語義得分 * 60%)**。
-   - 保底機制：若 RMS 滿分且判讀正確，該房源分數至少保證在 85 分以上，確保不會產生反直覺排序。
 ---
 
-## 本地部署與開發指南
+## 核心模組說明
 
-### 1. 執行網頁推薦系統
+### 1. 數據與通勤修正 (`pipeline/data_prep/`)
+* **`update_commute_data.py`**: 關鍵模組。使用 ArcGIS 將地址轉換為精確經緯度，再透過 OSRM 計算到興大正門的真實步行與機車路程。
+* **`generate_dataset.py`**: 合成訓練樣本。加入「隱含意圖映射」（例如：提到垃圾車對應到具備子母車的房屋），並進行 **Hard Negative Mining** 提升模型分辨相似物件的能力。
+
+### 2. 模型訓練與評估 (`pipeline/model_training/`)
+* **`train_and_export_onnx.py`**: 使用 `rbt3` 進行微調。模型直接匯出至前端 `custom_onnx_model_dir`，取消冗餘的 `saved_models` 存儲。
+* **`evaluate_model.py`**: 提供專業評估指標。除了傳統準確度，更導入了 **NDCG@5 (排序品質)** 與 **MRR (檢索效率)** 指標。
+
+### 3. 前端推論引擎 (`frontend/js/`)
+* **`inference.js`**: 核心邏輯。負責 Tokenization、ONNX 推理。實作了 **非同步 Yield 機制**，確保大型運算不阻塞 UI 渲染。
+* **`app.js`**: 負責 UI 渲染。實作了 **Progressive Rendering** 與 **AI Loading Overlay**。
+
+---
+
+## 快速開始
+
+### 1. 開啟推薦網頁
+本專案為靜態網頁，只需本機伺服器即可執行：
 ```bash
-# 開啟終端機並在專案根目錄下執行 (Mac/Linux/Windows):
-python3 -m http.server 8000
+python3 -m http.server 8080
 ```
-完成後，請打開瀏覽器訪問 `http://localhost:8000` 即可使用。
+造訪 `http://localhost:8080`。
 
-### 2. 開發與訓練環境重置
-如果您調整了 `nchu_rental_info.csv`，需要重新訓練模型或更新資料庫：
-
+### 2. 環境設定 (Python)
+若要重新執行數據修正或模型訓練：
 ```bash
-# 1. 建立 Python 虛擬環境
 python3 -m venv .venv
 source .venv/bin/activate
-
-# 2. 安裝必要的深度學習開源依賴
-pip install torch transformers datasets numpy onnx onnxruntime
+pip install torch transformers datasets numpy onnx onnxruntime requests
 ```
 
-#### 完整工作流操作
-
+### 3. 數據刷新工作流
+若修改了 `nchu_rental_info.csv`，請依序執行：
 ```bash
-# 步驟 1: 生成訓練資料庫
-python generate_dataset.py
+# 1. 更新真實路網距離與時間 (OSRM)
+python pipeline/data_prep/update_commute_data.py
 
-# 步驟 2: 微調 ALBERT 模型並打包為原版 ONNX
-python train_and_export_onnx.py
+# 2. 生成前端所需的特徵資料與描述
+python pipeline/data_prep/precompute_embeddings.py
 
-# 步驟 3: 壓縮權重至 Int8
-python quantize_model.py
-
-# 步驟 4: 取代舊有模型檔案 (手動覆蓋至前端載入區)
-mv my_custom_model_quant.onnx custom_onnx_model_dir/model.onnx
-
-# 步驟 5: 抓取最新房屋描述並產生給前端使用的靜態 JSON 提供即時比對
-python precompute_embeddings.py
+# (可選) 若需重訓模型
+python pipeline/data_prep/generate_dataset.py
+python pipeline/model_training/train_and_export_onnx.py
 ```
 
-## 目錄結構
-```text
-├── index.html                 # 網頁主進入點
-├── styles.css                 # Obsidian Dark 風格的介面樣式表
-├── app.js                     # UI 封裝邏輯與互動渲染模組
-├── inference.js               # ONNX Web推論引擎、NLP兩階段檢索主邏輯
-├── property_data.json         # 房源資訊與標準描述文本 (由 Python 產生)
-├── custom_onnx_model_dir/     # AI 模型專屬存放區 (過大時建議使用 Git LFS)
-│   ├── model.onnx             # 經量化壓縮的 ALBERT 權重
-│   ├── model.onnx.data        # External Protocol Buffer Data
-│   └── tokenizer.json         # HF 標記器設定分詞字典
-├── generate_dataset.py        # 訓練資料合成器腳本
-├── train_and_export_onnx.py   # 模型微調主程式
-├── precompute_embeddings.py   # 靜態特徵匯出腳本 
-├── quantize_model.py          # 模型形狀清理與壓縮工具
-└── nchu_rental_info.csv       # 系統的唯一資料來源 (單一事實點)
-```
+---
+
+## 效能指標 (Current Version - RBT3)
+
+- **Accuracy**: ~90.5%
+- **Mean NDCG @ 5**: 0.64 (高品質排序)
+- **Mean Reciprocal Rank (MRR)**: 0.64 (平均在前兩名即可找到滿意房源)
+- **感官延遲**: < 100ms (Progressive Rendering + UI Yielding 帶來的即時回饋感)
+
+---
+
+## 目錄導覽
+- `frontend/`: 包含所有網頁資源與 ONNX 模型。
+- `pipeline/`: 包含數據處理 (`data_prep`) 與模型訓練 (`model_training`) 的所有腳本。
+- `data/`: 存放原始 CSV 與生成的訓練 JSON。
+- `nchu_rental_info.csv`: 系統唯一資料來源。
