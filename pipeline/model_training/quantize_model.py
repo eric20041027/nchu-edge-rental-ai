@@ -15,7 +15,6 @@ def main():
     print("=" * 60)
     print("Quantizing ONNX model (FP32 -> INT8 Dynamic)...")
 
-    # 解決 (768) vs (2) 衝突：手動清除模型中的舊有形狀資訊
     print("  Cleaning model shape info to avoid conflicts...")
     model = onnx.load(INPUT_MODEL)
     for _ in range(len(model.graph.value_info)):
