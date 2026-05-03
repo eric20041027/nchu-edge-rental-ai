@@ -14,9 +14,12 @@ venv/
 saved_models/recommendation_model_output/
 saved_models/rbt3_finetuned/
 
-# ONNX Models (Large files > 100MB should be ignored or use Git LFS)
-*.onnx.data
-*.onnx
+# ONNX Models
+# Ignore the large unquantized model (>150MB)
+frontend/models/custom_onnx_model_dir/my_custom_model.onnx
+frontend/models/custom_onnx_model_dir/my_custom_model.onnx.data
+# Allow the quantized model (84MB)
+!frontend/models/custom_onnx_model_dir/my_custom_model_quant.onnx
 
 # Generated datasets (regenerable from CSV)
 data/processed/*.json
