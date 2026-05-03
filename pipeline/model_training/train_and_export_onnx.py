@@ -15,7 +15,11 @@ from transformers import (
     TrainingArguments,
     Trainer,
     EarlyStoppingCallback,
+    TrainerCallback,
+    PrinterCallback,
     PreTrainedModel,
+
+
     PreTrainedTokenizer
 )
 from datasets import Dataset
@@ -136,7 +140,29 @@ def compute_metrics(p: Tuple[np.ndarray, np.ndarray]) -> Dict[str, float]:
 
 
 
+class CleanLogCallback(TrainerCallback):
+    """Custom callback to print training logs in a concise, readable format."""
+    def on_log(self, args, state, control, logs=None, **kwargs):
+        if logs is None: return
+        
+        # We only care about training logs (which have 'loss') or evaluation logs (which have 'eval_loss')
+        if "loss" in logs:
+            lr = logs.get("learning_rate", 0)
+            loss = logs.get("loss", 0)
+            epoch = logs.get("epoch", 0)
+            print(f"  Epoch {epoch:>4.1f} | Loss: {loss:>6.3f} | LR: {lr:>8.2e}")
+        
+        elif "eval_loss" in logs:
+            e_loss = logs.get("eval_loss", 0)
+            e_acc = logs.get("eval_accuracy", 0)
+            e_f1 = logs.get("eval_f1", 0)
+            print("-" * 45)
+            print(f"  VALIDATION | Loss: {e_loss:>6.3f} | Acc: {e_acc:>6.3f} | F1: {e_f1:>6.3f}")
+            print("-" * 45)
+
+
 def train_model(train_dataset: Dataset, eval_dataset: Dataset) -> Tuple[Trainer, PreTrainedModel]:
+
     """Initializes model, configures Trainer, and fine-tunes ALBERT."""
     print("\n[Train] Starting fine-tuning (RBT3)...")
 
@@ -159,16 +185,18 @@ def train_model(train_dataset: Dataset, eval_dataset: Dataset) -> Tuple[Trainer,
         weight_decay=0.01,
         warmup_ratio=0.1,
         label_smoothing_factor=0.1,       # Prevent over-confidence on hard negatives
-        logging_steps=50,
-        logging_first_step=True,
+        logging_steps=100,                # Less frequent logging for cleaner output
+        logging_first_step=False,
         save_strategy="steps",
         save_steps=200,
         load_best_model_at_end=True,
-        metric_for_best_model="f1",       # F1 is more robust than accuracy for semantic tasks
+        metric_for_best_model="f1",
         greater_is_better=True,
         report_to="none",
         save_total_limit=3,
+        disable_tqdm=False,               # Progress bar restored as requested
     )
+
 
     trainer = WeightedTrainer(
         model=model,
@@ -177,12 +205,16 @@ def train_model(train_dataset: Dataset, eval_dataset: Dataset) -> Tuple[Trainer,
         eval_dataset=eval_dataset,
         compute_metrics=compute_metrics,
         callbacks=[
-            EarlyStoppingCallback(
-                early_stopping_patience=3,    # Stop if F1 doesn't improve for 3 eval cycles
-                early_stopping_threshold=0.001
-            )
+            EarlyStoppingCallback(early_stopping_patience=3, early_stopping_threshold=0.001),
+            CleanLogCallback()
         ]
     )
+
+    # Remove the default printer to keep logs clean
+    trainer.remove_callback(PrinterCallback)
+
+
+
 
 
     trainer.train()
@@ -237,7 +269,12 @@ def export_to_onnx(model: PreTrainedModel, tokenizer: PreTrainedTokenizer):
     model.to("cpu")
     model.eval()
 
+    # Suppress redundant torch.onnx internal logs
+    import logging
+    logging.getLogger("torch.onnx").setLevel(logging.ERROR)
+
     torch.onnx.export(
+
         model,
         (
             inputs["input_ids"].to("cpu"),
