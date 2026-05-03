@@ -99,7 +99,8 @@ def scrape_rent():
         
         df = df[expected_cols]
         
-        output_filename = "../../data/raw/nchu_rental_info.csv"
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        output_filename = os.path.join(base_dir, "../../data/raw/nchu_rental_info.csv")
         df.to_csv(output_filename, index=False, encoding='utf-8-sig') 
         print(f"\n--- 抓取完成 ---")
         print(f"總共抓取 {len(all_house_data)} 筆資料")
