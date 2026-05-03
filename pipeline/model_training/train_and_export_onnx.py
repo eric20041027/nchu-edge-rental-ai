@@ -8,6 +8,9 @@ import json
 import random
 import torch
 import numpy as np
+import warnings
+warnings.filterwarnings("ignore", message=".*pin_memory.*")
+
 from typing import Tuple, Dict, Any, List
 from transformers import (
     BertTokenizerFast,
