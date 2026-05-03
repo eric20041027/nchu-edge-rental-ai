@@ -1,4 +1,4 @@
-import { initData, initNLP, recommend } from './inference.js?v=20260311_V2';
+import { initData, initNLP, recommend } from './inference.js?v=20260503_V15';
 
 // --- Constants & State ---
 const PAGE_SIZE = 5;
