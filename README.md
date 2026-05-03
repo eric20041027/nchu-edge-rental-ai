@@ -104,8 +104,21 @@ python pipeline/model_training/train_and_export_onnx.py
 
 ---
 
-## 目錄導覽
-- `frontend/`: 包含所有網頁資源與 ONNX 模型。
-- `pipeline/`: 包含數據處理 (`data_prep`) 與模型訓練 (`model_training`) 的所有腳本。
-- `data/`: 存放原始 CSV 與生成的訓練 JSON。
-- `nchu_rental_info.csv`: 系統唯一資料來源。
+## 目錄架構
+```text
+Renting_model_ONNX/
+├── data/                       # 數據存儲
+│   ├── raw/                    # 原始資料 (nchu_rental_info.csv, FB 貼文)
+│   └── processed/              # 處理後資料 (訓練集 JSON, 預算特徵等)
+├── frontend/                   # 網頁前端 (生產環境)
+│   ├── js/                     # 推論引擎 (inference.js) 與 UI 邏輯 (app.js)
+│   ├── models/                 # 核心 ONNX 模型與 Tokenizer 設定
+│   ├── assets/                 # 前端靜態資源 (property_data.json)
+│   └── index.html              # 推薦系統介面
+├── pipeline/                   # AI 流水線 (開發環境)
+│   ├── data_prep/              # 數據清洗、OSRM 路網修正、分級資料生成
+│   ├── model_training/         # 模型訓練、Graded NDCG 評估、ONNX 匯出
+│   └── crawlers/               # 社群與網站資料採集
+└── saved_models/               # 訓練產物 (PyTorch Checkpoints)
+```
+
