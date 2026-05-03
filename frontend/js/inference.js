@@ -38,25 +38,14 @@ export async function initNLP(onProgress) {
             console.log("Tokenizer loaded.");
             if (onProgress) onProgress({ status: 'progress', file: 'tokenizer.json', loaded: 30, total: 100 });
 
-            if (onProgress) onProgress({ status: 'progress', file: 'my_custom_model.onnx', loaded: 40, total: 100 });
-            const modelUrl = 'models/custom_onnx_model_dir/my_custom_model.onnx?v=20260318_v1';
-            const dataUrl = 'models/custom_onnx_model_dir/my_custom_model.onnx.data?v=20260318_v1';
+            if (onProgress) onProgress({ status: 'progress', file: 'my_custom_model_quant.onnx', loaded: 40, total: 100 });
+            const modelUrl = 'models/custom_onnx_model_dir/my_custom_model_quant.onnx?v=20260503';
 
-            console.log("Fetching external data...");
-            const dataResponse = await fetch(dataUrl);
-            const dataBuffer = await dataResponse.arrayBuffer();
-            
-            if (onProgress) onProgress({ status: 'progress', file: 'my_custom_model.onnx.data', loaded: 90, total: 100 });
-
-            console.log("Creating InferenceSession with external data...");
+            console.log("Creating InferenceSession...");
             session = await window.ort.InferenceSession.create(modelUrl, {
                 executionProviders: ['wasm'],
                 graphOptimizationLevel: 'all',
-                sessionOptions: { numThreads: 4 },
-                externalData: [{
-                    path: 'my_custom_model.onnx.data',
-                    data: new Uint8Array(dataBuffer)
-                }]
+                sessionOptions: { numThreads: 4 }
             });
 
             if (onProgress) onProgress({ status: 'ready', file: 'model.onnx', loaded: 100, total: 100 });
