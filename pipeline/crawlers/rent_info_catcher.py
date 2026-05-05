@@ -17,7 +17,7 @@ def scrape_rent():
     detail_urls = []
     
     # --- 1. Collect detail page URLs ---
-    PAGE_NUM = 7 # Number of pages to scrape
+    PAGE_NUM = 15 # Number of pages to scrape
     print(f"Collecting links from the first {PAGE_NUM} pages...")
     
     for i in range(PAGE_NUM):
@@ -100,7 +100,7 @@ def scrape_rent():
         df = df[expected_cols]
         
         base_dir = os.path.dirname(os.path.abspath(__file__))
-        output_filename = os.path.join(base_dir, "../../data/raw/nchu_rental_info.csv")
+        output_filename = os.path.join(base_dir, "../../data/raw/nchu_official_raw.csv")
         df.to_csv(output_filename, index=False, encoding='utf-8-sig') 
         print(f"\n--- 抓取完成 ---")
         print(f"總共抓取 {len(all_house_data)} 筆資料")

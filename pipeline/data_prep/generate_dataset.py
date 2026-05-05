@@ -477,26 +477,39 @@ def main():
             "prop_conflict":  lambda p: any("限女" in n for n in p.get("notes", [])),
         },
     ]
+    # Precompute property character sets for faster Jaccard sorting
+    prop_char_sets = [set(t) for t in prop_texts]
 
     def generate_samples_for_split(prop_idx_set):
         """為指定的物件子集生成樣本，負樣本只從同子集內的不相容物件中挑選。"""
         samples = []
+        # Convert set to list for stable sampling
+        pool = list(prop_idx_set)
+        
         for idx in prop_idx_set:
             prop = properties[idx]
-            queries = QueryGenerator.build_queries(prop, num_queries=60)
+            queries = QueryGenerator.build_queries(prop, num_queries=20)
             for query in queries:
                 relevance = compute_relevance_score(query, prop)
                 samples.append({"query": query, "property": prop_texts[idx], "label": 1, "relevance": relevance, "property_idx": idx})
 
-                other_in_split = [i for i in prop_idx_set if i != idx]
+                other_in_split = [i for i in pool if i != idx]
+                query_chars = set(query)
 
                 # --- 策略一：Jaccard 字面困難負樣本 ---
+                # 優化：先過濾不相容，再排序
                 incompatible = [i for i in other_in_split if not is_compatible(query, properties[i])]
                 if incompatible:
-                    query_chars = set(query)
-                    incompatible.sort(key=lambda i: len(query_chars & set(prop_texts[i])), reverse=True)
+                    # 使用預先計算好的 char sets 加速
+                    incompatible.sort(key=lambda i: len(query_chars & prop_char_sets[i]), reverse=True)
                     for neg_idx in incompatible[:2]:
                         samples.append({"query": query, "property": prop_texts[neg_idx], "label": 0, "relevance": 0, "property_idx": neg_idx})
+                
+                # --- 策略一點五：隨機簡單負樣本 ---
+                if incompatible:
+                    random_negs = random.sample(incompatible, min(3, len(incompatible)))
+                    for neg_idx in random_negs:
+                        samples.append({"query": query, "property": prop_texts[neg_idx], "label": 0, "relevance": -1, "property_idx": neg_idx})
 
                 # --- 策略二：語意誤導型負樣本（條件衝突，非字面不符）---
                 for dim in CONFLICT_DIMENSIONS:

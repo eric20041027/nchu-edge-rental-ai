@@ -16,8 +16,8 @@ def process_property_row(row: Dict[str, str]) -> Dict[str, Any]:
     rent_num = int(rent_match.group(1)) if rent_match else 0
 
     dist = float(row.get("距離(km)", "0") or "0")
-    walk_mins = int(row.get("walk_mins", "0") or "0")
-    scooter_mins = int(row.get("scooter_mins", "0") or "0")
+    walk_mins = int(float(row.get("walk_mins", "0") or "0"))
+    scooter_mins = int(float(row.get("scooter_mins", "0") or "0"))
 
     furniture = [s.strip() for s in row.get("家具設施", "").split("/") if s.strip()]
     included = [s.strip() for s in row.get("租金包含", "").split("/") if s.strip()]

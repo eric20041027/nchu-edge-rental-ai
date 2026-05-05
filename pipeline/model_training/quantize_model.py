@@ -5,7 +5,7 @@ Reduces model size and speeds up CPU inference with minimal accuracy drop.
 """
 import os
 import onnx
-from onnxruntime.quantization import quantize_dynamic, QuantType, preprocess
+from onnxruntime.quantization import quantize_dynamic, QuantType, quant_pre_process
 
 BASE_DIR     = os.path.dirname(__file__)
 INPUT_MODEL  = os.path.join(BASE_DIR, "../../frontend/models/custom_onnx_model_dir/my_custom_model.onnx")
@@ -21,14 +21,26 @@ def main():
         model.graph.value_info.pop()
     onnx.save(model, INPUT_MODEL)
 
+    print("  Preprocessing model (Shape inference & optimizations)...")
+    temp_model = INPUT_MODEL.replace(".onnx", ".preprocessed.onnx")
+    input_path = temp_model
+    try:
+        quant_pre_process(INPUT_MODEL, temp_model)
+    except Exception as e:
+        print(f"  Preprocess skipped (symbolic inference issue): {e}")
+        input_path = INPUT_MODEL
+
     quantize_dynamic(
-        model_input=INPUT_MODEL,
+        model_input=input_path,
         model_output=OUTPUT_MODEL,
         op_types_to_quantize=["MatMul", "Gemm"],
         weight_type=QuantType.QInt8,
         use_external_data_format=False, # 產生單一檔案，方便前端部署
         extra_options={"MatMulConstBOnly": True},
     )
+
+    if os.path.exists(temp_model):
+        os.remove(temp_model)
 
     input_size  = os.path.getsize(INPUT_MODEL)  / (1024 * 1024)
     output_size = os.path.getsize(OUTPUT_MODEL) / (1024 * 1024)

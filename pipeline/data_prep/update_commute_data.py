@@ -94,6 +94,13 @@ def main():
     
     count = 0
     for row in rows:
+        walk_val = row.get("walk_mins", "").strip()
+        scooter_val = row.get("scooter_mins", "").strip()
+        
+        if walk_val and scooter_val and walk_val != "0" and scooter_val != "0":
+            count += 1
+            continue
+
         addr = row.get("地址", "")
         # Remove unwanted prefix like "402" or "台中市南區" if duplicated
         clean_addr = addr.replace("402", "").strip()
@@ -114,6 +121,15 @@ def main():
             print(f"  -> Failed, estimated from distance: {row['walk_mins']}m")
             
         count += 1
+        
+        # Periodic Save every 10 properties
+        if count % 10 == 0:
+            with open(csv_path, "w", encoding="utf-8-sig", newline="") as f:
+                writer = csv.DictWriter(f, fieldnames=fieldnames)
+                writer.writeheader()
+                writer.writerows(rows)
+            print(f"  [Auto-Save] Progress saved at {count}/{len(rows)}")
+
         time.sleep(0.5) # ArcGIS is more lenient than Nominatim
 
     with open(csv_path, "w", encoding="utf-8", newline="") as f:

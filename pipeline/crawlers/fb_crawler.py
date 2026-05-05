@@ -17,7 +17,7 @@ from playwright.async_api import async_playwright
 
 GROUP_URL = "https://www.facebook.com/groups/NCHU110Fresh/"
 TARGET_FILE = os.path.join(os.path.dirname(__file__), "../../data/raw/fb_queries.json")
-SCROLL_COUNT = 50  # 往下捲動的次數
+SCROLL_COUNT = 100  # 往下捲動的次數
 
 async def main():
     async with async_playwright() as p:

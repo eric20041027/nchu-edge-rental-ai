@@ -40,3 +40,7 @@ architecture.txt
 
 # Temporary checkpoints
 temp_checkpoints/
+*.data
+*.data
+sym_shape_infer_temp.onnx
+*.html

@@ -4,6 +4,12 @@ Fine-tunes hfl/rbt3 (3-layer Chinese RoBERTa) on query-property pairs for binary
 Training data is synthesized by generate_dataset.py.
 """
 import os
+# Aggressively suppress Hugging Face background errors and telemetry
+os.environ["TRANSFORMERS_NO_ADVISORY_WARNINGS"] = "1"
+os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
+os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
+os.environ["HF_HUB_OFFLINE"] = "1"
+
 import json
 import random
 import torch
@@ -39,22 +45,31 @@ ONNX_OUTPUT_PATH = os.path.join(os.path.dirname(__file__), "../../frontend/model
 SAVED_MODEL_DIR = os.path.join(os.path.dirname(__file__), "../../saved_models/rbt3_finetuned")
 
 def load_and_balance_data(train_path: str, dev_path: str) -> Tuple[Dataset, Dataset]:
-    """Loads JSON datasets and balances the training classes."""
-    print("[Load Data] Loading and balancing datasets...")
-
-
+    """Loads and balances training data, including model-identified hard examples."""
+    print(f"\n[Step 1] Loading and balancing data...")
+    
     with open(train_path, "r", encoding="utf-8") as f:
         train_data = json.load(f)
     print(f"  Raw Train: {len(train_data)} samples")
 
+    # Load Hard Examples if they exist
+    hard_examples_path = os.path.join(os.path.dirname(train_path), "hard_examples.json")
+    hard_examples = []
+    if os.path.exists(hard_examples_path):
+        with open(hard_examples_path, "r", encoding="utf-8") as f:
+            hard_examples = json.load(f)
+        for d in hard_examples: d["is_hard"] = True
+        print(f"  Loaded {len(hard_examples)} Model-specific Hard Examples.")
+    
     with open(dev_path, "r", encoding="utf-8") as f:
         dev_data = json.load(f)
     print(f"  Raw Dev:   {len(dev_data)} samples")
 
     random.seed(42)
+    # Exclude hard examples from balancing to ensure they are all kept
     pos_samples = [d for d in train_data if d["label"] == 1]
     neg_samples = [d for d in train_data if d["label"] == 0]
-    print(f"  Original distribution: POS={len(pos_samples)}, NEG={len(neg_samples)}")
+    print(f"  Original distribution (excl. hard): POS={len(pos_samples)}, NEG={len(neg_samples)}")
 
     if len(neg_samples) > len(pos_samples):
         neg_samples = random.sample(neg_samples, len(pos_samples))
@@ -63,9 +78,10 @@ def load_and_balance_data(train_path: str, dev_path: str) -> Tuple[Dataset, Data
         pos_samples = random.sample(pos_samples, len(neg_samples))
         print(f"  Balanced POS down to {len(pos_samples)}")
 
-    train_data = pos_samples + neg_samples
+    # Combine balanced samples with ALL hard examples
+    train_data = pos_samples + neg_samples + hard_examples
     random.shuffle(train_data)
-    print(f"  Final balanced train set: {len(train_data)} samples")
+    print(f"  Final train set: {len(train_data)} samples (includes hard examples)")
 
     return Dataset.from_list(train_data), Dataset.from_list(dev_data)
 
@@ -109,11 +125,22 @@ def tokenize_datasets(
         )
         tokenized["labels"] = examples["label"]
         
-        # Map relevance (0-3) to sample weights
-        # Perfect Match (3) = 2.0, Good (2) = 1.5, Partial (1) = 1.0, Neg (0) = 1.0
-        rel_map = {3: 2.0, 2: 1.5, 1: 1.0, 0: 1.0}
-        tokenized["sample_weight"] = [float(rel_map.get(r, 1.0)) for r in examples["relevance"]]
+        # Base weights from relevance
+        rel_map = {3: 3.0, 2: 2.0, 1: 1.0, 0: 1.5, -1: 0.5}
         
+        weights = []
+        # Ensure is_hard exists in batch
+        is_hard_list = examples.get("is_hard", [False]*len(examples["query"]))
+        for i in range(len(examples["query"])):
+            rel = examples["relevance"][i]
+            is_hard = is_hard_list[i]
+            
+            w = float(rel_map.get(rel, 1.0))
+            if is_hard:
+                w *= 2.5 # Boost weight for cases model previously failed on
+            weights.append(w)
+            
+        tokenized["sample_weight"] = weights
         return tokenized
 
     train_tokenized = train_dataset.map(tokenize_function, batched=True)
@@ -212,7 +239,7 @@ def train_model(train_dataset: Dataset, eval_dataset: Dataset) -> Tuple[Trainer,
         eval_dataset=eval_dataset,
         compute_metrics=compute_metrics,
         callbacks=[
-            EarlyStoppingCallback(early_stopping_patience=3, early_stopping_threshold=0.001),
+            EarlyStoppingCallback(early_stopping_patience=5, early_stopping_threshold=0.001),
             CleanLogCallback()
         ]
     )
@@ -283,7 +310,7 @@ def export_to_onnx(model: PreTrainedModel, tokenizer: PreTrainedTokenizer):
         ),
         ONNX_OUTPUT_PATH,
         export_params=True,
-        opset_version=15,
+        opset_version=17,
         do_constant_folding=True,
         input_names=["input_ids", "attention_mask", "token_type_ids"],
         output_names=["logits"],

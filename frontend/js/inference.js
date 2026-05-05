@@ -93,6 +93,7 @@ function parseConstraintsFromText(text) {
     let genderUnrestricted = false, hasGenderMention = false, hasBudgetMention = false, hasRoomTypeMention = false;
     let wantsUtilityBilling = false, maxElectricityPrice = null;
     let requireBalcony = false, requireWindow = false, requireParking = false, requireWaste = false;
+    let requireSubsidy = false, isSocialHousing = false;
     let excludeRooftop = false, excludeWooden = false, excludeHaunted = false;
 
     if (text.includes('不限女') || text.includes('不限性別') || text.includes('男生') || text.includes('男士')) {
@@ -116,6 +117,9 @@ function parseConstraintsFromText(text) {
 
     if (text.includes('車位') || text.includes('停車')) requireParking = true;
     if (text.includes('子母車') || text.includes('垃圾')) requireWaste = true;
+    
+    if (text.includes('補助') || text.includes('補貼') || text.includes('報稅') || text.includes('入籍')) requireSubsidy = true;
+    if (text.includes('社宅') || text.includes('社會住宅')) isSocialHousing = true;
 
     if (text.includes('以上')) limit = 'above';
     else if (text.includes('以下') || text.includes('以內') || text.includes('內')) limit = 'below';
@@ -190,6 +194,7 @@ function parseConstraintsFromText(text) {
     return { 
         budget, minBudget, maxBudget, limit, genderUnrestricted, hasGenderMention, hasBudgetMention, hasRoomTypeMention, 
         wantsUtilityBilling, maxElectricityPrice, requireBalcony, requireWindow, requireParking, requireWaste, 
+        requireSubsidy, isSocialHousing,
         excludeRooftop, excludeWooden, excludeHaunted, maxWalkMins, maxScooterMins 
     };
 }
@@ -204,8 +209,12 @@ function filterHardExclusions(properties, constraints) {
     const candidates = [];
     
     for (const prop of properties) {
-        if (excludeRooftop && prop.is_rooftop) continue;
+        if (excludeRooftop && (prop.is_rooftop || prop.text.includes('頂加'))) continue;
         if (excludeWooden && prop.is_wooden_partition) continue;
+        
+        // Subsidy Exclusion
+        if (requireSubsidy && (prop.text.includes('不可補助') || prop.text.includes('不可報稅') || prop.text.includes('不可入籍'))) continue;
+        if (isSocialHousing && !prop.text.includes('社會住宅') && !prop.text.includes('社宅')) continue;
 
         // Commute time filtering
         let dist = parseFloat(prop.distance);
