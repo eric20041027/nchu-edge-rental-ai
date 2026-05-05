@@ -45,8 +45,14 @@ async function setupApplication() {
             initData(),
             initNLP((progress) => {
                 if (progress.status === 'progress') {
-                    let percent = Math.round((progress.loaded / progress.total) * 100);
-                    loadStatus.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 正在下載 AI 模組與資料 (${percent}%)...`;
+                    let percentText = "";
+                    if (progress.total && progress.total > 0) {
+                        let percent = Math.round((progress.loaded / progress.total) * 100);
+                        percentText = `${percent}%`;
+                    } else {
+                        percentText = `${Math.round(progress.loaded / 1024)} KB`;
+                    }
+                    loadStatus.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 正在下載 AI 模組與資料 (${percentText})...`;
                 }
             })
         ]);

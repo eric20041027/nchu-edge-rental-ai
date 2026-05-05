@@ -131,6 +131,33 @@ async def get_detail_info(page, url: str) -> dict:
         if matches:
             contact_phone = matches[0]
 
+    # 2. Add extra wait for dynamic contact info
+    await page.wait_for_timeout(1500)
+    if not contact_name:
+        # Strategy A: Look for "Landlord" links
+        links = soup.find_all('a', href=re.compile(r'/landlord/'))
+        if links:
+            contact_name = links[0].get_text(strip=True)
+        
+        # Strategy B: Scan description for "Name + Phone" patterns like "廖先生09xx..."
+        if not contact_name:
+            # Look for common patterns: [Name][Title][Phone]
+            # e.g., 廖先生0970... or 張小姐 0902...
+            name_phone_match = re.search(r'([^\s\d]{1,3}(?:先生|小姐|房東|代理人))[:：\s]*' + re.escape(contact_phone), desc)
+            if name_phone_match:
+                contact_name = name_phone_match.group(1)
+
+        # Strategy C: Check text siblings near labels
+        if not contact_name:
+            for el in soup.find_all(text=re.compile(r'房東|代理人|聯絡人')):
+                parent = el.parent
+                text_content = parent.get_text(separator='|', strip=True).split('|')
+                for part in text_content:
+                    if part not in ['房東', '代理人', '聯絡人'] and 1 < len(part) < 10:
+                        contact_name = part
+                        break
+                if contact_name: break
+
     image_url = data.get("image", "")
 
     return {
