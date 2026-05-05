@@ -2,25 +2,25 @@
 
 本專案為針對中興大學學生設計之 Edge AI 租屋推薦系統。系統透過微調後之 RoBERTa (rbt3) 模型處理自然語言查詢，並與房源資料進行語意匹配。
 
-## 系統功能
+## 系統亮點
 
-- **資料整合 (Multi-Source Integration)**: 整合興大校外租屋網與租租通數據，目前資料庫規模為 601 筆房源。
-- **語意匹配模型 (RoBERTa)**: 採用 hfl/rbt3 模型，用於處理口語化需求與房源描述之關聯性計算。
-- **路網距離計算 (OSRM)**: 串接 OSRM 與 ArcGIS API，計算房源至校園之實際路網行走與行車時間。
-- **評分機制 (Graded Relevance)**: 採用 0-3 分級標註機制進行訓練與測試，並以 Graded NDCG 作為主要排序評估指標。
-- **模型量化 (Quantization)**: 模型經 INT8 量化處理，體積為 84 MB，於瀏覽器端環境執行推理。
-- **特徵解析**: 提取租金補貼、計費方式、陽台等結構化資訊供預篩選使用。
+- **跨平台資料整合 (Multi-Source Crawler)**: 自動化整合興大校外租屋網 (官方) 與租租通 (民間) 數據，房源總數突破 600 筆，涵蓋最完整的興大生活圈。
+- **深度語意理解 (RoBERTa)**: 採用 hfl/rbt3 (3 層 RoBERTa) 模型，能精準識別口語化需求（如：「不想追垃圾車」、「採光要好」、「台水電計費」）。
+- **真實路網導航 (OSRM)**: 全面接入 OSRM (Open Source Routing Machine) 與 ArcGIS Geocoding API。所有通勤時間皆為真實路網的步行/行車時間。
+- **分級評分引擎 (Graded NDCG)**: 採用 0-3 分級評分機制，模型在測試集上的 Graded NDCG@5 達到 0.848，具備極高的推薦品質。
+- **邊緣端推論 (Edge AI)**: 模型以 ONNX INT8 量化技術壓縮至 84 MB，直接在瀏覽器運行，反應迅速且隱私無慮。
+- **進階特徵解析**: 自動識別「租金補貼」、「社會住宅」、「陽台」與「特定樓層需求」，消除傳統篩選器的僵硬限制。
 
 ---
 
-## 效能測試數據 (Model Evaluation)
+## 效能表現 (Model Performance)
 
-| 指標 | 數值 | 說明 |
-| :--- | :--- | :--- |
-| **Accuracy** | **0.940** | 樣本分類之準確比率 |
-| **F1-Score** | **0.870** | 精確率與召回率之調和平均數 |
-| **Graded NDCG@5** | **0.848** | 評估前五名排序結果與預期相關度之一致性 |
-| **Inference Time** | **< 100ms** | 瀏覽器端單次推理之平均耗時 |
+| 指標 | 數值 | 狀態 | 說明 |
+| :--- | :--- | :--- | :--- |
+| **Accuracy** | **0.940** | 優秀 | 語意匹配的基礎準確度 |
+| **F1-Score** | **0.870** | 優秀 | 兼顧精確率與召回率的綜合表現 |
+| **Graded NDCG@5** | **0.848** | 領先 | 將「完美匹配」房源推向最前端的能力 |
+| **Inference Time** | **< 100ms** | 極速 | 瀏覽器端 WASM 加速推理時間 |
 
 ---
 
@@ -52,22 +52,22 @@ graph TD
 
 ---
 
-## 模組說明
+## 核心模組說明
 
 ### 1. 資料處理 (pipeline/crawlers/ & data_prep/)
-* **crawler_ddroom.py**: 抓取租租通房源資料與解析 JSON-LD 格式。
-* **rent_info_catcher.py**: 抓取興大官方租屋網房源資料。
-* **merge_sources.py**: 執行多源資料合併與去重。
-* **update_commute_data.py**: 計算房源至興大正門之預估交通時間。
+* **crawler_ddroom.py**: 使用 Playwright 抓取租租通房源，支援 JSON-LD 深度解析。
+* **rent_info_catcher.py**: 針對興大官方租屋網進行抓取，確保官方認證房源不遺漏。
+* **merge_sources.py**: 智慧合併多源數據並進行去重處理。
+* **update_commute_data.py**: 路網核心。計算房源到興大正門的真實步行/機車時間。
 
 ### 2. 模型開發 (pipeline/model_training/)
-* **train_and_export_onnx.py**: 執行模型訓練並匯出為 ONNX 格式。
-* **quantize_model.py**: 執行 INT8 動態量化。
-* **evaluate_model.py**: 計算各項評估指標並產出測試報告。
+* **train_and_export_onnx.py**: 核心訓練腳本。強制離線模式避免 403 報錯，並實作 Graded Relevance 加權學習。
+* **quantize_model.py**: 將 146MB 模型量化為 84MB，大幅提升前端載入效率。
+* **evaluate_model.py**: 生成專業的評估報告，包含 NDCG、MRR 與定性搜尋範例分析。
 
 ---
 
-## 🛠️ 執行與維護
+## 執行與維護
 
 ### 1. 自動化全流程 (Automation)
 本專案提供一鍵執行腳本，涵蓋從抓取到評估的完整生命週期：
@@ -83,7 +83,7 @@ chmod +x run_pipeline.sh
 
 ---
 
-## 📈 深度技術分析
+## 深度技術分析
 
 ### 1. 排序 (Ranking) 與分類 (Classification) 的平衡
 目前系統在分類準確度 (Accuracy: 0.94) 表現極佳，但在 Graded NDCG@5 (0.848) 仍有優化空間。
@@ -105,10 +105,10 @@ chmod +x run_pipeline.sh
 
 ---
 
-## 技術堆疊
+## 技術清單
 - 前端: Vanilla JS, ONNX Runtime Web, CSS Grid/Flex
 - 後端: Python, PyTorch, Transformers, ONNX
 - 外部服務: ArcGIS API, OSRM
 
 ---
-**本專案旨在提供租屋資訊整合與語意推薦之技術方案。**
+**本專案旨在解決興大租屋資訊零散與篩選不便之痛點，透過 AI 賦予租屋搜尋全新的語意溫度。**

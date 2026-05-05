@@ -9,11 +9,10 @@
  */
 import { AutoTokenizer, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1';
 
-let tokenizer = null;
-let session = null;
+let worker = null;
 let propertyData = [];
-
-const MAX_LENGTH = 64;
+let pendingInference = new Map();
+let inferenceIdCounter = 0;
 
 // --- Property Data Synchronization ---
 export async function initData() {
@@ -22,68 +21,51 @@ export async function initData() {
     console.log(`Loaded ${propertyData.length} property descriptions`);
 }
 
-// --- NLP Engine Initialization ---
+// --- NLP Engine Initialization via Web Worker ---
 export async function initNLP(onProgress) {
-    if (!tokenizer || !session) {
-        env.allowRemoteModels = false;
-        env.allowLocalModels = true;
-        env.useBrowserCache = true;
-        env.localModelPath = window.location.origin + '/';
+    if (!worker) {
+        return new Promise((resolve, reject) => {
+            console.log("Initializing Inference Web Worker...");
+            worker = new Worker('js/inference-worker.js');
 
-        try {
-            console.log("Starting model initialization...");
-            if (onProgress) onProgress({ status: 'progress', file: 'tokenizer.json', loaded: 10, total: 100 });
+            worker.onmessage = (e) => {
+                const { type, message, score, id, error } = e.data;
+                if (type === 'status' && onProgress) {
+                    onProgress({ status: 'progress', message });
+                } else if (type === 'ready') {
+                    console.log('Inference Worker Ready');
+                    if (onProgress) onProgress({ status: 'ready' });
+                    resolve();
+                } else if (type === 'scoreResult') {
+                    const callback = pendingInference.get(id);
+                    if (callback) {
+                        callback(score);
+                        pendingInference.delete(id);
+                    }
+                } else if (type === 'error') {
+                    console.error('Worker error:', message);
+                    if (reject) reject(new Error(message));
+                }
+            };
 
-            tokenizer = await AutoTokenizer.from_pretrained('models/custom_onnx_model_dir');
-            console.log("Tokenizer loaded.");
-            if (onProgress) onProgress({ status: 'progress', file: 'tokenizer.json', loaded: 30, total: 100 });
-
-            if (onProgress) onProgress({ status: 'progress', file: 'my_custom_model_quant.onnx', loaded: 40, total: 100 });
-            const modelUrl = 'models/custom_onnx_model_dir/my_custom_model_quant.onnx?v=20260503_V15';
-
-            console.log("Creating InferenceSession...");
-            session = await window.ort.InferenceSession.create(modelUrl, {
-                executionProviders: ['wasm'],
-                graphOptimizationLevel: 'all',
-                sessionOptions: { numThreads: 4 }
+            worker.postMessage({ 
+                type: 'init', 
+                data: { origin: window.location.origin } 
             });
-
-            if (onProgress) onProgress({ status: 'ready', file: 'model.onnx', loaded: 100, total: 100 });
-            console.log('ONNX Sentence-Pair model loaded successfully');
-        } catch (err) {
-            console.error('Model loading error details:', err);
-            throw err;
-        }
+        });
     }
 }
 
-// --- Core Inference: Semantic Similarity Calculation ---
+// --- Proxy to Worker for Scoring ---
 async function scorePair(query, propertyText) {
-    const encoded = await tokenizer(query, {
-        text_pair: propertyText,
-        padding: 'max_length',
-        truncation: true,
-        max_length: MAX_LENGTH,
-        return_tensors: 'np',
-        return_token_type_ids: true,
+    return new Promise((resolve) => {
+        const id = inferenceIdCounter++;
+        pendingInference.set(id, resolve);
+        worker.postMessage({
+            type: 'score',
+            data: { query, propertyText, id }
+        });
     });
-
-    const inputs = {};
-    for (const key of session.inputNames) {
-        if (encoded[key]) {
-            inputs[key] = new ort.Tensor('int64',
-                BigInt64Array.from(encoded[key].data.map(v => BigInt(v))),
-                encoded[key].dims
-            );
-        }
-    }
-
-    const results = await session.run(inputs);
-    const logits = results.logits.data;
-    const maxL = Math.max(logits[0], logits[1]);
-    const exp0 = Math.exp(logits[0] - maxL);
-    const exp1 = Math.exp(logits[1] - maxL);
-    return exp1 / (exp0 + exp1);
 }
 
 // --- Constraint Parsing & Normalization ---
@@ -204,7 +186,8 @@ function filterHardExclusions(properties, constraints) {
     const { 
         budget, minBudget, maxBudget, limit, genderUnrestricted, hasGenderMention, hasBudgetMention,
         excludeRooftop, excludeWooden, maxElectricityPrice, wantsUtilityBilling,
-        maxWalkMins, maxScooterMins
+        maxWalkMins, maxScooterMins,
+        requireSubsidy, isSocialHousing, requireBalcony, requireWindow, requireParking, requireWaste
     } = constraints;
     const candidates = [];
     
@@ -215,6 +198,12 @@ function filterHardExclusions(properties, constraints) {
         // Subsidy Exclusion
         if (requireSubsidy && (prop.text.includes('不可補助') || prop.text.includes('不可報稅') || prop.text.includes('不可入籍'))) continue;
         if (isSocialHousing && !prop.text.includes('社會住宅') && !prop.text.includes('社宅')) continue;
+
+        // Hard Amenity Exclusions
+        if (requireBalcony && !prop.text.includes('陽台') && !(prop.furniture && prop.furniture.includes('陽台'))) continue;
+        if (requireWindow && !prop.text.includes('對外窗') && !prop.text.includes('採光')) continue;
+        if (requireParking && !prop.text.includes('車位') && !prop.text.includes('停車')) continue;
+        if (requireWaste && !prop.text.includes('子母車') && !prop.text.includes('代收垃圾') && !prop.text.includes('垃圾處理')) continue;
 
         // Commute time filtering
         let dist = parseFloat(prop.distance);

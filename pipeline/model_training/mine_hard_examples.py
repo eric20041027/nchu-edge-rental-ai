@@ -25,16 +25,11 @@ def run_onnx_batch(session, tokenizer, queries, properties, batch_size=1):
         inputs = tokenizer(batch_q, batch_p, 
                           padding='max_length', truncation=True, max_length=128, return_tensors="np")
         
-        # Ensure correct type (int64) and log shapes for the first batch
         onnx_inputs = {
             input_names[0]: inputs["input_ids"].astype(np.int64),
             input_names[1]: inputs["attention_mask"].astype(np.int64),
             input_names[2]: inputs["token_type_ids"].astype(np.int64)
         }
-        
-        if i == 0:
-            for k, v in onnx_inputs.items():
-                print(f"  Input '{k}' shape: {v.shape}, dtype: {v.dtype}")
             
         logits = session.run(["logits"], onnx_inputs)[0]
         exp_logits = np.exp(logits - np.max(logits, axis=1, keepdims=True))
