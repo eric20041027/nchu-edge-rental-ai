@@ -373,12 +373,14 @@ def compute_relevance_score(query: str, prop: Dict[str, Any]) -> int:
 
     # --- Part C: Final Mapping ---
     if total_specified == 0:
-        return 3 # No specific constraints, default to perfect
+        # 無具體指定條件的查詢（如「有沒有平件的房子」）視為「優良」而非「完美」
+        # 因為沒有格局/地點/預算等關鍵條件的驗證，不應等同於「所有條件全滿足」
+        return 2
         
     score_ratio = satisfied / total_specified
     
-    if score_ratio >= 0.95: return 3
-    if score_ratio >= 0.6:  return 2
+    if score_ratio >= 0.85: return 3  # 降低門滝：綕大多數指定条件満足即為 Perfect
+    if score_ratio >= 0.5:  return 2  # 擴展有效區間：50%~85% 均為 Good
     if score_ratio >= 0.2:  return 1
     return 0
 
@@ -445,16 +447,19 @@ def main():
             relevance = compute_relevance_score(query, prop)
             all_samples.append({"query": query, "property": prop_texts[idx], "label": 1, "relevance": relevance, "property_idx": idx})
             
-            # 增加負樣本數量
+            # Hard Negative Mining: 取跟詢問「字元重疊度最高」的不相容房源作為困難負樣本
             other_indices = [i for i in range(len(properties)) if i != idx]
-            random.shuffle(other_indices)
-            neg_count = 0
-            for neg_idx in other_indices:
-                if not is_compatible(query, properties[neg_idx]):
+            incompatible = [i for i in other_indices if not is_compatible(query, properties[i])]
+            
+            if incompatible:
+                # 依語意相似度排序：找「看起來很像但其實不符合」的房源
+                query_chars = set(query)
+                incompatible.sort(
+                    key=lambda i: len(query_chars & set(prop_texts[i])),
+                    reverse=True
+                )
+                for neg_idx in incompatible[:3]:  # 1:3 比例，提升困難樣本比例
                     all_samples.append({"query": query, "property": prop_texts[neg_idx], "label": 0, "relevance": 0, "property_idx": neg_idx})
-                    neg_count += 1
-                if neg_count >= 2: # 每個正樣本配 2 個負樣本
-                    break
     
     # 載入 FB 真實貼文
     fb_queries_path = os.path.join(os.path.dirname(__file__), "../../data/raw/fb_queries.json")
