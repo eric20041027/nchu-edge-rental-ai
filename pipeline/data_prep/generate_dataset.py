@@ -437,82 +437,93 @@ def main():
     properties = load_properties()
     print(f"  Loaded {len(properties)} properties")
 
-    print("\nStep 2: Generating query-property pairs...")
-    # 增加 num_queries 從 40 到 60，neg_per_pos 從 1 到 2
-    all_samples = []
+    # ============================================================
+    # Object-level Split: 先切割物件，再生成樣本
+    # 確保同一租屋物件的查詢對不會同時出現在訓練集與測試集中
+    # 違反此原則將導致 Data Leakage，NDCG 分數嚴重虛高
+    # ============================================================
+    prop_indices = list(range(len(properties)))
+    random.shuffle(prop_indices)
+    n = len(prop_indices)
+    train_prop_idx = set(prop_indices[:int(n * 0.8)])
+    dev_prop_idx   = set(prop_indices[int(n * 0.8):int(n * 0.9)])
+    test_prop_idx  = set(prop_indices[int(n * 0.9):])
+
     prop_texts = [property_to_text(p) for p in properties]
-    for idx, prop in enumerate(properties):
-        queries = QueryGenerator.build_queries(prop, num_queries=60)
-        for query in queries:
-            relevance = compute_relevance_score(query, prop)
-            all_samples.append({"query": query, "property": prop_texts[idx], "label": 1, "relevance": relevance, "property_idx": idx})
-            
-            # Hard Negative Mining: 取跟詢問「字元重疊度最高」的不相容房源作為困難負樣本
-            other_indices = [i for i in range(len(properties)) if i != idx]
-            incompatible = [i for i in other_indices if not is_compatible(query, properties[i])]
-            
-            if incompatible:
-                # 依語意相似度排序：找「看起來很像但其實不符合」的房源
-                query_chars = set(query)
-                incompatible.sort(
-                    key=lambda i: len(query_chars & set(prop_texts[i])),
-                    reverse=True
-                )
-                for neg_idx in incompatible[:3]:  # 1:3 比例，提升困難樣本比例
-                    all_samples.append({"query": query, "property": prop_texts[neg_idx], "label": 0, "relevance": 0, "property_idx": neg_idx})
-    
-    # 載入 FB 真實貼文
+
+    print(f"\nStep 2: Generating query-property pairs (Object-level Split)...")
+    print(f"  Property split: {len(train_prop_idx)} train / {len(dev_prop_idx)} dev / {len(test_prop_idx)} test")
+
+    def generate_samples_for_split(prop_idx_set):
+        """為指定的物件子集生成樣本，負樣本只從同子集內的不相容物件中挑選。"""
+        samples = []
+        for idx in prop_idx_set:
+            prop = properties[idx]
+            queries = QueryGenerator.build_queries(prop, num_queries=60)
+            for query in queries:
+                relevance = compute_relevance_score(query, prop)
+                samples.append({"query": query, "property": prop_texts[idx], "label": 1, "relevance": relevance, "property_idx": idx})
+
+                # Hard Negative Mining（限制在同切割集內，防止跨集合資訊洩漏）
+                other_in_split = [i for i in prop_idx_set if i != idx]
+                incompatible = [i for i in other_in_split if not is_compatible(query, properties[i])]
+                if incompatible:
+                    query_chars = set(query)
+                    incompatible.sort(key=lambda i: len(query_chars & set(prop_texts[i])), reverse=True)
+                    for neg_idx in incompatible[:3]:
+                        samples.append({"query": query, "property": prop_texts[neg_idx], "label": 0, "relevance": 0, "property_idx": neg_idx})
+        random.shuffle(samples)
+        return samples
+
+    train_data = generate_samples_for_split(train_prop_idx)
+    dev_data   = generate_samples_for_split(dev_prop_idx)
+    test_data  = generate_samples_for_split(test_prop_idx)
+
+    # FB 真實查詢只注入訓練集，避免污染驗證集與測試集
     fb_queries_path = os.path.join(os.path.dirname(__file__), "../../data/raw/fb_queries.json")
     if os.path.exists(fb_queries_path):
-        print("\nStep 2.5: Injecting Facebook crawled queries...")
+        print("\nStep 2.5: Injecting Facebook crawled queries into train split only...")
         with open(fb_queries_path, "r", encoding="utf-8") as f:
             fb_queries = json.load(f)
-        
+
         fb_samples = []
-        prop_texts = [property_to_text(p) for p in properties]
         for query in fb_queries:
             pos_found = False
-            for idx, prop in enumerate(properties):
-                # 如果符合相容性，視為正樣本
-                if is_compatible(query, prop):
-                    rel = compute_relevance_score(query, prop)
+            for idx in train_prop_idx:
+                if is_compatible(query, properties[idx]):
+                    rel = compute_relevance_score(query, properties[idx])
                     fb_samples.append({"query": query, "property": prop_texts[idx], "label": 1, "relevance": rel})
                     pos_found = True
                     break
-            
-            # 若有正樣本，則隨機挑選一個不相容的當作負樣本
             if pos_found:
-                other_indices = list(range(len(properties)))
-                random.shuffle(other_indices)
-                for neg_idx in other_indices:
+                cands = list(train_prop_idx)
+                random.shuffle(cands)
+                for neg_idx in cands:
                     if not is_compatible(query, properties[neg_idx]):
                         fb_samples.append({"query": query, "property": prop_texts[neg_idx], "label": 0, "relevance": 0})
                         break
-                        
-        print(f"  Generated {len(fb_samples)} pairs from FB queries.")
-        all_samples.extend(fb_samples)
-        
-    pos = sum(1 for s in all_samples if s["label"] == 1)
-    neg = len(all_samples) - pos
-    print(f"  Total samples: {len(all_samples)}")
-    print(f"  Positive: {pos}, Negative: {neg}, Ratio: 1:{neg/pos:.1f}")
 
-    random.shuffle(all_samples)
-    train_bound, dev_bound = int(len(all_samples) * 0.8), int(len(all_samples) * 0.9)
-    train_data, dev_data, test_data = all_samples[:train_bound], all_samples[train_bound:dev_bound], all_samples[dev_bound:]
+        print(f"  Generated {len(fb_samples)} pairs from FB queries.")
+        train_data.extend(fb_samples)
+        random.shuffle(train_data)
+
+    pos = sum(1 for s in train_data if s["label"] == 1)
+    neg = len(train_data) - pos
+    print(f"\n  Train: {len(train_data)} samples (Pos: {pos}, Neg: {neg}, Ratio 1:{neg/pos:.1f})")
+    print(f"  Dev:   {len(dev_data)} samples")
+    print(f"  Test:  {len(test_data)} samples")
 
     print(f"\nStep 3: Saving datasets...")
     def clean(samples): return [{"query": s["query"], "property": s["property"], "label": s["label"], "relevance": s.get("relevance", s["label"])} for s in samples]
 
     for filename, subset in zip(
-        ["../../data/processed/recommendation_train.json", "../../data/processed/recommendation_dev.json", "../../data/processed/recommendation_test.json"], 
+        ["../../data/processed/recommendation_train.json", "../../data/processed/recommendation_dev.json", "../../data/processed/recommendation_test.json"],
         [train_data, dev_data, test_data]
     ):
         out_path = os.path.join(os.path.dirname(__file__), filename)
         with open(out_path, "w", encoding="utf-8") as f:
             json.dump(clean(subset), f, ensure_ascii=False, indent=2)
 
-    prop_texts = [property_to_text(p) for p in properties]
     prop_out = os.path.join(os.path.dirname(__file__), "../../data/processed/property_texts.json")
     with open(prop_out, "w", encoding="utf-8") as f:
         json.dump(prop_texts, f, ensure_ascii=False, indent=2)
@@ -522,3 +533,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

@@ -24,21 +24,34 @@
 
 ---
 
-##  專案架構與資料流
+## 系統架構
+
+### Offline Pipeline（離線訓練）
 
 ```mermaid
 graph TD
-    A[nchu_rental_info.csv] --> B(update_commute_data.py)
-    B --> C(generate_dataset.py)
-    B --> D(precompute_embeddings.py)
-    C --> E(train_and_export_onnx.py)
-    E --> F[frontend/models/custom_onnx_model_dir/]
-    D --> G[property_data.json]
-    H[User Input] --> I[app.js]
-    F --> J[inference.js]
-    G --> I
-    I -- 1. Rule Match --> K[Instant UI Result]
-    J -- 2. AI Re-rank --> K[Final Ranked Result]
+    A["nchu_rental_info.csv (原始房源資料)"] --> B("update_commute_data.py\n地址地理編碼 + OSRM 路網通勤時間")
+    B --> C("generate_dataset.py\nObject-level Split + Hard Negative Mining\n生成 train / dev / test")
+    B --> D("precompute_embeddings.py\n生成前端特徵 JSON")
+    C --> E("train_and_export_onnx.py\nRBT3 微調 + Graded Sample Weighting")
+    E --> F["my_custom_model.onnx (FP32, Opset 17)"]
+    F --> G("quantize_model.py\nINT8 Dynamic Quantization")
+    G --> H["my_custom_model_quant.onnx (INT8, 84 MB)"]
+    D --> I["property_data.json"]
+```
+
+### Online Serving（瀏覽器推論）
+
+```mermaid
+graph TD
+    A["使用者輸入自然語言查詢"] --> B("app.js\n規則預篩 (is_compatible)") 
+    B -- "Phase 1: 立即顯示初步結果" --> C["Rule-based 排序結果"]
+    B -- "Phase 2: 背景非同步呼叫" --> D("inference.js\nTokenizer (BertTokenizer)")
+    D --> E("onnxruntime-web\nWASM Multi-thread 推論")
+    E -- "語意相關分數" --> F("app.js\n依分數重新排序")
+    F --> G["AI 語意重排後的最終結果"]
+    H["my_custom_model_quant.onnx"] --> E
+    I["property_data.json"] --> B
 ```
 
 ---
@@ -51,9 +64,9 @@ graph TD
 
 
 ### 2. 模型訓練與評估 (`pipeline/model_training/`)
-* **`train_and_export_onnx.py`**: 使用 `rbt3` 進行微調。導入 **樣本權重 (Sample Weighting)** 機制，針對高品質匹配進行強化學習。輸出的數值已精確至**小數點後五位**。
-* **`quantize_model.py`**: 對導出的 ONNX 模型進行 **INT8 量化**，將模型體積壓縮至約 1/4，並顯著提升在瀏覽器端的執行速度。
-* **`evaluate_model.py`**: 提供專業評估指標。導入業界標準 **Graded NDCG (Exponential Gain)** 與標籤分佈報告，目前評估集已擴大至 1000+ 樣本，提供具統計意義的效能分析。
+* **`train_and_export_onnx.py`**: 使用 `rbt3` 進行微調，導入 **樣本權重 (Sample Weighting)** 機制針對高品質匹配進行強化學習，並以 Opset 17 導出 ONNX 格式。
+* **`quantize_model.py`**: 對導出的 ONNX 模型進行 **INT8 動態量化**，模型體積從 **146.8 MB 壓縮至 84.4 MB**（約 43% 縮減），以降低瀏覽器端的下載與載入成本。
+* **`evaluate_model.py`**: 提供專業評估指標。導入業界標準 **Graded NDCG (Exponential Gain)** 與標籤分佈報告，評估集為獨立的測試物件集（Object-level Split），提供無資料洩漏的嚴謹評估。
 
 
 ### 3. 前端推論引擎 (`frontend/js/`)
@@ -158,9 +171,19 @@ python pipeline/model_training/evaluate_model.py
 | **口語化／隱含意圖** | 涵蓋非直接表達的語意（最具挑戰性）| 「怕吵」→ 隔音佳；「不想追垃圾車」→ 有子母車 |
 | **噪音注入 (Noise Injection)** | 提升對錯字、縮寫、口音的容忍度 | 「興大」↔「中興大學」↔「NCHU」；字元隨機丟失 |
 
-### 2. 真實資料的交叉驗證（分佈外測試）
+### 2. 資料集規模與物件層級切割（Object-level Split）
 
-資料集中混入了來自 **Facebook 租屋社群**爬取的真實用戶貼文（`fb_queries.json`）。這些查詢**完全未參與訓練**，作為分佈外測試集（Out-of-Distribution Test Set），直接驗證模型對真實口語表達的泛化能力。
+本系統以**物件（Property）為單位**進行資料集切割，而非以樣本為單位。這是防止 Data Leakage 的關鍵設計：同一租屋物件所衍生的所有查詢對，保證只出現在訓練、驗證、測試三個切割集中的其中之一。
+
+| 切割集 | 物件比例 | 估計樣本數 | 說明 |
+| :--- | :--- | :--- | :--- |
+| **Train** | 80% | ~19,000+ | 用於梯度更新，包含 FB 真實查詢注入 |
+| **Dev** | 10% | ~2,400 | 用於訓練期間的超參數驗證與 Early Stopping |
+| **Test** | 10% | ~2,400 | 最終效能報告，與訓練資料嚴格隔離 |
+
+> **Data Leakage 聲明**：本系統已實作嚴格的 Object-level Split，評估指標（Accuracy、NDCG、MRR）均基於訓練期間完全未見過的物件所衍生之測試集計算。
+
+Facebook 真實貼文（`fb_queries.json`）僅注入訓練集，不納入驗證集與測試集，以確保分佈外驗證的獨立性。
 
 ### 3. 困難負樣本挖掘（Hard Negative Mining）
 
@@ -183,11 +206,10 @@ python pipeline/model_training/evaluate_model.py
 
 | 指標 | 數值 | 說明 |
 | :--- | :--- | :--- |
-| **Accuracy** | **92.2%** | 基於 1,000 筆測試樣本的二元分類準確率 |
+| **Accuracy** | **92.2%** | 基於獨立測試物件集（Object-level Split）的二元分類準確率 |
 | **F1 Score** | **0.882** | Precision 與 Recall 的調和平均，反映正負樣本均衡表現 |
 | **Graded NDCG @ 5** | **0.851** | 語意排序品質；完美房源極大機率排在搜尋結果首位 |
 | **Mean MRR** | **0.675** | 平均在第 1.5 名即可找到符合條件的房源 |
-| **感官延遲** | **< 100ms** | Progressive Rendering + UI Yielding 帶來的即時回饋感 |
 
 
 ---
