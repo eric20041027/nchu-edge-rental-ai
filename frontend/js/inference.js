@@ -26,7 +26,7 @@ export async function initNLP(onProgress) {
     if (!worker) {
         return new Promise((resolve, reject) => {
             console.log("Initializing Inference Web Worker...");
-            worker = new Worker('js/inference-worker.js');
+            worker = new Worker('js/inference-worker.js', { type: 'module' });
 
             worker.onmessage = (e) => {
                 const { type, message, score, id, error } = e.data;

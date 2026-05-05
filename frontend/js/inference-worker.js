@@ -1,38 +1,37 @@
 /**
  * inference-worker.js - Off-main-thread ONNX Inference Worker
- * 
- * Handles loading of the 84MB model and execution of semantic scoring.
+ *
+ * Handles loading of the 84MB ONNX model and all semantic scoring.
+ * Runs as an ES Module Worker ({type: 'module'}) to support top-level imports.
  */
 
-// Import ONNX Runtime and Transformers (Tokenizer) inside Worker
 import { AutoTokenizer, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1';
 
-// Import ONNX Runtime Web via script tag in worker is tricky, 
-// using CDN import instead.
-importScripts('https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js');
+// ONNX Runtime Web must be loaded via dynamic import inside the worker
+let ort = null;
 
 let tokenizer = null;
 let session = null;
 const MAX_LENGTH = 64;
 
-// Configure Xenova/Transformers for local models
-env.allowRemoteModels = false;
-env.allowLocalModels = true;
-env.useBrowserCache = true;
-
-/**
- * Initialization function
- */
 async function init(localOrigin) {
     try {
+        // Dynamically load ORT inside the worker context
+        const ortModule = await import('https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.mjs');
+        ort = ortModule.default ?? ortModule;
+
+        // Configure Xenova/Transformers for local models
+        env.allowRemoteModels = false;
+        env.allowLocalModels = true;
+        env.useBrowserCache = true;
         env.localModelPath = localOrigin + '/';
-        
+
         postMessage({ type: 'status', message: 'Loading Tokenizer...' });
         tokenizer = await AutoTokenizer.from_pretrained('models/custom_onnx_model_dir');
-        
-        postMessage({ type: 'status', message: 'Loading 84MB AI Model...' });
+
+        postMessage({ type: 'status', message: 'Loading AI Model (84 MB)...' });
         const modelUrl = localOrigin + '/models/custom_onnx_model_dir/my_custom_model_quant.onnx';
-        
+
         session = await ort.InferenceSession.create(modelUrl, {
             executionProviders: ['wasm'],
             graphOptimizationLevel: 'all',
@@ -45,9 +44,6 @@ async function init(localOrigin) {
     }
 }
 
-/**
- * Single-pair scoring
- */
 async function scorePair(query, propertyText) {
     const encoded = await tokenizer(query, {
         text_pair: propertyText,
@@ -76,9 +72,6 @@ async function scorePair(query, propertyText) {
     return exp1 / (exp0 + exp1);
 }
 
-/**
- * Message Handler
- */
 onmessage = async (e) => {
     const { type, data } = e.data;
 
