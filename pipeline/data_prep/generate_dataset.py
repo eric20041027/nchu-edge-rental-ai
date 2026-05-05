@@ -379,9 +379,9 @@ def compute_relevance_score(query: str, prop: Dict[str, Any]) -> int:
         
     score_ratio = satisfied / total_specified
     
-    if score_ratio >= 0.85: return 3  # 降低門滝：綕大多數指定条件満足即為 Perfect
-    if score_ratio >= 0.5:  return 2  # 擴展有效區間：50%~85% 均為 Good
-    if score_ratio >= 0.2:  return 1
+    if score_ratio >= 0.85: return 3  # 絕大多數條件滿足 → Perfect
+    if score_ratio >= 0.65: return 2  # 多數符合但有明顯偏差 → Good  (0.5 to 0.65 落入 Partial)
+    if score_ratio >= 0.15: return 1  # 部分符合：如「兩維度只符合一個」→ Partial
     return 0
 
 
