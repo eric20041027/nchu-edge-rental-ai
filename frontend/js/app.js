@@ -164,7 +164,10 @@ async function fetchRecommendations(inputText) {
             }
         });
 
-        if (data && data.length >= 0) {
+        if (data === null) {
+            // Previous inference was superseded by a newer query — do nothing.
+            return;
+        } else if (data && data.length >= 0) {
             allRecommendedHouses = data;
             visibleCount = 0;
             renderCards(true);

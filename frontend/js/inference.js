@@ -422,16 +422,16 @@ function formatResponse(scoredResults, top_k) {
     }));
 }
 
-let inferenceLock = false;
+let currentQueryId = 0;
 
 // --- Main Recommendation Pipeline ---
 // onPartialResult(results): optional callback called immediately with rule-based results
 export async function recommend(text, top_k = 20, onPartialResult = null) {
-    if (inferenceLock) {
-        console.warn("New recommendation ignored: Previous inference still in progress.");
-        return null;
-    }
-    inferenceLock = true;
+    // Increment the query ID — any in-progress inference with an older ID will detect
+    // the mismatch and exit early, allowing this new query to proceed immediately.
+    const myQueryId = ++currentQueryId;
+
+    const isCancelled = () => myQueryId !== currentQueryId;
 
     try {
         console.log("User Query:", text);
@@ -461,6 +461,9 @@ export async function recommend(text, top_k = 20, onPartialResult = null) {
         // 3. AI Re-ranking (runs after partial results are shown)
         const scoredResults = [];
         for (let i = 0; i < topCandidates.length; i++) {
+            // If a newer query has arrived, abort this one immediately
+            if (isCancelled()) return null;
+
             const { prop, rms } = topCandidates[i];
             try {
                 const aiScore = await scorePair(text, prop.text);
@@ -478,6 +481,7 @@ export async function recommend(text, top_k = 20, onPartialResult = null) {
         }
 
         // 4. Return final AI-ranked results
+        if (isCancelled()) return null;
         scoredResults.sort((a, b) => b.score - a.score);
         console.log(`Inference complete: ${scoredResults.length} results in ${(performance.now() - startTime).toFixed(0)}ms`);
 
@@ -486,7 +490,7 @@ export async function recommend(text, top_k = 20, onPartialResult = null) {
         }
 
         return formatResponse(scoredResults, top_k);
-    } finally {
-        inferenceLock = false;
+    } catch (err) {
+        throw err;
     }
 }
