@@ -454,6 +454,30 @@ def main():
     print(f"\nStep 2: Generating query-property pairs (Object-level Split)...")
     print(f"  Property split: {len(train_prop_idx)} train / {len(dev_prop_idx)} dev / {len(test_prop_idx)} test")
 
+    # ============================================================
+    # 語意衝突負樣本偵測表
+    # 偵測查詢中的「條件聲明」，並挑選「表面優質但恰好違反此條件」的房源
+    # 這強迫模型學習「禁/不/謝絕」等否定語意的語義權重
+    # ============================================================
+    CONFLICT_DIMENSIONS = [
+        {
+            "query_keywords": ["可養寵", "可寵", "可以養貓", "可以養狗", "帶貓", "帶狗", "有寵物", "2隻貓", "3隻貓"],
+            "prop_conflict":  lambda p: any("禁寵" in n or "禁止寵物" in n or "不可養寵" in n for n in p.get("notes", [])),
+        },
+        {
+            "query_keywords": ["謝絕頂加", "不要頂加", "禁頂加", "非頂加", "不接受頂加"],
+            "prop_conflict":  lambda p: "頂加" in p.get("building_type", "") or "加蓋" in p.get("floor", ""),
+        },
+        {
+            "query_keywords": ["限女", "女生專用", "女學生", "僅限女"],
+            "prop_conflict":  lambda p: any("限男" in n for n in p.get("notes", [])),
+        },
+        {
+            "query_keywords": ["限男", "男生", "僅限男"],
+            "prop_conflict":  lambda p: any("限女" in n for n in p.get("notes", [])),
+        },
+    ]
+
     def generate_samples_for_split(prop_idx_set):
         """為指定的物件子集生成樣本，負樣本只從同子集內的不相容物件中挑選。"""
         samples = []
@@ -464,16 +488,33 @@ def main():
                 relevance = compute_relevance_score(query, prop)
                 samples.append({"query": query, "property": prop_texts[idx], "label": 1, "relevance": relevance, "property_idx": idx})
 
-                # Hard Negative Mining（限制在同切割集內，防止跨集合資訊洩漏）
                 other_in_split = [i for i in prop_idx_set if i != idx]
+
+                # --- 策略一：Jaccard 字面困難負樣本 ---
                 incompatible = [i for i in other_in_split if not is_compatible(query, properties[i])]
                 if incompatible:
                     query_chars = set(query)
                     incompatible.sort(key=lambda i: len(query_chars & set(prop_texts[i])), reverse=True)
-                    for neg_idx in incompatible[:3]:
+                    for neg_idx in incompatible[:2]:
                         samples.append({"query": query, "property": prop_texts[neg_idx], "label": 0, "relevance": 0, "property_idx": neg_idx})
+
+                # --- 策略二：語意誤導型負樣本（條件衝突，非字面不符）---
+                for dim in CONFLICT_DIMENSIONS:
+                    if any(kw in query for kw in dim["query_keywords"]):
+                        semantic_neg_cands = [
+                            i for i in other_in_split
+                            if dim["prop_conflict"](properties[i])
+                        ]
+                        if semantic_neg_cands:
+                            # 優先挑租金較低（看起來更吸引人）的語意陷阱
+                            semantic_neg_cands.sort(key=lambda i: properties[i].get("rent", 9999))
+                            chosen = semantic_neg_cands[0]
+                            samples.append({"query": query, "property": prop_texts[chosen], "label": 0, "relevance": 0, "property_idx": chosen})
+                        break  # 每個查詢只加一個語意衝突負樣本
+
         random.shuffle(samples)
         return samples
+
 
     train_data = generate_samples_for_split(train_prop_idx)
     dev_data   = generate_samples_for_split(dev_prop_idx)
