@@ -103,7 +103,7 @@ python pipeline/model_training/evaluate_model.py
 
 ---
 
-## 📊 評估機制與指標說明
+## 評估機制與指標說明
 
 為了確保推薦結果不只是「有相關」而是「真準確」，本專案導入了資訊檢索 (Information Retrieval) 領域的專業評估指標：
 
@@ -138,11 +138,11 @@ python pipeline/model_training/evaluate_model.py
 | **TF-IDF 關鍵字匹配** | 字詞重疊率排序 | 口語詞（「怕熱」→ 冷氣）必敗 |
 | **規則過濾 (Rule-only)** | 僅用硬規則篩選 | 只有二元結果，無法排序 |
 | **hfl/rbt3（未微調）** | 同架構但未訓練 | 驗證微調的價值 |
-| **✅ 本系統 (Fine-tuned RBT3)** | 語意微調 + Graded Ranking | — |
+| **本系統 (Fine-tuned RBT3)** | 語意微調 + Graded Ranking | — |
 
 ---
 
-## 🔬 模型泛化能力論證
+## 模型泛化能力論證
 
 > **核心主張**：本模型在租屋語意匹配任務上，具備跨查詢表達方式的廣泛辨識能力，而非僅對合成查詢的過擬合。
 
@@ -179,7 +179,7 @@ python pipeline/model_training/evaluate_model.py
 
 ---
 
-## 📈 效能指標 (Latest Evaluation - RBT3)
+## 效能指標 (Latest Evaluation - RBT3)
 
 | 指標 | 數值 | 說明 |
 | :--- | :--- | :--- |
