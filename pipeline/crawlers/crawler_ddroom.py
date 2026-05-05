@@ -103,13 +103,41 @@ async def get_detail_info(page, url: str) -> dict:
         if tag_text and tag_text not in notes:
             notes.append(tag_text)
 
+    # Extract contact name and phone from JSON-LD (author/provider) or DOM
+    contact_name = ""
+    contact_phone = ""
+
+    # Try JSON-LD author field
+    for key in ("author", "provider", "seller"):
+        val = data.get(key, {})
+        if isinstance(val, dict):
+            contact_name = contact_name or val.get("name", "")
+            contact_phone = contact_phone or val.get("telephone", "")
+
+    # Try additionalProperty
+    for prop in data.get("additionalProperty", []):
+        name = prop.get("name", "")
+        value = str(prop.get("value", ""))
+        if "聯絡" in name or "姓名" in name or "房東" in name:
+            contact_name = contact_name or value
+        elif "電話" in name or "手機" in name or "phone" in name.lower():
+            contact_phone = contact_phone or value
+
+    # Try DOM as fallback — look for visible phone patterns
+    if not contact_phone:
+        phone_pattern = re.compile(r'09\d{2}[-\s]?\d{3}[-\s]?\d{3}|0\d{1,2}-\d{6,8}')
+        text_nodes = soup.get_text()
+        matches = phone_pattern.findall(text_nodes)
+        if matches:
+            contact_phone = matches[0]
+
     image_url = data.get("image", "")
 
     return {
         "網址": url, "地址": addr, "格局": room_type, "類型": "大樓",
         "室內坪數": size, "租金": price_val, "空房間數": "",
         "押金": "", "安全標章": "", "樓層": floor,
-        "聯絡人": "", "電話": "", "家具設施": furniture,
+        "聯絡人": contact_name, "電話": contact_phone, "家具設施": furniture,
         "租金包含": "", "另計費用": "", "安全管理": "",
         "消防逃生": "", "備註": "/".join(notes), "圖片網址": image_url,
         "距離(km)": "", "walk_mins": "", "scooter_mins": "",
