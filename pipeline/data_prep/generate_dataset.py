@@ -36,6 +36,7 @@ class Templates:
     FURNITURE = {
         "冷氣機": ["有冷氣", "要冷氣", "含冷氣", "怕熱"],
         "冷氣": ["有冷氣", "要冷氣", "怕熱"],
+        "變頻冷氣": ["變頻", "省電冷氣", "省電費"],
         "洗衣機": ["有洗衣機", "獨洗", "獨立洗衣"],
         "冰箱": ["有冰箱", "需要冰東西"],
         "電視": ["有電視"],
@@ -46,12 +47,14 @@ class Templates:
         "衣櫃": ["有衣櫃", "衣服很多"],
         "熱水器": ["有熱水器"],
         "（電）熱水器": ["有熱水器"],
-        "電梯": ["有電梯", "不想爬樓梯", "不想走樓梯", "搬東西方便", "懶得爬樓梯"],
+        "電梯": ["有電梯", "不想爬樓梯", "不想走樓梯", "搬東西方便", "樓層高", "有電梯"],
         "陽台": ["有陽台", "要陽台", "想曬衣服", "衣服容易乾", "通風好", "要有對外窗"],
         "曬衣場": ["獨曬", "有曬衣", "可曬衣"],
         "機車停車位": ["有車位", "機車位", "有停車位", "好停車"],
         "飲水機": ["有飲水機", "不用買水"],
         "寬頻網路": ["有網路", "上網方便"],
+        "垃圾處理": ["子母車", "垃圾車", "不用追垃圾車", "垃圾子母車"],
+        "可開伙": ["開伙", "煮飯", "小廚房", "可以煮", "黑晶爐"],
     }
     INCLUDED = {
         "水費": ["含水費", "包水費", "水費包含"],
@@ -371,6 +374,27 @@ def compute_relevance_score(query: str, prop: Dict[str, Any]) -> int:
         
         if loc_match: satisfied += 1
 
+    # 4. Special Pet Constraint (Critical for students)
+    if any(k in query for k in ["寵物", "貓", "狗"]):
+        total_specified += 1
+        note_str = " ".join(prop.get("notes", []))
+        if "可寵" in note_str or "可養寵" in note_str:
+            satisfied += 1
+        elif "禁寵" in note_str:
+            return 0 # Hard conflict if they ask for pet but it's forbidden
+        else:
+            satisfied += 0.5 # Unknown / ambiguous
+            
+    # 5. Trash collection / Cooking
+    if any(k in query for k in ["子母車", "垃圾車"]):
+        total_specified += 1
+        security_str = " ".join(prop.get("security", []))
+        if "垃圾處理" in security_str: satisfied += 1
+        
+    if "開伙" in query:
+        total_specified += 1
+        if any("開伙" in f for f in prop.get("furniture", [])): satisfied += 1
+
     # --- Part C: Final Mapping ---
     if total_specified == 0:
         # 無具體指定條件的查詢（如「有沒有平件的房子」）視為「優良」而非「完美」
@@ -385,7 +409,7 @@ def compute_relevance_score(query: str, prop: Dict[str, Any]) -> int:
     return 0
 
 
-def create_dataset_pairs(properties: List[Dict[str, Any]], neg_per_pos: int = 1) -> List[Dict[str, Any]]:
+def create_dataset_pairs(properties: List[Dict[str, Any]], neg_per_pos: int = 2) -> List[Dict[str, Any]]:
     """Constructs matching and non-matching pairs for sequence classification."""
     samples = []
     prop_texts = [property_to_text(p) for p in properties]
@@ -488,7 +512,7 @@ def main():
         
         for idx in prop_idx_set:
             prop = properties[idx]
-            queries = QueryGenerator.build_queries(prop, num_queries=20)
+            queries = QueryGenerator.build_queries(prop, num_queries=12)
             for query in queries:
                 relevance = compute_relevance_score(query, prop)
                 samples.append({"query": query, "property": prop_texts[idx], "label": 1, "relevance": relevance, "property_idx": idx})
@@ -507,7 +531,8 @@ def main():
                 
                 # --- 策略一點五：隨機簡單負樣本 ---
                 if incompatible:
-                    random_negs = random.sample(incompatible, min(3, len(incompatible)))
+                    # 精簡：隨機簡單負樣本對模型幫助不大，只留 1 個即可
+                    random_negs = random.sample(incompatible, min(1, len(incompatible)))
                     for neg_idx in random_negs:
                         samples.append({"query": query, "property": prop_texts[neg_idx], "label": 0, "relevance": -1, "property_idx": neg_idx})
 
@@ -521,9 +546,10 @@ def main():
                         if semantic_neg_cands:
                             # 優先挑租金較低（看起來更吸引人）的語意陷阱
                             semantic_neg_cands.sort(key=lambda i: properties[i].get("rent", 9999))
-                            chosen = semantic_neg_cands[0]
-                            samples.append({"query": query, "property": prop_texts[chosen], "label": 0, "relevance": 0, "property_idx": chosen})
-                        break  # 每個查詢只加一個語意衝突負樣本
+                            # 增加語意衝突負樣本數量至 2 個（保留核心干擾，精簡數量）
+                            for chosen in semantic_neg_cands[:2]:
+                                samples.append({"query": query, "property": prop_texts[chosen], "label": 0, "relevance": 0, "property_idx": chosen})
+                        break  # 每個查詢只加一類語意衝突負樣本，但該類生成2個
 
         random.shuffle(samples)
         return samples
@@ -533,32 +559,42 @@ def main():
     dev_data   = generate_samples_for_split(dev_prop_idx)
     test_data  = generate_samples_for_split(test_prop_idx)
 
-    # FB 真實查詢只注入訓練集，避免污染驗證集與測試集
-    fb_queries_path = os.path.join(os.path.dirname(__file__), "../../data/raw/fb_queries.json")
-    if os.path.exists(fb_queries_path):
-        print("\nStep 2.5: Injecting Facebook crawled queries into train split only...")
-        with open(fb_queries_path, "r", encoding="utf-8") as f:
-            fb_queries = json.load(f)
+    # Step 2.5: Injecting external real-world / LLM-generated queries into train split only
+    external_query_files = [
+        "../../data/raw/fb_queries.json",
+        "../../data/raw/llm_queries.json"
+    ]
+    
+    total_external_samples = 0
+    for filename in external_query_files:
+        filepath = os.path.join(os.path.dirname(__file__), filename)
+        if os.path.exists(filepath):
+            print(f"\nStep 2.5: Injecting external queries from {os.path.basename(filename)}...")
+            with open(filepath, "r", encoding="utf-8") as f:
+                external_queries = json.load(f)
 
-        fb_samples = []
-        for query in fb_queries:
-            pos_found = False
-            for idx in train_prop_idx:
-                if is_compatible(query, properties[idx]):
-                    rel = compute_relevance_score(query, properties[idx])
-                    fb_samples.append({"query": query, "property": prop_texts[idx], "label": 1, "relevance": rel})
-                    pos_found = True
-                    break
-            if pos_found:
-                cands = list(train_prop_idx)
-                random.shuffle(cands)
-                for neg_idx in cands:
-                    if not is_compatible(query, properties[neg_idx]):
-                        fb_samples.append({"query": query, "property": prop_texts[neg_idx], "label": 0, "relevance": 0})
+            external_samples = []
+            for query in external_queries:
+                pos_found = False
+                for idx in train_prop_idx:
+                    if is_compatible(query, properties[idx]):
+                        rel = compute_relevance_score(query, properties[idx])
+                        external_samples.append({"query": query, "property": prop_texts[idx], "label": 1, "relevance": rel})
+                        pos_found = True
                         break
+                if pos_found:
+                    cands = list(train_prop_idx)
+                    random.shuffle(cands)
+                    for neg_idx in cands:
+                        if not is_compatible(query, properties[neg_idx]):
+                            external_samples.append({"query": query, "property": prop_texts[neg_idx], "label": 0, "relevance": 0})
+                            break
 
-        print(f"  Generated {len(fb_samples)} pairs from FB queries.")
-        train_data.extend(fb_samples)
+            print(f"  Generated {len(external_samples)} pairs from {os.path.basename(filename)}.")
+            train_data.extend(external_samples)
+            total_external_samples += len(external_samples)
+            
+    if total_external_samples > 0:
         random.shuffle(train_data)
 
     pos = sum(1 for s in train_data if s["label"] == 1)

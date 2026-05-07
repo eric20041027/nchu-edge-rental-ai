@@ -83,8 +83,8 @@ def main():
     session = ort.InferenceSession(MODEL_PATH)
 
     # Phase 1: Binary Classification
-    print("[Phase 1] Binary Classification Metrics (n=1000)")
-    sample_size = min(len(test_data), 1000)
+    print("[Phase 1] Binary Classification Metrics (n=5000)")
+    sample_size = min(len(test_data), 5000)
     sample_test = random.sample(test_data, sample_size)
 
     test_queries = [d["query"] for d in sample_test]
@@ -92,25 +92,29 @@ def main():
     test_labels = np.array([d["label"] for d in sample_test])
     
     probs = run_onnx_batch(session, tokenizer, test_queries, test_props)
-    preds = (probs >= 0.5).astype(int)
-    
-    acc = (preds == test_labels).mean()
-    tp = ((preds == 1) & (test_labels == 1)).sum()
-    fp = ((preds == 1) & (test_labels == 0)).sum()
-    fn = ((preds == 0) & (test_labels == 1)).sum()
-    precision = tp / (tp + fp) if (tp + fp) > 0 else 0
-    recall = tp / (tp + fn) if (tp + fn) > 0 else 0
-    f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
-    
-    print(f"  Accuracy: {acc:.5f} | F1: {f1:.5f}")
+    print(f"{'Threshold':>10} | {'Acc':>8} | {'Prec':>8} | {'Recall':>8} | {'F1':>8}")
+    print("-" * 55)
+    for threshold in [0.5, 0.7, 0.9]:
+        preds = (probs >= threshold).astype(int)
+        
+        acc = (preds == test_labels).mean()
+        tp = ((preds == 1) & (test_labels == 1)).sum()
+        fp = ((preds == 1) & (test_labels == 0)).sum()
+        fn = ((preds == 0) & (test_labels == 1)).sum()
+        
+        prec = tp / (tp + fp) if (tp + fp) > 0 else 0
+        rec = tp / (tp + fn) if (tp + fn) > 0 else 0
+        f1_score = 2 * prec * rec / (prec + rec) if (prec + rec) > 0 else 0
+        
+        print(f"{threshold:>10.1f} | {acc:>8.3f} | {prec:>8.3f} | {rec:>8.3f} | {f1_score:>8.3f}")
 
     # Phase 2: Ranking Pipeline
     print("\n[Phase 2] Ranking Metrics (Top-30 Re-ranking Simulation)")
 
     pos_queries = list(set([d["query"] for d in test_data if d["label"] == 1]))
     random.seed(42)
-    num_eval_queries = min(len(pos_queries), 200)
-    eval_queries = random.sample(pos_queries, num_eval_queries) # Increased to 200 queries
+    num_eval_queries = min(len(pos_queries), 500)
+    eval_queries = random.sample(pos_queries, num_eval_queries) # Increased to 500 queries
     
     ndcg_list, mrr_list = [], []
     ndcg_graded_list = []

@@ -8,7 +8,7 @@ import os
 os.environ["TRANSFORMERS_NO_ADVISORY_WARNINGS"] = "1"
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
 os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
-os.environ["HF_HUB_OFFLINE"] = "1"
+os.environ["HF_HUB_OFFLINE"] = "0"
 
 import json
 import random
@@ -39,7 +39,7 @@ from torch import nn
 
 
 # Global Configurations
-MODEL_CHECKPOINT = "hfl/rbt3"   # Upgraded: 3-layer Chinese RoBERTa (better semantic understanding)
+MODEL_CHECKPOINT = "hfl/rbt6"   # Upgraded: 6-layer Chinese RoBERTa (much better semantic understanding)
 MAX_LENGTH = 64                   # Aligned with inference.js MAX_LENGTH for consistency
 ONNX_OUTPUT_PATH = os.path.join(os.path.dirname(__file__), "../../frontend/models/custom_onnx_model_dir/my_custom_model.onnx")
 SAVED_MODEL_DIR = os.path.join(os.path.dirname(__file__), "../../saved_models/rbt3_finetuned")
@@ -95,16 +95,21 @@ class WeightedTrainer(Trainer):
         outputs = model(**inputs)
         logits = outputs.get("logits")
         
+        # [Option C] Temperature Calibration
+        # Scaling logits by T > 1.0 flattens the distribution and prevents sigmoid saturation
+        # This helps the model maintain ranking resolution even for high-probability samples.
+        temperature = 2.0 
+        scaled_logits = logits / temperature
+        
         if weights is not None:
-            # CrossEntropyLoss with reduction='none' to apply per-sample weights
             loss_fct = nn.CrossEntropyLoss(reduction='none')
-            loss = loss_fct(logits.view(-1, self.model.config.num_labels), labels.view(-1))
+            loss = loss_fct(scaled_logits.view(-1, self.model.config.num_labels), labels.view(-1))
             loss = (loss * weights).mean()
         else:
-            loss = outputs.get("loss")
+            loss_fct = nn.CrossEntropyLoss()
+            loss = loss_fct(scaled_logits.view(-1, self.model.config.num_labels), labels.view(-1))
             
         return (loss, outputs) if return_outputs else loss
-
 
 
 def tokenize_datasets(
@@ -125,11 +130,12 @@ def tokenize_datasets(
         )
         tokenized["labels"] = examples["label"]
         
-        # Base weights from relevance
-        rel_map = {3: 3.0, 2: 2.0, 1: 1.0, 0: 1.5, -1: 0.5}
+        # [Strategy Update] Aggressive Weighted Ranking
+        # We push 'Perfect' much higher and penalize 'None' (Hard Negatives) more
+        # to ensure the model distinguishes level 3 from level 2.
+        rel_map = {3: 15.0, 2: 4.0, 1: 0.8, 0: 6.0, -1: 0.5}
         
         weights = []
-        # Ensure is_hard exists in batch
         is_hard_list = examples.get("is_hard", [False]*len(examples["query"]))
         for i in range(len(examples["query"])):
             rel = examples["relevance"][i]
@@ -137,7 +143,7 @@ def tokenize_datasets(
             
             w = float(rel_map.get(rel, 1.0))
             if is_hard:
-                w *= 2.5 # Boost weight for cases model previously failed on
+                w *= 2.0 # Slightly lower boost since base weights are already high
             weights.append(w)
             
         tokenized["sample_weight"] = weights
@@ -217,7 +223,7 @@ def train_model(train_dataset: Dataset, eval_dataset: Dataset) -> Tuple[Trainer,
         num_train_epochs=12,              # More epochs; EarlyStopping will prevent overfit
         weight_decay=0.01,
         warmup_ratio=0.1,
-        label_smoothing_factor=0.1,       # Prevent over-confidence on hard negatives
+        label_smoothing_factor=0.0,       # Remove label smoothing to force absolute confidence on '0' (No match)
         logging_steps=100,                # Less frequent logging for cleaner output
         logging_first_step=False,
         save_strategy="steps",
