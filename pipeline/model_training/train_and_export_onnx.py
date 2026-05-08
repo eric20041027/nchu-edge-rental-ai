@@ -27,8 +27,6 @@ from transformers import (
     TrainerCallback,
     PrinterCallback,
     PreTrainedModel,
-
-
     PreTrainedTokenizer,
     logging
 )
@@ -250,6 +248,8 @@ def train_model(train_dataset: Dataset, eval_dataset: Dataset) -> Tuple[Trainer,
         num_labels=2,
         id2label={0: "NOT_MATCH", 1: "MATCH"},
         label2id={"NOT_MATCH": 0, "MATCH": 1},
+        hidden_dropout_prob=0.15,         # Increased dropout for better generalization
+        attention_probs_dropout_prob=0.15 # Increased attention dropout
     )
 
     training_args = TrainingArguments(

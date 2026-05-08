@@ -574,21 +574,33 @@ def main():
                 external_queries = json.load(f)
 
             external_samples = []
-            for query in external_queries:
-                pos_found = False
-                for idx in train_prop_idx:
-                    if is_compatible(query, properties[idx]):
-                        rel = compute_relevance_score(query, properties[idx])
-                        external_samples.append({"query": query, "property": prop_texts[idx], "label": 1, "relevance": rel})
-                        pos_found = True
-                        break
-                if pos_found:
-                    cands = list(train_prop_idx)
-                    random.shuffle(cands)
-                    for neg_idx in cands:
-                        if not is_compatible(query, properties[neg_idx]):
-                            external_samples.append({"query": query, "property": prop_texts[neg_idx], "label": 0, "relevance": 0})
+            for item in external_queries:
+                # [New Logic] Handle pre-paired LLM samples (dictionaries)
+                if isinstance(item, dict) and "query" in item and "property" in item:
+                    external_samples.append({
+                        "query": item["query"], 
+                        "property": item["property"], 
+                        "label": item.get("label", 0), 
+                        "relevance": item.get("relevance", 0),
+                        "is_hard": True # Explicitly mark as hard for training weights
+                    })
+                # [Legacy Logic] Handle list of query strings (requires compatibility search)
+                elif isinstance(item, str):
+                    query = item
+                    pos_found = False
+                    for idx in train_prop_idx:
+                        if is_compatible(query, properties[idx]):
+                            rel = compute_relevance_score(query, properties[idx])
+                            external_samples.append({"query": query, "property": prop_texts[idx], "label": 1, "relevance": rel})
+                            pos_found = True
                             break
+                    if pos_found:
+                        cands = list(train_prop_idx)
+                        random.shuffle(cands)
+                        for neg_idx in cands:
+                            if not is_compatible(query, properties[neg_idx]):
+                                external_samples.append({"query": query, "property": prop_texts[neg_idx], "label": 0, "relevance": 0})
+                                break
 
             print(f"  Generated {len(external_samples)} pairs from {os.path.basename(filename)}.")
             train_data.extend(external_samples)
