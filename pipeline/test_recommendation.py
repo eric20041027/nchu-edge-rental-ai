@@ -84,29 +84,34 @@ def main():
         scored = []
         for p in properties[:100]: # Score top 100 for better analysis
             ai_score, raw_prob = score_pair_ai(tokenizer, session, query, p['text'])
+            pText = (p['text'] + p.get('furniture', '') + " ".join(p.get('notes', []))).lower()
             
-            # --- Better Rule Based Match (RMS) ---
+            # --- Better Rule Based Match (RMS) with Intent ---
             match_count = 0
             total_req = 0
-            
-            # Keywords matching
-            for kw in ["陽台", "電視", "冰箱", "洗衣機", "冷氣"]:
-                if kw in query:
-                    total_req += 1
-                    if kw in p['text']: match_count += 1
-            
-            # Location matching
-            if any(x in query for x in ["南區", "東區", "大里", "興大"]):
+            query_kws = query.lower().split() # Simplified for CLI
+
+            for kw in query_kws:
+                if len(kw) < 2: continue
                 total_req += 1
-                if any(x in query and x in p['text'] for x in ["南區", "東區", "大里", "興大"]):
-                    match_count += 1
+                is_match = kw in pText
+                
+                # Intent mapping
+                if '垃圾' in kw or '追車' in kw:
+                    is_match = any(x in pText for x in ['子母車', '代收垃圾', '垃圾處理'])
+                elif '樓梯' in kw or '電梯' in kw:
+                    is_match = any(x in pText for x in ['電梯', '華廈', '大樓'])
+                elif '電' in kw or '省' in kw:
+                    is_match = any(x in pText for x in ['台電', '獨立電錶', '台水台電'])
+                
+                if is_match: match_count += 1
 
             rms = (match_count / total_req) if total_req > 0 else 1.0
             
             # Final Score Logic (35% Rules + 65% AI)
             final_score = (rms * 35) + (ai_score * 65)
             
-            # Special boost for perfect rule matches (Match browser)
+            # Special boost for perfect rule matches
             if rms == 1.0 and final_score < 80:
                 final_score = 80 + (ai_score * 15)
 

@@ -394,16 +394,26 @@ function calculateRuleBasedScore(candidates, queryKeywords, text, constraints) {
             totalRequirements++;
             let isMatch = pText.includes(kw);
             
-            // Special Case: Vertical Access (Elevator vs Stairs)
+            // --- Special Case: Intent-Based Mapping ---
             if (kw.includes('樓梯') || kw.includes('電梯')) {
-                // If user mentions stairs/elevator, they WANT an elevator.
-                // We only match if the property has elevator-related keywords.
                 const elevatorKws = ['電梯', '華廈', '大樓'];
                 isMatch = elevatorKws.some(alt => pText.includes(alt));
-            } else if (!isMatch) {
-                // Generic semantic expansion for other groups
+            } 
+            else if (kw.includes('垃圾') || kw.includes('追車')) {
+                const wasteKws = ['子母車', '代收垃圾', '垃圾處理', '垃圾子車'];
+                isMatch = wasteKws.some(alt => pText.includes(alt));
+            }
+            else if (kw.includes('電') || kw.includes('錢') || kw.includes('省')) {
+                if (kw.includes('電費') || kw.includes('台電') || kw.includes('省')) {
+                    const powerKws = ['台電', '獨立電錶', '台水台電'];
+                    isMatch = powerKws.some(alt => pText.includes(alt));
+                }
+            }
+            
+            // Generic semantic expansion for other groups
+            if (!isMatch) {
                 for (const [group, alternates] of Object.entries(semanticMap)) {
-                    if (group !== '電梯' && (kw.includes(group) || group.includes(kw))) {
+                    if (kw.includes(group) || group.includes(kw)) {
                         if (alternates.some(alt => pText.includes(alt))) {
                             isMatch = true;
                             break;
