@@ -53,6 +53,24 @@ def property_to_text(prop: Dict[str, Any]) -> str:
     parts.extend([note for note in prop["notes"] if "寵物" in note or "限" in note])
     return " ".join(parts)
 
+def apply_hybrid_filtering(query: str, property_text: str, score: float) -> float:
+    """[Option 1] Hybrid Filtering: Penalizes AI scores if hard constraints are violated."""
+    penalty = 1.0
+    
+    # 1. Pet Policy Violation (The most critical issue found)
+    if ("養貓" in query or "養狗" in query or "寵物" in query) and "禁養寵物" in property_text:
+        penalty *= 0.1 # Aggressive penalty
+        
+    # 2. Balcony Requirement
+    if "陽台" in query and "陽台" not in property_text:
+        penalty *= 0.5
+        
+    # 3. Electricity Bill (Taipower)
+    if "台電" in query and "台電" not in property_text:
+        penalty *= 0.7
+
+    return score * penalty
+
 def run_onnx_batch(session, tokenizer, queries, properties):
     all_probs = []
     input_names = [input.name for input in session.get_inputs()]
@@ -72,7 +90,10 @@ def run_onnx_batch(session, tokenizer, queries, properties):
         logits = session.run(["logits"], onnx_inputs)[0]
         exp_logits = np.exp(logits - np.max(logits, axis=1, keepdims=True))
         probs = exp_logits / np.sum(exp_logits, axis=1, keepdims=True)
-        all_probs.append(probs[0, 1])
+        
+        # Apply Hybrid Filtering (Option 1)
+        final_score = apply_hybrid_filtering(queries[i], properties[i], probs[0, 1])
+        all_probs.append(final_score)
         
     return np.array(all_probs)
 

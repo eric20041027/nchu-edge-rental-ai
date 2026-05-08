@@ -243,10 +243,8 @@ function createPropertyCardHTML(house, badgeClass) {
         let scooterMins = house.scooter_mins || Math.max(1, Math.ceil(dist / 0.5));
         
         const queryText = userRequirement ? userRequirement.value : "";
+        let showWalk = walkMins <= 10;
         
-        let showWalk = walkMins <= 10; // Default logic
-        
-        // Override based on explicit user intent
         if (queryText.includes("走路") || queryText.includes("步行")) {
             showWalk = true;
         } else if (queryText.includes("機車") || queryText.includes("騎車")) {
@@ -260,43 +258,80 @@ function createPropertyCardHTML(house, badgeClass) {
         }
     }
 
+    // [Explainable AI] Generate Reason Tags
+    let reasonsHtml = "";
+    if (house.match_reasons && house.match_reasons.length > 0) {
+        reasonsHtml = `<div class="match-reasons" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;">
+            ${house.match_reasons.map(r => `<span style="background: rgba(0, 255, 209, 0.15); color: #00FFD1; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; border: 1px solid rgba(0, 255, 209, 0.3);"><i class="fa-solid fa-check"></i> ${r}</span>`).join('')}
+        </div>`;
+    }
+
+    // [Hybrid Filtering] Conflict Warning
+    let conflictHtml = "";
+    let cardOpacity = 1.0;
+    if (house.conflict_reason) {
+        conflictHtml = `<div class="conflict-alert" style="background: rgba(255, 107, 107, 0.15); color: #ff6b6b; padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; margin-bottom: 12px; border: 1px solid rgba(255, 107, 107, 0.3); display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span>${house.conflict_reason}</span>
+        </div>`;
+        cardOpacity = 0.7; // Dim the card
+    }
+
     return `
-        <div class="card-image">
-            <img src="${imgUrl}" alt="房間照片">
-            <span class="badge ${badgeClass}">配對相符度 ${displayScore}%</span>
+        <div class="property-card-inner" style="opacity: ${cardOpacity};">
+            <div class="card-image">
+                <img src="${imgUrl}" alt="房間照片">
+                <span class="badge ${badgeClass}">配對相符度 ${displayScore}%</span>
+            </div>
+            <div class="card-content">
+                ${conflictHtml}
+                <div class="card-price">NT$ ${house.price_str}</div>
+                <h4 class="card-title" style="margin-bottom: 8px;">${house.title}</h4>
+                
+                ${reasonsHtml}
+
+                <div class="card-details" style="display: flex; gap: 10px; font-size: 0.85rem; color: #ccc; margin-bottom: 5px;">
+                    <span><i class="fa-solid fa-vector-square"></i> ${house.size}</span>
+                    <span><i class="fa-solid fa-building"></i> ${house.floor}</span>
+                </div>
+                
+                <details style="font-size: 0.8rem; color: #ccc; margin-bottom: 10px; cursor: pointer; background: rgba(255,255,255,0.03); padding: 5px 8px; border-radius: 6px;">
+                    <summary style="outline: none; font-weight: 500;"><i class="fa-solid fa-couch"></i> 查看附屬家具設施</summary>
+                    <div style="margin-top: 5px; line-height: 1.4; padding-left: 18px;">
+                        ${house.furniture.split('/').join(', ')}
+                    </div>
+                </details>
+                
+                <div style="font-size: 0.85rem; color: var(--primary-color); margin-bottom: 12px; font-weight: 500;">
+                    ${commuteHtml}
+                </div>
+
+                <div class="contact-info" style="margin-bottom: 15px; padding: 10px; background: rgba(255, 255, 255, 0.03); border-radius: 12px; border: 1px solid var(--border-glass);">
+                    <div style="font-size: 0.85rem; color: #94A3B8; margin-bottom: 5px; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-user-tie" style="color: var(--primary-color);"></i>
+                        <span>聯絡人：${house.contact || '不具名'}</span>
+                    </div>
+                    <div style="font-size: 0.95rem; color: #F8FAFC; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-phone" style="color: var(--accent-color);"></i>
+                        <a href="tel:${house.phone}" style="color: inherit; text-decoration: none; font-weight: 600;">${house.phone || '無資料'}</a>
+                    </div>
+                </div>
+
+                <div class="map-container" style="margin-bottom: 15px; border-radius: 8px; overflow: hidden; height: 120px;">
+                    <iframe width="100%" height="100%" frameborder="0" style="border:0" 
+                        src="https://maps.google.com/maps?q=${encodeURIComponent(house.address)}&output=embed" 
+                        allowfullscreen>
+                    </iframe>
+                </div>
+                <div class="card-link">
+                    <a href="${house.url}" target="_blank" style="color: var(--primary-color); text-decoration: none; font-size: 0.9rem; display: inline-block;">
+                        <i class="fa-solid fa-link"></i> 前往查看物件
+                    </a>
+                </div>
+            </div>
         </div>
-        <div class="card-content">
-            <div class="card-price">NT$ ${house.price_str}</div>
-            <h4 class="card-title">${house.title}</h4>
-            <div class="card-details" style="display: flex; gap: 10px; font-size: 0.85rem; color: #ccc; margin-bottom: 5px;">
-                <span><i class="fa-solid fa-vector-square"></i> ${house.size}</span>
-                <span><i class="fa-solid fa-building"></i> ${house.floor}</span>
-            </div>
-            
-            <details style="font-size: 0.8rem; color: #ccc; margin-bottom: 10px; cursor: pointer; background: rgba(255,255,255,0.03); padding: 5px 8px; border-radius: 6px;">
-                <summary style="outline: none; font-weight: 500;"><i class="fa-solid fa-couch"></i> 查看附屬家具設施</summary>
-                <div style="margin-top: 5px; line-height: 1.4; padding-left: 18px;">
-                    ${house.furniture.split('/').join(', ')}
-                </div>
-            </details>
-            
-            <div style="font-size: 0.85rem; color: var(--primary-color); margin-bottom: 12px; font-weight: 500;">
-                ${commuteHtml}
-            </div>
-
-            <div class="contact-info" style="margin-bottom: 15px; padding: 10px; background: rgba(255, 255, 255, 0.03); border-radius: 12px; border: 1px solid var(--border-glass);">
-                <div style="font-size: 0.85rem; color: #94A3B8; margin-bottom: 5px; display: flex; align-items: center; gap: 8px;">
-                    <i class="fa-solid fa-user-tie" style="color: var(--primary-color);"></i>
-                    <span>聯絡人：${house.contact || '不具名'}</span>
-                </div>
-                <div style="font-size: 0.95rem; color: #F8FAFC; display: flex; align-items: center; gap: 8px;">
-                    <i class="fa-solid fa-phone" style="color: var(--accent-color);"></i>
-                    <a href="tel:${house.phone}" style="color: inherit; text-decoration: none; font-weight: 600;">${house.phone || '無資料'}</a>
-                </div>
-            </div>
-
-            <div class="map-container" style="margin-bottom: 15px; border-radius: 8px; overflow: hidden; height: 120px;">
-                <iframe width="100%" height="100%" frameborder="0" style="border:0" 
+    `;
+}            <iframe width="100%" height="100%" frameborder="0" style="border:0" 
                     src="https://maps.google.com/maps?q=${encodeURIComponent(house.address)}&output=embed" 
                     allowfullscreen>
                 </iframe>

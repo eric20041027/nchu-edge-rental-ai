@@ -243,8 +243,8 @@ class CleanLogCallback(TrainerCallback):
 
 def train_model(train_dataset: Dataset, eval_dataset: Dataset) -> Tuple[Trainer, PreTrainedModel]:
 
-    """Initializes model, configures Trainer, and fine-tunes ALBERT."""
-    print("\n[Train] Starting fine-tuning (RBT3)...")
+    """Initializes model, configures Trainer, and fine-tunes the model."""
+    print(f"\n[Train] Starting fine-tuning ({MODEL_CHECKPOINT})...")
 
 
     model = AutoModelForSequenceClassification.from_pretrained(
@@ -272,8 +272,8 @@ def train_model(train_dataset: Dataset, eval_dataset: Dataset) -> Tuple[Trainer,
         save_strategy="steps",
         save_steps=200,
         load_best_model_at_end=True,
-        metric_for_best_model="loss",
-        greater_is_better=False,
+        metric_for_best_model="f1",       # Switch back to F1 to focus on classification quality
+        greater_is_better=True,
         report_to="none",
         save_total_limit=5,               # Keep more checkpoints for safety
         disable_tqdm=False,
@@ -288,8 +288,8 @@ def train_model(train_dataset: Dataset, eval_dataset: Dataset) -> Tuple[Trainer,
         eval_dataset=eval_dataset,
         compute_metrics=compute_metrics,
         callbacks=[
-            # Reverted patience back to original 5
-            EarlyStoppingCallback(early_stopping_patience=5, early_stopping_threshold=0.0005),
+            # Increased patience to 8 to give the model more time to optimize precision
+            EarlyStoppingCallback(early_stopping_patience=8, early_stopping_threshold=0.0005),
             CleanLogCallback()
         ]
     )

@@ -177,8 +177,41 @@ function parseConstraintsFromText(text) {
         budget, minBudget, maxBudget, limit, genderUnrestricted, hasGenderMention, hasBudgetMention, hasRoomTypeMention, 
         wantsUtilityBilling, maxElectricityPrice, requireBalcony, requireWindow, requireParking, requireWaste, 
         requireSubsidy, isSocialHousing,
-        excludeRooftop, excludeWooden, excludeHaunted, maxWalkMins, maxScooterMins 
+        excludeRooftop, excludeWooden, excludeHaunted, maxWalkMins, maxScooterMins,
+        wantsPet: (text.includes('養貓') || text.includes('養狗') || text.includes('寵物'))
     };
+}
+
+// --- Explainability: Match Reasons & Conflict Detection ---
+function explainMatch(query, prop, constraints) {
+    const reasons = [];
+    const { wantsUtilityBilling, requireBalcony, wantsPet } = constraints;
+
+    // 1. Key Amenities
+    if (requireBalcony && (prop.has_balcony || prop.text.includes('陽台'))) reasons.push('陽台');
+    if (wantsUtilityBilling && (prop.electricity_billing === '台水台電')) reasons.push('台電計費');
+    if (wantsPet && (prop.text.includes('可養') || prop.text.includes('寵物友善'))) reasons.push('可養寵物');
+
+    // 2. Location matches
+    const keywords = extractKeywords(query);
+    keywords.forEach(kw => {
+        if (prop.text.includes(kw) && (kw.endsWith('路') || kw.endsWith('街') || kw.includes('區'))) {
+            reasons.push(kw);
+        }
+    });
+
+    return [...new Set(reasons)];
+}
+
+function checkConflicts(prop, constraints) {
+    const { wantsPet } = constraints;
+    
+    // Check for hard pet conflict
+    if (wantsPet && (prop.text.includes('禁養') || prop.text.includes('不可養'))) {
+        return "此房源禁養寵物";
+    }
+    
+    return null;
 }
 
 // --- Hard Exclusion Filtering ---
@@ -411,7 +444,8 @@ function formatResponse(scoredResults, top_k) {
         url: item.property.url,
         imgUrl: item.property.img || null,
         score: item.score,
-        match_details: "",
+        match_reasons: item.match_reasons || [],
+        conflict_reason: item.conflict_reason || null,
         size: item.property.size || "坪數未提供",
         floor: item.property.floor || "樓層未提供",
         furniture: item.property.furniture || "無特殊設施提供",
@@ -474,7 +508,20 @@ export async function recommend(text, top_k = 20, onPartialResult = null) {
                 let finalPercentage = Math.round((rms * 35) + (normalizedAiScore * 65));
                 if (rms === 1.0 && finalPercentage < 80) finalPercentage = 80 + Math.round(normalizedAiScore * 15);
                 
-                scoredResults.push({ property: prop, score: Math.min(100, Math.round(finalPercentage)) });
+                // --- Explainability & Hybrid Filtering (Option 1) ---
+                const match_reasons = explainMatch(text, prop, constraints);
+                const conflict_reason = checkConflicts(prop, constraints);
+                
+                if (conflict_reason) {
+                    finalPercentage *= 0.1; // Aggressive reduction for conflicts
+                }
+                
+                scoredResults.push({ 
+                    property: prop, 
+                    score: Math.min(100, Math.round(finalPercentage)),
+                    match_reasons,
+                    conflict_reason
+                });
             } catch (err) {
                 console.error(`AI scoring error for property ${i}:`, err);
             }
