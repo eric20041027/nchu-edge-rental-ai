@@ -171,7 +171,8 @@ async function fetchRecommendations(inputText) {
         } else if (data && data.length > 0) {
             // Check relevance based on score
             const topScore = data[0].final_score || 0;
-            if (topScore < 15) {
+            console.log("AI Top Match Score:", topScore);
+            if (topScore < 5) {
                 recommendationList.innerHTML = `<div style="text-align: center; color: #ff6b6b; padding: 2rem;">
                     <i class="fa-solid fa-circle-question" style="font-size: 3rem; margin-bottom: 1rem;"></i><br>
                     偵測到不相干的文字，請重新輸入更具體的租屋需求。<br>
