@@ -38,7 +38,9 @@ from torch import nn
 
 # Global Configurations
 MODEL_CHECKPOINT = "hfl/rbt6"   # Upgraded: 6-layer Chinese RoBERTa (much better semantic understanding)
-MAX_LENGTH = 64                   # Aligned with inference.js MAX_LENGTH for consistency
+MAX_LENGTH = 64                 # Aligned with inference.js MAX_LENGTH for consistency
+# MODEL_CHECKPOINT = "hfl/rbt3"  # Reverted to 3-layer for fast frontend loading (approx. 84MB quantized)
+# MAX_LENGTH = 128               # Keep 128 to capture more details without increasing file size
 ONNX_OUTPUT_PATH = os.path.join(os.path.dirname(__file__), "../../frontend/models/custom_onnx_model_dir/my_custom_model.onnx")
 SAVED_MODEL_DIR = os.path.join(os.path.dirname(__file__), "../../saved_models/rbt3_finetuned")
 

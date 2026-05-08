@@ -10,7 +10,7 @@ venv/
 .DS_Store
 *.log
 
-# 訓練中間產物 (checkpoints / Training intermediate outputs)
+# 訓練中�??�物 (checkpoints / Training intermediate outputs)
 saved_models/recommendation_model_output/
 saved_models/rbt3_finetuned/
 
@@ -19,12 +19,12 @@ saved_models/rbt3_finetuned/
 frontend/models/custom_onnx_model_dir/my_custom_model.onnx
 frontend/models/custom_onnx_model_dir/my_custom_model.onnx.data
 # Allow the quantized model (84MB)
-!frontend/models/custom_onnx_model_dir/my_custom_model_quant.onnx
+# �Ȯɱư��L�j�ҫ�
 
 # Generated datasets (regenerable from CSV)
 data/processed/*.json
 
-# Agents / Skills (開發工具，非專案本體)
+# Agents / Skills (?�發工具，�?專�??��?)
 .agents/
 .agent/
 _agents/
@@ -34,7 +34,7 @@ _agent/
 # Vercel
 .vercel/
 
-# 訓練相關 (非網頁運行必要)
+# 訓練?��? (?�網?��?行�?�?
 test_custom_model.html
 architecture.txt
 
@@ -44,3 +44,4 @@ temp_checkpoints/
 *.data
 sym_shape_infer_temp.onnx
 *.html
+frontend/models/custom_onnx_model_dir/my_custom_model_quant.onnx
