@@ -1,45 +1,63 @@
 # Changelog
 
-All notable changes to the **NCHU Rental Recommendation AI** project will be documented in this file.
+All 140+ commits of the **NCHU Rental Recommendation AI** project summarized into key technical milestones.
 
-## [2026-05-08] - Optimization for Generalization & Precision
-### Added
-- **Adversarial Training (FGM)**: Implemented Fast Gradient Method in `WeightedTrainer` to inject perturbations into embedding layers, improving semantic robustness.
-- **LLM Hard Traps (500 samples)**: Generated 500 high-difficulty query-property pairs using Gemini API targeting subtle constraint violations (pet policies, utilities, locations).
-- **Dropout Regularization**: Increased `hidden_dropout_prob` and `attention_probs_dropout_prob` to **0.15** to prevent overfitting.
+## 🚀 [Phase 5] Extreme Optimization & Generalization (Current)
+*Target: Hit NDCG@5 > 0.85*
 
-### Changed
-- **Training Schedule**: Increased `num_train_epochs` to 15 and set `early_stopping_patience` to 12.
-- **Dataset Pipeline**: Updated `generate_dataset.py` to handle pre-paired dictionary samples from LLM augmentation.
-- **Learning Rate**: Fine-tuned to `2e-5` for more stable convergence in the final ranking optimization phase.
-- **Centralized Augmentation**: Merged trap generation logic into `augment_with_llm.py` and consolidated output to `llm_queries.json`.
+### [2026-05-08] - Generalization & Adversarial Training
+- **Adversarial Training (FGM)**: Integrated Fast Gradient Method to boost semantic robustness.
+- **LLM Hard Traps**: Synthesized 500+ high-difficulty trap samples using Gemini API.
+- **Dropout Regularization**: Increased dropout to 0.15 for better model stability.
 
----
-
-## [2026-05-07] - Ranking-Aware Training & Calibration
-### Added
-- **Temperature Calibration (Option C)**: Introduced Logit Scaling with $T=2.0$ in the cross-entropy loss function to prevent sigmoid saturation and improve ranking resolution for NDCG.
-- **Aggressive Weighting Scheme**: Implemented a non-linear weight map (Perfect: 15.0, Good: 4.0, None: 6.0) to prioritize high-relevance matches.
-
-### Fixed
-- **Security Audit**: Removed all hardcoded API keys and implemented `.env` file support for `GEMINI_API_KEY`.
-- **Git Safety**: Updated `.gitignore` to strictly exclude sensitive credentials and large temporary model artifacts.
-
-### Optimized
-- **Inference Pipeline**: Successfully exported and quantized the model to INT8 ONNX format for edge deployment.
+### [2026-05-07] - Ranking Calibration
+- **Temperature Scaling (T=2.0)**: Calibrated Softmax logits to improve ranking resolution.
+- **Weighted Learning**: Implemented aggressive weights (Perfect: 15.0) for the ranking loss.
 
 ---
 
-## [2026-05-06] - Core Pipeline & Data Integration
-### Added
-- **Multi-Source Crawlers**: Implemented automated data fetching from 591, Dcard, and Facebook rental groups.
-- **Hard Negative Mining**: Established the initial hard negative sampling ratio (1:2.5) to boost classification precision.
-- **Feature Engineering**: Implemented `property_to_text` canonical description logic for transformer input.
+## 📈 [Phase 4] Precision Metrics & Commute Awareness (2026-04-27 to 2026-05-06)
+*Target: Transition from Binary to Graded Evaluation*
+
+- **Graded Metrics**: Adopted **NDCG@5** and **MRR** for statistical performance tracking.
+- **Commute Logic**: Integrated OSRM data for precise travel time/distance scoring.
+- **Hard Negative Mining**: Optimized pos:neg ratio to 1:2.5 to reduce false positives.
+- **Budget Scaling**: Implemented Chinese numeral parsing (e.g., 6k, 1萬5) for budget extraction.
 
 ---
 
-## [Project Goals]
-- [x] Baseline F1 Score > 0.85
-- [ ] Graded NDCG@5 > 0.85 (In progress with May 8th updates)
-- [x] Edge AI Deployment (ONNX Quantized)
-- [x] Automated Data Augmentation
+## 🎨 [Phase 3] Cross-Encoder & UI Overhaul (2026-03-18 to 2026-04-02)
+*Target: Professional UX and Deep Semantic Matching*
+
+- **Sentence-Pair Architecture**: Switched to a robust Cross-Encoder for direct query-property matching.
+- **UI/UX Excellence**: Implemented Glassmorphism, Mesh Gradients, and Framer Motion-style animations.
+- **Quantization**: Successfully implemented INT8 quantization to reduce model size for web delivery.
+- **Stopwords & Cleaning**: Refined the NLP cleaning pipeline for higher training signal.
+
+---
+
+## 🤖 [Phase 2] Web AI & ONNX Integration (2026-03-08 to 2026-03-12)
+*Target: 100% Client-side AI Inference*
+
+- **ONNX Runtime Web**: Migrated inference from Python backend to browser-based WASM runtime.
+- **Transformers.js**: Integrated Hugging Face's web framework for tokenizer compatibility.
+- **NER Model**: Trained and deployed a 3-class NER model to extract location/budget/features.
+- **Vercel Deployment**: Configured WASM and CORS headers for successful cloud hosting.
+
+---
+
+## 🏗️ [Phase 1] Foundation & Multi-Source ETL (2026-02-27 to 2026-03-07)
+*Target: Data Acquisition and Backend Baseline*
+
+- **Web Scrapers**: Developed automated crawlers for 591, Dcard, and FB Rental groups.
+- **Flask Backend**: Built the initial Python recommendation API.
+- **Keyword Engine**: Implemented the first-generation Regex-based matching logic.
+- **Initial Dataset**: Collected and normalized the first batch of NCHU-area rental listings.
+
+---
+
+## [Project Stats]
+- **Total Commits**: 140+
+- **Model Architecture**: RoBERTa-tiny (RBT6)
+- **Deployment Platform**: Vercel + ONNXRuntime Web
+- **Key Metrics**: F1=0.87, NDCG@5 Target=0.85
