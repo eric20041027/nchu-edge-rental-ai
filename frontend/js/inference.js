@@ -86,9 +86,10 @@ function parseConstraintsFromText(text) {
     }
 
     // Exclusions (Hard Filtering)
-    if (text.match(/(謝絕|不要|拒絕|禁|❌|不接受)[^。！？\n]*(頂加|加蓋|頂樓)/)) excludeRooftop = true;
-    if (text.match(/(謝絕|不要|拒絕|禁|❌|不接受)[^。！？\n]*木板/)) excludeWooden = true;
-    if (text.match(/(謝絕|不要|拒絕|禁|❌|不接受)[^。！？\n]*凶宅/)) excludeHaunted = true;
+    const negativeWords = "(謝絕|不要|拒絕|禁|❌|不接受|不想|討厭|避免|不要有|不要找)";
+    if (text.match(new RegExp(`${negativeWords}[^。！？\\n]*(頂加|加蓋|頂樓)`))) excludeRooftop = true;
+    if (text.match(new RegExp(`${negativeWords}[^。！？\\n]*木板`))) excludeWooden = true;
+    if (text.match(new RegExp(`${negativeWords}[^。！？\\n]*凶宅`))) excludeHaunted = true;
 
     // Explicit Requirements
     if (text.match(/(要有|必須|希望|想找)[^。！？\n]*陽台/)) requireBalcony = true;
@@ -230,6 +231,8 @@ function explainMatch(query, prop, constraints) {
             let label = `有${kw}`;
             if (kw.includes('垃圾')) label = '免追垃圾車';
             if (kw.includes('樓梯') || kw.includes('電梯')) label = '有電梯';
+            if (kw.includes('窗')) label = '有對外窗';
+            if (kw.includes('車位') || kw.includes('停車')) label = '好停車';
             if (kw === '台電' || kw === '電費') label = '台電計費';
             if (kw === '租補' || kw === '補助') label = '可申請租補';
             
@@ -415,10 +418,18 @@ function calculateRuleBasedScore(candidates, queryKeywords, text, constraints) {
             else if (kw.includes('陽台')) {
                 isMatch = prop.has_balcony || pText.includes('陽台');
             }
+            else if (kw.includes('窗')) {
+                isMatch = prop.has_window || pText.includes('窗');
+            }
+            else if (kw.includes('車位') || kw.includes('停車')) {
+                isMatch = prop.has_parking || pText.includes('車位') || pText.includes('停車');
+            }
             else if (kw.includes('電') || kw.includes('錢') || kw.includes('省')) {
                 if (kw.includes('電費') || kw.includes('台電') || kw.includes('省')) {
                     const powerKws = ['台電', '獨立電錶', '台水台電'];
-                    isMatch = (prop.electricity_billing && prop.electricity_billing.includes('台電')) || powerKws.some(alt => pText.includes(alt));
+                    isMatch = (prop.electricity_billing && prop.electricity_billing.includes('台電')) || 
+                              (prop.notes && prop.notes.some(n => n.includes('台電'))) ||
+                              powerKws.some(alt => pText.includes(alt));
                 }
             }
             
