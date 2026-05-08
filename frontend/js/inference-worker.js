@@ -26,8 +26,8 @@ async function init(localOrigin) {
         env.useBrowserCache = true;
         env.localModelPath = localOrigin + '/';
 
-        // 2. Load Tokenizer with progress
-        tokenizer = await AutoTokenizer.from_pretrained('models/custom_onnx_model_dir', {
+        // 2. Start Tokenizer and Model download in parallel
+        const tokenizerPromise = AutoTokenizer.from_pretrained('models/custom_onnx_model_dir', {
             progress_callback: (p) => {
                 if (p.status === 'progress') {
                     postMessage({ type: 'status', message: '正在加載分詞器...', loaded: p.loaded, total: p.total });
@@ -35,40 +35,55 @@ async function init(localOrigin) {
             }
         });
 
-        // 3. Manually fetch the 84MB model to track progress accurately
         const modelUrl = localOrigin + '/models/custom_onnx_model_dir/my_custom_model_quant.onnx';
-        postMessage({ type: 'status', message: '準備下載 AI 模型...', loaded: 0, total: 88000000 });
+        const modelFetchPromise = (async () => {
+            const response = await fetch(modelUrl, { cache: 'force-cache' });
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            
+            const reader = response.body.getReader();
+            const contentLength = +response.headers.get('Content-Length');
+            
+            let receivedLength = 0;
+            let chunks = [];
+            let lastUpdate = 0;
 
-        const response = await fetch(modelUrl);
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        
-        const reader = response.body.getReader();
-        const contentLength = +response.headers.get('Content-Length');
-        
-        let receivedLength = 0;
-        let chunks = [];
-        while(true) {
-            const {done, value} = await reader.read();
-            if (done) break;
-            chunks.push(value);
-            receivedLength += value.length;
-            postMessage({ 
-                type: 'status', 
-                message: '正在下載 AI 模型...', 
-                loaded: receivedLength, 
-                total: contentLength || 88000000 
-            });
-        }
+            while(true) {
+                const {done, value} = await reader.read();
+                if (done) break;
+                chunks.push(value);
+                receivedLength += value.length;
+                
+                // Throttled UI update (every 512KB) to save CPU
+                if (receivedLength - lastUpdate > 512 * 1024) {
+                    postMessage({ 
+                        type: 'status', 
+                        message: '正在下載 AI 模型...', 
+                        loaded: receivedLength, 
+                        total: contentLength || 88000000 
+                    });
+                    lastUpdate = receivedLength;
+                }
+            }
+            
+            const modelBuffer = new Uint8Array(receivedLength);
+            let position = 0;
+            for(let chunk of chunks) {
+                modelBuffer.set(chunk, position);
+                position += chunk.length;
+            }
+            return modelBuffer;
+        })();
 
-        // 4. Create Session from the downloaded buffer
-        const modelBuffer = new Uint8Array(receivedLength);
-        let position = 0;
-        for(let chunk of chunks) {
-            modelBuffer.set(chunk, position);
-            position += chunk.length;
-        }
+        // Wait for both to complete
+        const [loadedTokenizer, loadedModelBuffer] = await Promise.all([
+            tokenizerPromise,
+            modelFetchPromise
+        ]);
 
-        session = await ort.InferenceSession.create(modelBuffer, {
+        tokenizer = loadedTokenizer;
+
+        // 2. Create Session
+        session = await ort.InferenceSession.create(loadedModelBuffer, {
             executionProviders: ['wasm'],
             graphOptimizationLevel: 'all',
             sessionOptions: { numThreads: 4 }
