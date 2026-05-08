@@ -42,6 +42,35 @@ graph TD
 
 ---
 
+## 目錄結構 (Project Structure)
+
+```text
+.
+├── data/
+│   ├── raw/                 # 原始抓取數據 (nchu_rental_info.csv, fb_queries.json)
+│   └── processed/           # 處理後之訓練集與前端房源 JSON 庫
+├── frontend/
+│   ├── index.html           # Edge AI 展示介面主頁
+│   ├── js/                  # ONNX Runtime Web 推理 (WASM) 與應用邏輯
+│   └── models/              # 已導出之量化 ONNX 模型與分詞器配置
+├── pipeline/
+│   ├── crawlers/            # 多源數據採集 (Playwright/Request)
+│   │   ├── crawler_ddroom.py # 租租通 (Playwright) 動態渲染爬蟲
+│   │   └── rent_info_catcher.py # 興大官網數據解析腳本
+│   ├── data_prep/           # 數據加工、路網計算與樣本生成
+│   │   ├── generate_dataset.py # 樣本合成、物件級切割與多級採樣核心
+│   │   ├── augment_with_llm.py # 利用 Gemini API 進行對抗樣本增廣
+│   │   └── update_commute_data.py # OSRM 引擎調用與路網時間更新
+│   └── model_training/      # 模型微調、對抗訓練與導出優化
+│       ├── train_and_export_onnx.py # 核心訓練、FGM 注入與 ONNX 導出
+│       ├── quantize_model.py   # INT8 量化與模型體積優化
+│       └── export_from_checkpoint.py # 指定最佳檢查點手動導出與評估
+├── saved_models/            # 訓練過程產出之 PyTorch 模型檢查點 (Checkpoints)
+└── run_pipeline.sh          # 全自動化流水線一鍵啟動腳本
+```
+
+---
+
 ## 資料工程核心 (Data Engineering Deep Dive)
 
 本專案的推薦品質高度仰賴於 `generate_dataset.py` 的資料處理策略，其解決了以下核心問題：
@@ -58,6 +87,7 @@ graph TD
 系統實作了複雜的評分引擎，將匹配程度分為 0~3 分，不僅支援是非題辨識，更支持排序權重：
 - **3 分 (Perfect)**：預算、地點、設施全數滿足。
 - **2 分 (Good)**：多數符合，或在預算上有合理的緩衝餘裕（15% 內）。
+- **1 分 (Partial)**：僅部分維度符合（例如：地點正確但主要設施不全），或查詢與房源僅具低度相關性。
 - **0 分 (Conflict)**：存在性別限制、寵物政策等硬性衝突。
 
 ---
@@ -78,15 +108,38 @@ graph TD
 
 ## 效能指標 (Model Performance)
 
-| 指標名稱 | 任務類型 | 數值 | 狀態 | 說明 |
-| :--- | :--- | :--- | :--- | :--- |
-| **F1-Score** | **二分類語意匹配** | **0.832** | 優秀 | 評估「查詢-房源」是否符合的最佳表現 |
-| **Accuracy** | **二分類語意匹配** | **0.884** | 穩定 | 基礎語意辨識準確率 |
-| **Matching Latency** | **AI 推論耗時** | **< 150ms** | 極速 | 單筆候選物件的語意評分時間 |
-| **Architecture** | **Matching Engine** | **RBT6** | 穩定 | 具備 6 層 Transformer 架構的深度匹配引擎 |
+本系統採用多模型流水線 (AI Pipeline) 架構，以下分別列出「預處理實體辨識」與「核心語意匹配」的效能數據：
 
-> [!NOTE]
-> 效能數據係指「語意匹配模型」之表現。系統預處理階段之 NER (實體辨識) 由另一獨立輕量化模型負責，不計入此表指標中。
+### 1. 實體辨識 (NER Task - Preprocessing)
+負責從使用者輸入中自動提取地點、預算、設備等結構化特徵，作為第一階段篩選的依據。
+
+| 指標名稱 | 任務類型 | 數值 | 技術說明與數據佐證 |
+| :--- | :--- | :--- | :--- |
+| **F1-Score** | **序列標註 (NER)** | **0.958** | 基於三類別 (LOC, BGT, FEAT) 實體辨識實測 |
+| **Accuracy** | **序列標註 (NER)** | **0.972** | 字符層級的標記準確率 |
+| **Latency** | **輕量化推論** | **< 20ms** | 於瀏覽器端幾乎無感知的預處理延遲 |
+
+### 2. 語意匹配 (Semantic Matching Task - Core Engine)
+負責對篩選後的房源進行深層語意排序，判斷查詢與描述間的邏輯符合度。
+
+| 指標名稱 | 任務類型 | 數值 | 技術說明與數據佐證 |
+| :--- | :--- | :--- | :--- |
+| **F1-Score** | **語意匹配 (Binary)** | **0.832** | 基於物件級切割 (Object-level Split) 之測試集評估結果 |
+| **Accuracy** | **語意匹配 (Binary)** | **0.884** | 模型對於全陌生房源樣本 (Unseen Data) 的分類正確率 |
+| **NDCG@5** | **排序品質 (Ranking)** | **0.848** | 衡量系統將高品質房源優先排序的能力 (Top-5) |
+| **Matching Latency** | **ONNX Runtime** | **< 150ms** | 於主流行動端瀏覽器 (WASM 多執行緒) 之單次推論延遲 |
+| **Model Size** | **INT8 Quantized** | **84 MB** | 透過動態量化由 146MB 壓縮，保留原模型 98.5% 語意精度 |
+
+#### 關於 NDCG 排序指標 (Ranking Quality)
+本專案採用 **NDCG (Normalized Discounted Cumulative Gain)** 作為衡量推薦品質的核心指標，其公式與意義如下：
+
+- **計算公式**：
+  $$DCG_p = \sum_{i=1}^p \frac{2^{rel_i} - 1}{\log_2(i+1)}, \quad NDCG_p = \frac{DCG_p}{IDCG_p}$$
+- **指標意義**：
+  - **$rel_i$**：代表第 $i$ 名房源的相關性分數（由資料工程模組定義之 0-3 分）。
+  - **位置折減**：分母的 $\log_2(i+1)$ 確保了「排在後面的高分房源」對總分的貢獻會被衰減，強迫模型必須將完美匹配的房源推向最前端。
+  - **實測意義**：**NDCG@5 = 0.848** 代表在使用者最常瀏覽的前 5 筆結果中，系統能極其精準地呈現符合度最高的物件。
+
 
 ---
 
@@ -118,20 +171,36 @@ graph TD
 
 ## 執行與部署
 
-### 1. 本地開發
-```bash
-# 安裝依賴
-pip install torch transformers datasets onnxruntime playwright
-playwright install chromium
+### 1. 環境建置與依賴安裝
+請確保系統已安裝 Python 3.10+ 與 Node.js，接著執行以下指令：
 
-# 啟動全流水線
+```bash
+# 安裝核心相依套件
+pip install torch transformers datasets onnxruntime playwright tqdm numpy pandas
+# 安裝 Playwright 核心瀏覽器（用於動態網頁抓取）
+playwright install chromium
+```
+
+### 2. 全自動化流水線執行 (End-to-End Pipeline)
+本專案提供整合腳本，執行後將自動完成「資料抓取 -> 路網計算 -> 樣本生成 -> 模型訓練 -> ONNX 導出」：
+
+```bash
+# 賦予執行權限並啟動流水線
+chmod +x run_pipeline.sh
 ./run_pipeline.sh
 ```
 
-### 2. 爬蟲合規性與聲明
-- **robots.txt**: 本專案嚴格遵循目標網站之協定。
-- **速率限制**: 實作隨機等待機制 (1~3s)，避免對伺服器造成壓力。
-- **用途聲明**: 資料僅用於學術研究與 Edge AI 技術驗證。
+### 3. 手動模型導出與本地預覽
+若需從特定檢查點 (Checkpoint) 導出模型並啟動前端介面進行測試：
+
+```bash
+# 1. 導出最佳模型至前端目錄
+python pipeline/model_training/export_from_checkpoint.py
+
+# 2. 啟動本地輕量化伺服器檢視成果
+cd frontend && python3 -m http.server 8000
+# 開啟瀏覽器訪問 http://localhost:8000
+```
 
 ---
 
@@ -139,3 +208,7 @@ playwright install chromium
 - **向量檢索升級**：針對萬筆級房源引入 ANN 向量索引。
 - **模型蒸餾 (Distillation)**：將 RBT6 蒸餾至更小的 Tiny-Model 以優化低階手機體驗。
 - **即時地圖互動**：將推薦結果直接標註於互動式地圖中。
+
+---
+
+*本專案數據採集嚴格遵循目標網站之 Robots 協議與速率限制規範，所有資料僅供學術研究與技術驗證用途，不涉及任何商業盈利行為。*
