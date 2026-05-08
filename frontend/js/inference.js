@@ -394,10 +394,16 @@ function calculateRuleBasedScore(candidates, queryKeywords, text, constraints) {
             totalRequirements++;
             let isMatch = pText.includes(kw);
             
-            // Apply semantic expansion for matching
-            if (!isMatch) {
+            // Special Case: Vertical Access (Elevator vs Stairs)
+            if (kw.includes('樓梯') || kw.includes('電梯')) {
+                // If user mentions stairs/elevator, they WANT an elevator.
+                // We only match if the property has elevator-related keywords.
+                const elevatorKws = ['電梯', '華廈', '大樓'];
+                isMatch = elevatorKws.some(alt => pText.includes(alt));
+            } else if (!isMatch) {
+                // Generic semantic expansion for other groups
                 for (const [group, alternates] of Object.entries(semanticMap)) {
-                    if (kw.includes(group) || group.includes(kw)) {
+                    if (group !== '電梯' && (kw.includes(group) || group.includes(kw))) {
                         if (alternates.some(alt => pText.includes(alt))) {
                             isMatch = true;
                             break;
@@ -408,7 +414,7 @@ function calculateRuleBasedScore(candidates, queryKeywords, text, constraints) {
 
             if (isMatch) {
                 matchCount++;
-                kScore += 15; // Significant boost for keyword match
+                kScore += 15;
             }
         });
 
