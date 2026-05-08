@@ -86,8 +86,31 @@ def load_and_balance_data(train_path: str, dev_path: str) -> Tuple[Dataset, Data
     return Dataset.from_list(train_data), Dataset.from_list(dev_data)
 
 
+class FGM:
+    """Fast Gradient Method for Adversarial Training to improve generalization."""
+    def __init__(self, model):
+        self.model = model
+        self.backup = {}
+
+    def attack(self, epsilon=1.0, emb_name='word_embeddings'):
+        for name, param in self.model.named_parameters():
+            if param.requires_grad and emb_name in name:
+                self.backup[name] = param.data.clone()
+                norm = torch.norm(param.grad)
+                if norm != 0 and not torch.isnan(norm):
+                    r_at = epsilon * param.grad / norm
+                    param.data.add_(r_at)
+
+    def restore(self, emb_name='word_embeddings'):
+        for name, param in self.model.named_parameters():
+            if param.requires_grad and emb_name in name:
+                assert name in self.backup
+                param.data = self.backup[name]
+        self.backup = {}
+
+
 class WeightedTrainer(Trainer):
-    """Custom Trainer to support sample weighting based on graded relevance."""
+    """Custom Trainer supporting sample weighting and Adversarial Training (FGM)."""
     def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
         labels = inputs.get("labels")
         weights = inputs.pop("sample_weight", None)
@@ -95,9 +118,7 @@ class WeightedTrainer(Trainer):
         outputs = model(**inputs)
         logits = outputs.get("logits")
         
-        # [Option C] Temperature Calibration
-        # Scaling logits by T > 1.0 flattens the distribution and prevents sigmoid saturation
-        # This helps the model maintain ranking resolution even for high-probability samples.
+        # [Option C] Temperature Calibration (T=2.0)
         temperature = 2.0 
         scaled_logits = logits / temperature
         
@@ -110,6 +131,24 @@ class WeightedTrainer(Trainer):
             loss = loss_fct(scaled_logits.view(-1, self.model.config.num_labels), labels.view(-1))
             
         return (loss, outputs) if return_outputs else loss
+
+    def training_step(self, model, inputs) -> torch.Tensor:
+        """Standard training step + FGM adversarial attack for better generalization."""
+        model.train()
+        inputs = self._prepare_inputs(inputs)
+        
+        # 1. Standard forward & backward
+        loss = self.compute_loss(model, inputs)
+        loss.backward()
+        
+        # 2. Adversarial attack
+        fgm = FGM(model)
+        fgm.attack() # Default epsilon=1.0
+        loss_adv = self.compute_loss(model, inputs)
+        loss_adv.backward() # Add adversarial gradient
+        fgm.restore() # Restore original weights
+        
+        return loss.detach()
 
 
 def tokenize_datasets(
