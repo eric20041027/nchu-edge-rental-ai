@@ -205,9 +205,17 @@ function explainMatch(query, prop, constraints) {
     queryKeywords.forEach(kw => {
         if (kw.length < 2 || ignoreList.includes(kw)) return;
         
-        // Check for direct match or semantic group match
+        // Check for direct match, semantic group match, or boolean flag match
         let isMatch = pText.includes(kw);
+        
+        // Intent-based boolean flag fallbacks
         if (!isMatch) {
+            if ((kw.includes('垃圾') || kw.includes('追車')) && prop.has_waste_disposal) isMatch = true;
+            if ((kw.includes('樓梯') || kw.includes('電梯')) && prop.has_elevator) isMatch = true;
+            if (kw.includes('陽台') && prop.has_balcony) isMatch = true;
+            if (kw.includes('車位') && prop.has_parking) isMatch = true;
+            
+            // Generic semantic expansion
             for (const [group, alternates] of Object.entries(semanticMap)) {
                 if (kw.includes(group) || group.includes(kw)) {
                     if (alternates.some(alt => pText.includes(alt))) {
@@ -221,6 +229,7 @@ function explainMatch(query, prop, constraints) {
         if (isMatch) {
             let label = `有${kw}`;
             if (kw.includes('垃圾')) label = '免追垃圾車';
+            if (kw.includes('樓梯') || kw.includes('電梯')) label = '有電梯';
             if (kw === '台電' || kw === '電費') label = '台電計費';
             if (kw === '租補' || kw === '補助') label = '可申請租補';
             
@@ -394,19 +403,22 @@ function calculateRuleBasedScore(candidates, queryKeywords, text, constraints) {
             totalRequirements++;
             let isMatch = pText.includes(kw);
             
-            // --- Special Case: Intent-Based Mapping ---
+            // --- Special Case: Intent-Based Mapping + Boolean Flags ---
             if (kw.includes('樓梯') || kw.includes('電梯')) {
                 const elevatorKws = ['電梯', '華廈', '大樓'];
-                isMatch = elevatorKws.some(alt => pText.includes(alt));
+                isMatch = prop.has_elevator || elevatorKws.some(alt => pText.includes(alt));
             } 
             else if (kw.includes('垃圾') || kw.includes('追車')) {
                 const wasteKws = ['子母車', '代收垃圾', '垃圾處理', '垃圾子車'];
-                isMatch = wasteKws.some(alt => pText.includes(alt));
+                isMatch = prop.has_waste_disposal || wasteKws.some(alt => pText.includes(alt));
+            }
+            else if (kw.includes('陽台')) {
+                isMatch = prop.has_balcony || pText.includes('陽台');
             }
             else if (kw.includes('電') || kw.includes('錢') || kw.includes('省')) {
                 if (kw.includes('電費') || kw.includes('台電') || kw.includes('省')) {
                     const powerKws = ['台電', '獨立電錶', '台水台電'];
-                    isMatch = powerKws.some(alt => pText.includes(alt));
+                    isMatch = (prop.electricity_billing && prop.electricity_billing.includes('台電')) || powerKws.some(alt => pText.includes(alt));
                 }
             }
             
