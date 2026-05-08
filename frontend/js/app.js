@@ -331,18 +331,6 @@ function createPropertyCardHTML(house, badgeClass) {
             </div>
         </div>
     `;
-}            <iframe width="100%" height="100%" frameborder="0" style="border:0" 
-                    src="https://maps.google.com/maps?q=${encodeURIComponent(house.address)}&output=embed" 
-                    allowfullscreen>
-                </iframe>
-            </div>
-            <div class="card-link">
-                <a href="${house.url}" target="_blank" style="color: var(--primary-color); text-decoration: none; font-size: 0.9rem; display: inline-block;">
-                    <i class="fa-solid fa-link"></i> 前往查看物件
-                </a>
-            </div>
-        </div>
-    `;
 }
 
 function updateLoadMoreButton() {
