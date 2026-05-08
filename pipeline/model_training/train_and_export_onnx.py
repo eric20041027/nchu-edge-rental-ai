@@ -217,14 +217,14 @@ def train_model(train_dataset: Dataset, eval_dataset: Dataset) -> Tuple[Trainer,
         output_dir=os.path.join(os.path.dirname(__file__), "../../saved_models/recommendation_model_output"),
         eval_strategy="steps",
         eval_steps=200,
-        learning_rate=3e-5,               # Lower LR for RoBERTa (less aggressive updates)
+        learning_rate=2e-5,               # Slightly lower LR for more stable fine-tuning in late stages
         per_device_train_batch_size=32,
         per_device_eval_batch_size=32,
-        num_train_epochs=12,              # More epochs; EarlyStopping will prevent overfit
+        num_train_epochs=15,              # Increased epochs to ensure full data utilization
         weight_decay=0.01,
         warmup_ratio=0.1,
-        label_smoothing_factor=0.0,       # Remove label smoothing to force absolute confidence on '0' (No match)
-        logging_steps=100,                # Less frequent logging for cleaner output
+        label_smoothing_factor=0.0,
+        logging_steps=100,
         logging_first_step=False,
         save_strategy="steps",
         save_steps=200,
@@ -232,9 +232,9 @@ def train_model(train_dataset: Dataset, eval_dataset: Dataset) -> Tuple[Trainer,
         metric_for_best_model="f1",
         greater_is_better=True,
         report_to="none",
-        save_total_limit=3,
-        disable_tqdm=False,               # 恢復進度條
-        log_level="error",                # 隱藏內部日誌
+        save_total_limit=5,               # Keep more checkpoints for safety
+        disable_tqdm=False,
+        log_level="error",
     )
 
 
@@ -245,7 +245,8 @@ def train_model(train_dataset: Dataset, eval_dataset: Dataset) -> Tuple[Trainer,
         eval_dataset=eval_dataset,
         compute_metrics=compute_metrics,
         callbacks=[
-            EarlyStoppingCallback(early_stopping_patience=5, early_stopping_threshold=0.001),
+            # Increased patience to 12 to avoid premature stopping at 35%
+            EarlyStoppingCallback(early_stopping_patience=12, early_stopping_threshold=0.0005),
             CleanLogCallback()
         ]
     )
