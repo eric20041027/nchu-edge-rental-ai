@@ -130,8 +130,10 @@ class WeightedTrainer(Trainer):
             
         return (loss, outputs) if return_outputs else loss
 
-    def training_step(self, model, inputs) -> torch.Tensor:
-        """Standard training step + FGM adversarial attack for better generalization."""
+    def training_step(self, model, inputs, num_items_in_batch=None) -> torch.Tensor:
+        """Standard training step + FGM adversarial attack for better generalization.
+        Updated to support newer transformers version with num_items_in_batch.
+        """
         model.train()
         inputs = self._prepare_inputs(inputs)
         
@@ -139,12 +141,12 @@ class WeightedTrainer(Trainer):
         loss = self.compute_loss(model, inputs)
         loss.backward()
         
-        # 2. Adversarial attack
+        # 2. Adversarial attack (FGM)
         fgm = FGM(model)
-        fgm.attack() # Default epsilon=1.0
+        fgm.attack() 
         loss_adv = self.compute_loss(model, inputs)
-        loss_adv.backward() # Add adversarial gradient
-        fgm.restore() # Restore original weights
+        loss_adv.backward() 
+        fgm.restore() 
         
         return loss.detach()
 
