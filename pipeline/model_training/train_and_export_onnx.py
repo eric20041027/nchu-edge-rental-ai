@@ -286,8 +286,8 @@ def train_model(train_dataset: Dataset, eval_dataset: Dataset) -> Tuple[Trainer,
         eval_dataset=eval_dataset,
         compute_metrics=compute_metrics,
         callbacks=[
-            # Increased patience to 12 to avoid premature stopping at 35%
-            EarlyStoppingCallback(early_stopping_patience=12, early_stopping_threshold=0.0005),
+            # Reverted patience back to original 5
+            EarlyStoppingCallback(early_stopping_patience=5, early_stopping_threshold=0.0005),
             CleanLogCallback()
         ]
     )
