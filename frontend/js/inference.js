@@ -353,20 +353,22 @@ function calculateRuleBasedScore(candidates, queryKeywords, text, constraints) {
     const preScored = candidates.map(prop => {
         let kScore = 0, matchCount = 0, totalRequirements = 0;
 
-        // Commute Time Scoring
-        if (maxWalkMins !== null) {
+        // Commute Time Scoring - Only penalize if user explicitly asked for short commute
+        const isCommuteExplicit = text.includes('近') || text.includes('走') || text.includes('分鐘') || text.includes('公里');
+
+        if (maxWalkMins !== null && isCommuteExplicit) {
             totalRequirements++;
             const propWalk = prop.walk_mins || Math.ceil(prop.distance / 0.08);
             if (propWalk <= maxWalkMins) {
                 matchCount++;
-                kScore += 20; // Walking time is usually a very strong intent
+                kScore += 20; 
             } else if (propWalk <= maxWalkMins + 3) {
                 matchCount += 0.5;
                 kScore += 5;
             }
         }
 
-        if (maxScooterMins !== null) {
+        if (maxScooterMins !== null && isCommuteExplicit) {
             totalRequirements++;
             const propScooter = prop.scooter_mins || Math.max(1, Math.ceil(prop.distance / 0.5));
             if (propScooter <= maxScooterMins) {
