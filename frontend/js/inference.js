@@ -29,9 +29,9 @@ export async function initNLP(onProgress) {
             worker = new Worker('js/inference-worker.js', { type: 'module' });
 
             worker.onmessage = (e) => {
-                const { type, message, score, id, error } = e.data;
+                const { type, message, score, id, error, loaded, total } = e.data;
                 if (type === 'status' && onProgress) {
-                    onProgress({ status: 'progress', message });
+                    onProgress({ status: 'progress', message, loaded, total });
                 } else if (type === 'ready') {
                     console.log('Inference Worker Ready');
                     if (onProgress) onProgress({ status: 'ready' });

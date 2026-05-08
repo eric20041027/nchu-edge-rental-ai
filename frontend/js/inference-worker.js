@@ -20,19 +20,55 @@ async function init(localOrigin) {
         const ortModule = await import('https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.mjs');
         ort = ortModule.default ?? ortModule;
 
-        // Configure Xenova/Transformers for local models
+        // 1. Configure Transformers.js
         env.allowRemoteModels = false;
         env.allowLocalModels = true;
         env.useBrowserCache = true;
         env.localModelPath = localOrigin + '/';
 
-        postMessage({ type: 'status', message: 'Loading Tokenizer...' });
-        tokenizer = await AutoTokenizer.from_pretrained('models/custom_onnx_model_dir');
+        // 2. Load Tokenizer with progress
+        tokenizer = await AutoTokenizer.from_pretrained('models/custom_onnx_model_dir', {
+            progress_callback: (p) => {
+                if (p.status === 'progress') {
+                    postMessage({ type: 'status', message: '正在加載分詞器...', loaded: p.loaded, total: p.total });
+                }
+            }
+        });
 
-        postMessage({ type: 'status', message: 'Loading AI Model (84 MB)...' });
+        // 3. Manually fetch the 84MB model to track progress accurately
         const modelUrl = localOrigin + '/models/custom_onnx_model_dir/my_custom_model_quant.onnx';
+        postMessage({ type: 'status', message: '準備下載 AI 模型...', loaded: 0, total: 88000000 });
 
-        session = await ort.InferenceSession.create(modelUrl, {
+        const response = await fetch(modelUrl);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        
+        const reader = response.body.getReader();
+        const contentLength = +response.headers.get('Content-Length');
+        
+        let receivedLength = 0;
+        let chunks = [];
+        while(true) {
+            const {done, value} = await reader.read();
+            if (done) break;
+            chunks.push(value);
+            receivedLength += value.length;
+            postMessage({ 
+                type: 'status', 
+                message: '正在下載 AI 模型...', 
+                loaded: receivedLength, 
+                total: contentLength || 88000000 
+            });
+        }
+
+        // 4. Create Session from the downloaded buffer
+        const modelBuffer = new Uint8Array(receivedLength);
+        let position = 0;
+        for(let chunk of chunks) {
+            modelBuffer.set(chunk, position);
+            position += chunk.length;
+        }
+
+        session = await ort.InferenceSession.create(modelBuffer, {
             executionProviders: ['wasm'],
             graphOptimizationLevel: 'all',
             sessionOptions: { numThreads: 4 }

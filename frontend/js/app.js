@@ -46,11 +46,13 @@ async function setupApplication() {
             initNLP((progress) => {
                 if (progress.status === 'progress') {
                     let percentText = "";
-                    if (progress.total && progress.total > 0) {
+                    if (progress.total && progress.total > 0 && !isNaN(progress.loaded)) {
                         let percent = Math.round((progress.loaded / progress.total) * 100);
                         percentText = `${percent}%`;
-                    } else {
+                    } else if (progress.loaded && !isNaN(progress.loaded)) {
                         percentText = `${Math.round(progress.loaded / 1024)} KB`;
+                    } else {
+                        percentText = "計算中";
                     }
                     loadStatus.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 正在下載 AI 模組與資料 (${percentText})...`;
                 }
