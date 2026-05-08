@@ -1,63 +1,63 @@
-# Changelog
+# 專案更新日誌 (Changelog)
 
-All 140+ commits of the **NCHU Rental Recommendation AI** project summarized into key technical milestones.
+本文件詳實記錄了中興大學 AI 租屋推薦系統專案的技術演進歷程，統整了超過 140 次的提交紀錄。
 
-## 🚀 [Phase 5] Extreme Optimization & Generalization (Current)
-*Target: Hit NDCG@5 > 0.85*
+## [第五階段] 極致性能優化與泛化能力增強 (當前階段)
+目標：達成 Graded NDCG@5 > 0.85 門檻
 
-### [2026-05-08] - Generalization & Adversarial Training
-- **Adversarial Training (FGM)**: Integrated Fast Gradient Method to boost semantic robustness.
-- **LLM Hard Traps**: Synthesized 500+ high-difficulty trap samples using Gemini API.
-- **Dropout Regularization**: Increased dropout to 0.15 for better model stability.
+### [2026-05-08] - 泛化性與對抗訓練
+- 對抗訓練 (FGM)：在 WeightedTrainer 中整合快速梯度方法 (Fast Gradient Method)，針對 Embedding 層注入擾動，提升語意辨識的魯棒性。
+- LLM 困難樣本增廣：利用 Gemini API 生成 500 組高難度陷阱樣本，專門針對寵物政策、台水電、地點邊界等細微特徵進行誤導訓練。
+- 隨機失活 (Dropout) 強化：將隱藏層與注意力機制的 Dropout 比例提升至 0.15，增強正則化效果並防止過擬合。
+- 訓練環境相容性修正：修正 WeightedTrainer.training_step 函數簽名，以支援新版本 Transformers 庫之參數規範。
 
-### [2026-05-07] - Ranking Calibration
-- **Temperature Scaling (T=2.0)**: Calibrated Softmax logits to improve ranking resolution.
-- **Weighted Learning**: Implemented aggressive weights (Perfect: 15.0) for the ranking loss.
-
----
-
-## 📈 [Phase 4] Precision Metrics & Commute Awareness (2026-04-27 to 2026-05-06)
-*Target: Transition from Binary to Graded Evaluation*
-
-- **Graded Metrics**: Adopted **NDCG@5** and **MRR** for statistical performance tracking.
-- **Commute Logic**: Integrated OSRM data for precise travel time/distance scoring.
-- **Hard Negative Mining**: Optimized pos:neg ratio to 1:2.5 to reduce false positives.
-- **Budget Scaling**: Implemented Chinese numeral parsing (e.g., 6k, 1萬5) for budget extraction.
+### [2026-05-07] - 排序校準與權重策略
+- 溫度校準 (Temperature Scaling)：在損失函數中引入 T=2.0 的溫度係數，壓平 Logit 分佈以緩解 Sigmoid 飽和問題，顯著提升 NDCG 解析度。
+- 激進權重學習：實施非線性權重映射（Perfect 樣本賦予 15.0 倍權重），強制模型優先學習高相關度房源之特徵。
 
 ---
 
-## 🎨 [Phase 3] Cross-Encoder & UI Overhaul (2026-03-18 to 2026-04-02)
-*Target: Professional UX and Deep Semantic Matching*
+## [第四階段] 精準度指標與通勤感知優化 (2026-04-27 至 2026-05-06)
+目標：從二元分類評測轉型為分級排序評測
 
-- **Sentence-Pair Architecture**: Switched to a robust Cross-Encoder for direct query-property matching.
-- **UI/UX Excellence**: Implemented Glassmorphism, Mesh Gradients, and Framer Motion-style animations.
-- **Quantization**: Successfully implemented INT8 quantization to reduce model size for web delivery.
-- **Stopwords & Cleaning**: Refined the NLP cleaning pipeline for higher training signal.
-
----
-
-## 🤖 [Phase 2] Web AI & ONNX Integration (2026-03-08 to 2026-03-12)
-*Target: 100% Client-side AI Inference*
-
-- **ONNX Runtime Web**: Migrated inference from Python backend to browser-based WASM runtime.
-- **Transformers.js**: Integrated Hugging Face's web framework for tokenizer compatibility.
-- **NER Model**: Trained and deployed a 3-class NER model to extract location/budget/features.
-- **Vercel Deployment**: Configured WASM and CORS headers for successful cloud hosting.
+- 分級評測指標：正式採用 NDCG@5 與 MRR 作為核心效能監控指標，取代單一的 F1 分數。
+- 通勤邏輯整合：整合 OSRM 開源路網資料，實現精確的通勤時間與路網距離計算。
+- 困難負樣本挖掘：將正負樣本比優化至 1:2.5，並針對模型易錯樣本進行二次訓練。
+- 預算語意解析：實施繁體中文數字與簡寫（如：6k、1萬5）的魯棒解析邏輯。
 
 ---
 
-## 🏗️ [Phase 1] Foundation & Multi-Source ETL (2026-02-27 to 2026-03-07)
-*Target: Data Acquisition and Backend Baseline*
+## [第三階段] 雙塔匹配架構與 UI 全面改版 (2026-03-18 至 2026-04-02)
+目標：提升使用者體驗與深層語意匹配精度
 
-- **Web Scrapers**: Developed automated crawlers for 591, Dcard, and FB Rental groups.
-- **Flask Backend**: Built the initial Python recommendation API.
-- **Keyword Engine**: Implemented the first-generation Regex-based matching logic.
-- **Initial Dataset**: Collected and normalized the first batch of NCHU-area rental listings.
+- 句子對分類架構 (Cross-Encoder)：全面切換為 Cross-Encoder 架構，實現查詢與房源描述的直接深度匹配。
+- UI/UX 視覺重構：實施玻璃擬態 (Glassmorphism)、網格漸變動畫與 staggered 階梯式進入動畫。
+- 模型量化：實施 INT8 動態量化技術，在不損失精度的前提下大幅縮減模型體積，優化 Web 端載入速度。
 
 ---
 
-## [Project Stats]
-- **Total Commits**: 140+
-- **Model Architecture**: RoBERTa-tiny (RBT6)
-- **Deployment Platform**: Vercel + ONNXRuntime Web
-- **Key Metrics**: F1=0.87, NDCG@5 Target=0.85
+## [第二階段] Web AI 部署與 ONNX 整合 (2026-03-08 至 2026-03-12)
+目標：達成 100% 瀏覽器端本地 AI 推理
+
+- ONNX Runtime Web：將推理邏輯從 Python 後端遷移至瀏覽器端 WASM 執行緒。
+- Transformers.js 整合：實施 Hugging Face 的 Web 端框架，確保 Tokenizer 與模型權重之相容性。
+- 實體辨識模型 (NER)：訓練並部署專用的三類別 NER 模型，自動提取查詢中的地點、預算與設備需求。
+- Vercel 雲端部署：完成 WASM 與跨域請求 (CORS) 之標頭配置。
+
+---
+
+## [第一階段] 基礎建設與多源 ETL (2026-02-27 至 2026-03-07)
+目標：資料採集與後端基準建立
+
+- 多源爬蟲開發：開發針對 591、Dcard、FB 租屋社團的自動化資料採集腳本。
+- Flask 後端建立：構建首個基於 Python 的推薦系統 API 服務。
+- 關鍵字匹配引擎：實施第一代基於正則表達式 (Regex) 的過濾與評分邏輯。
+- 資料集標準化：收集並正規化首批中興大學周邊租屋物件資料。
+
+---
+
+## [專案統計與規格]
+- 總提交次數：140+
+- 模型架構：RoBERTa-tiny (RBT6)
+- 部署平台：Vercel + ONNXRuntime Web
+- 核心指標：F1 分數 0.87，NDCG@5 目標 0.85
