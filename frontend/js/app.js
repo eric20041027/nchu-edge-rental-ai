@@ -280,10 +280,12 @@ function createPropertyCardHTML(house, badgeClass) {
         </div>`;
     }
 
+    const badgeText = badgeClass === 'premium' ? '<i class="fa-solid fa-crown"></i> 最佳推薦 TOP 1' : '系統推薦';
+
     return `
         <div class="card-image">
             <img src="${imgUrl}" alt="房間照片">
-            <span class="badge ${badgeClass}">配對相符度 ${displayScore}%</span>
+            <span class="badge ${badgeClass}">${badgeText}</span>
         </div>
         <div class="card-content">
             ${conflictHtml}
