@@ -189,34 +189,44 @@ function explainMatch(query, prop, constraints) {
     const pText = prop.text + (prop.furniture || "") + (prop.notes ? prop.notes.join(" ") : "");
     const q = query.toLowerCase();
 
-    // 1. Financial & Budget Matches (High value)
-    if (prop.text.includes('台水台電') || prop.notes?.includes('獨立電錶')) {
-        if (q.includes('省') || q.includes('錢') || q.includes('便宜') || q.includes('台電')) {
-            reasons.push('台電計費');
-        }
+    // 1. User-Specified Matches (Highest Priority)
+    if (q.includes('陽台') && (pText.includes('陽台') || prop.has_balcony)) reasons.push('有陽台');
+    if (q.includes('電視') && pText.includes('電視')) reasons.push('有電視');
+    if (q.includes('冰箱') && pText.includes('冰箱')) reasons.push('有冰箱');
+    if (q.includes('洗衣機') && pText.includes('洗衣機')) reasons.push('有洗衣機');
+    if (q.includes('冷氣') && pText.includes('冷氣')) reasons.push('有冷氣');
+    if (q.includes('電費') || q.includes('台電')) {
+        if (prop.text.includes('台水台電') || prop.notes?.includes('獨立電錶')) reasons.push('台電計費');
     }
-    if (pText.includes('租補') || pText.includes('補助')) reasons.push('可申請租補');
-
-    // 2. Convenience & Amenities (Quality of life)
-    if (pText.includes('子母車') || pText.includes('垃圾處理')) reasons.push('免追垃圾車');
-    if (pText.includes('飲水機')) reasons.push('有飲水機');
-    if (pText.includes('電梯')) reasons.push('有電梯');
-    if (pText.includes('獨立洗衣機') || (pText.includes('洗衣機') && !pText.includes('共用'))) {
-        reasons.push('個人洗衣機');
+    if ((q.includes('租補') || q.includes('補助')) && (pText.includes('租補') || pText.includes('補助'))) {
+        reasons.push("可申請租補");
     }
-    if (pText.includes('陽台') || prop.has_balcony) reasons.push('有陽台');
-    if (pText.includes('採光') || pText.includes('大窗')) reasons.push('採光佳');
-    if (pText.includes('機車') || pText.includes('車位')) reasons.push('有機車位');
 
-    // 3. Location & Keyword matches
-    const keywords = extractKeywords(query);
-    keywords.forEach(kw => {
-        if (pText.includes(kw) && (kw.endsWith('路') || kw.endsWith('街') || kw.includes('區') || kw.includes('興大'))) {
-            reasons.push(kw);
+    // 2. High-Value General Highlights (Secondary Priority - only show if we have space)
+    const generalHighlights = [
+        { key: '子母車', label: '免追垃圾車' },
+        { key: '飲水機', label: '有飲水機' },
+        { key: '電梯', label: '有電梯' },
+        { key: '獨立洗衣機', label: '個人洗衣機' },
+        { key: '採光', label: '採光佳' }
+    ];
+
+    generalHighlights.forEach(h => {
+        if (reasons.length < 3 && pText.includes(h.key)) {
+            if (!reasons.includes(h.label)) reasons.push(h.label);
         }
     });
 
-    // Limit to top 3 most relevant reasons to keep UI clean
+    // 3. Location matches
+    if (reasons.length < 3) {
+        const keywords = extractKeywords(query);
+        keywords.forEach(kw => {
+            if (reasons.length < 3 && pText.includes(kw) && (kw.endsWith('路') || kw.endsWith('街') || kw.includes('區') || kw.includes('興大'))) {
+                reasons.push(kw);
+            }
+        });
+    }
+
     return [...new Set(reasons)].slice(0, 3);
 }
 
