@@ -190,22 +190,39 @@ function explainMatch(query, prop, constraints) {
     const q = query.toLowerCase();
 
     // 1. Dynamic Amenity/Keyword Matching (Universal)
-    // Extract all potential nouns/amenities from query
     const queryKeywords = extractKeywords(query);
-    
-    // List of common noisy words to ignore in tags
     const ignoreList = ['房', '推薦', '附近', '一下', '預算', '大概', '想要', '需求', '尋找'];
+    
+    // Semantic Normalization Map
+    const semanticMap = {
+        '垃圾': ['子母車', '代收垃圾', '垃圾處理', '垃圾子車'],
+        '電費': ['台電', '獨立電錶', '台水台電'],
+        '陽台': ['陽台', '露台'],
+        '省錢': ['台電', '含水費'],
+        '方便': ['子母車', '電梯', '飲水機']
+    };
 
     queryKeywords.forEach(kw => {
         if (kw.length < 2 || ignoreList.includes(kw)) return;
         
-        // If query kw matches property features
-        if (pText.includes(kw)) {
-            // Map common items to cleaner labels
+        // Check for direct match or semantic group match
+        let isMatch = pText.includes(kw);
+        if (!isMatch) {
+            for (const [group, alternates] of Object.entries(semanticMap)) {
+                if (kw.includes(group) || group.includes(kw)) {
+                    if (alternates.some(alt => pText.includes(alt))) {
+                        isMatch = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (isMatch) {
             let label = `有${kw}`;
+            if (kw.includes('垃圾')) label = '免追垃圾車';
             if (kw === '台電' || kw === '電費') label = '台電計費';
             if (kw === '租補' || kw === '補助') label = '可申請租補';
-            if (kw === '機車') label = '有機車位';
             
             if (!reasons.includes(label)) reasons.push(label);
         }
@@ -265,18 +282,15 @@ function filterHardExclusions(properties, constraints) {
     const candidates = [];
     
     for (const prop of properties) {
+        // 1. Core Policy Exclusions (Keep these hard)
         if (excludeRooftop && (prop.is_rooftop || prop.text.includes('頂加'))) continue;
         if (excludeWooden && prop.is_wooden_partition) continue;
-        
-        // Subsidy Exclusion
         if (requireSubsidy && (prop.text.includes('不可補助') || prop.text.includes('不可報稅') || prop.text.includes('不可入籍'))) continue;
         if (isSocialHousing && !prop.text.includes('社會住宅') && !prop.text.includes('社宅')) continue;
 
-        // Hard Amenity Exclusions
-        if (requireBalcony && !prop.text.includes('陽台') && !(prop.furniture && prop.furniture.includes('陽台'))) continue;
-        if (requireWindow && !prop.text.includes('對外窗') && !prop.text.includes('採光')) continue;
-        if (requireParking && !prop.text.includes('車位') && !prop.text.includes('停車')) continue;
-        if (requireWaste && !prop.text.includes('子母車') && !prop.text.includes('代收垃圾') && !prop.text.includes('垃圾處理')) continue;
+        // 2. Soft Amenities (REMOVED HARD CONTINUES)
+        // We no longer 'continue' here. We let these be handled by Rule-Based and AI scoring.
+        // This ensures semantic matches for things like "不想追垃圾車" are found even if keywords differ.
 
         // Commute time filtering
         let dist = parseFloat(prop.distance);
