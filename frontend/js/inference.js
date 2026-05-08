@@ -373,7 +373,7 @@ function calculateRuleBasedScore(candidates, queryKeywords, text, constraints) {
         kw.includes('區') || kw.includes('正門') || kw.includes('側門') || kw.includes('男宿')
     );
 
-    const queryKeywords = extractKeywords(text);
+    // const queryKeywords was already declared at the top of the function
     const ignoreList = ['房', '推薦', '附近', '一下', '預算', '大概', '想要', '需求', '尋找'];
     const semanticMap = {
         '垃圾': ['子母車', '代收垃圾', '垃圾處理', '垃圾子車'],
