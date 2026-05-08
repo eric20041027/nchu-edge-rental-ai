@@ -1,6 +1,6 @@
 import os
 import json
-import torch
+import json
 import onnxruntime as ort
 from transformers import BertTokenizerFast
 import numpy as np
