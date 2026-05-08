@@ -40,7 +40,9 @@ from torch import nn
 
 # Global Configurations
 MODEL_CHECKPOINT = "hfl/rbt6"   # Upgraded: 6-layer Chinese RoBERTa (much better semantic understanding)
-MAX_LENGTH = 64                   # Aligned with inference.js MAX_LENGTH for consistency
+MAX_LENGTH = 64                 # Aligned with inference.js MAX_LENGTH for consistency
+# MODEL_CHECKPOINT = "hfl/rbt3"  # Reverted to 3-layer for fast frontend loading (approx. 84MB quantized)
+# MAX_LENGTH = 128               # Keep 128 to capture more details without increasing file size
 ONNX_OUTPUT_PATH = os.path.join(os.path.dirname(__file__), "../../frontend/models/custom_onnx_model_dir/my_custom_model.onnx")
 SAVED_MODEL_DIR = os.path.join(os.path.dirname(__file__), "../../saved_models/rbt3_finetuned")
 
@@ -217,10 +219,10 @@ def train_model(train_dataset: Dataset, eval_dataset: Dataset) -> Tuple[Trainer,
         output_dir=os.path.join(os.path.dirname(__file__), "../../saved_models/recommendation_model_output"),
         eval_strategy="steps",
         eval_steps=200,
-        learning_rate=3e-5,               # Lower LR for RoBERTa (less aggressive updates)
-        per_device_train_batch_size=32,
-        per_device_eval_batch_size=32,
-        num_train_epochs=12,              # More epochs; EarlyStopping will prevent overfit
+        learning_rate=2e-5,               # Lowered for better convergence
+        per_device_train_batch_size=64,   # Increased for RTX 3060
+        per_device_eval_batch_size=64,
+        num_train_epochs=25,              # Increased for more thorough learning
         weight_decay=0.01,
         warmup_ratio=0.1,
         label_smoothing_factor=0.0,       # Remove label smoothing to force absolute confidence on '0' (No match)
