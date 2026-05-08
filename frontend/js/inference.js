@@ -185,30 +185,60 @@ function parseConstraintsFromText(text) {
 // --- Explainability: Match Reasons & Conflict Detection ---
 function explainMatch(query, prop, constraints) {
     const reasons = [];
-    const { wantsUtilityBilling, requireBalcony, wantsPet } = constraints;
+    const pText = prop.text + (prop.furniture || "") + (prop.notes ? prop.notes.join(" ") : "");
+    const q = query.toLowerCase();
 
-    // 1. Key Amenities
-    if (requireBalcony && (prop.has_balcony || prop.text.includes('陽台'))) reasons.push('陽台');
-    if (wantsUtilityBilling && (prop.electricity_billing === '台水台電')) reasons.push('台電計費');
-    if (wantsPet && (prop.text.includes('可養') || prop.text.includes('寵物友善'))) reasons.push('可養寵物');
+    // 1. Financial & Budget Matches (High value)
+    if (prop.text.includes('台水台電') || prop.notes?.includes('獨立電錶')) {
+        if (q.includes('省') || q.includes('錢') || q.includes('便宜') || q.includes('台電')) {
+            reasons.push('台電計費');
+        }
+    }
+    if (pText.includes('租補') || pText.includes('補助')) reasons.push('可申請租補');
 
-    // 2. Location matches
+    // 2. Convenience & Amenities (Quality of life)
+    if (pText.includes('子母車') || pText.includes('垃圾處理')) reasons.push('免追垃圾車');
+    if (pText.includes('飲水機')) reasons.push('有飲水機');
+    if (pText.includes('電梯')) reasons.push('有電梯');
+    if (pText.includes('獨立洗衣機') || (pText.includes('洗衣機') && !pText.includes('共用'))) {
+        reasons.push('個人洗衣機');
+    }
+    if (pText.includes('陽台') || prop.has_balcony) reasons.push('有陽台');
+    if (pText.includes('採光') || pText.includes('大窗')) reasons.push('採光佳');
+    if (pText.includes('機車') || pText.includes('車位')) reasons.push('有機車位');
+
+    // 3. Location & Keyword matches
     const keywords = extractKeywords(query);
     keywords.forEach(kw => {
-        if (prop.text.includes(kw) && (kw.endsWith('路') || kw.endsWith('街') || kw.includes('區'))) {
+        if (pText.includes(kw) && (kw.endsWith('路') || kw.endsWith('街') || kw.includes('區') || kw.includes('興大'))) {
             reasons.push(kw);
         }
     });
 
-    return [...new Set(reasons)];
+    // Limit to top 3 most relevant reasons to keep UI clean
+    return [...new Set(reasons)].slice(0, 3);
 }
 
 function checkConflicts(prop, constraints) {
     const { wantsPet } = constraints;
+    const pText = prop.text + (prop.notes ? prop.notes.join(" ") : "");
     
-    // Check for hard pet conflict
-    if (wantsPet && (prop.text.includes('禁養') || prop.text.includes('不可養'))) {
+    // 1. Pet Conflict
+    if (wantsPet && (pText.includes('禁養') || pText.includes('不可養'))) {
         return "此房源禁養寵物";
+    }
+
+    // 2. Gender Conflict (Simplified detection)
+    if (constraints.hasGenderMention) {
+        if (constraints.genderUnrestricted === false) {
+             if (pText.includes('限女性') && constraints.text.includes('男')) return "此房源僅限女性";
+             if (pText.includes('限男性') && constraints.text.includes('女')) return "此房源僅限男性";
+        }
+    }
+
+    // 3. Smoking
+    if (constraints.text.includes('抽菸') && (pText.includes('禁菸') || pText.includes('禁止吸菸'))) {
+        return "此房源禁止吸菸";
     }
     
     return null;
