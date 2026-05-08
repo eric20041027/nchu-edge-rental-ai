@@ -66,7 +66,7 @@ graph TD
 │       ├── quantize_model.py   # INT8 量化與模型體積優化
 │       └── export_from_checkpoint.py # 指定最佳檢查點手動導出與評估
 ├── saved_models/            # 訓練過程產出之 PyTorch 模型檢查點 (Checkpoints)
-└── run_pipeline.sh          # 全自動化流水線一鍵啟動腳本
+└── run_pipeline.sh          # 訓練啟動腳本
 ```
 
 ---
