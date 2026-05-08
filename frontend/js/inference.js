@@ -186,29 +186,38 @@ function parseConstraintsFromText(text) {
 // --- Explainability: Match Reasons & Conflict Detection ---
 function explainMatch(query, prop, constraints) {
     const reasons = [];
-    const pText = prop.text + (prop.furniture || "") + (prop.notes ? prop.notes.join(" ") : "");
+    const pText = (prop.text + (prop.furniture || "") + (prop.notes ? prop.notes.join(" ") : "")).toLowerCase();
     const q = query.toLowerCase();
 
-    // 1. User-Specified Matches (Highest Priority)
-    if (q.includes('陽台') && (pText.includes('陽台') || prop.has_balcony)) reasons.push('有陽台');
-    if (q.includes('電視') && pText.includes('電視')) reasons.push('有電視');
-    if (q.includes('冰箱') && pText.includes('冰箱')) reasons.push('有冰箱');
-    if (q.includes('洗衣機') && pText.includes('洗衣機')) reasons.push('有洗衣機');
-    if (q.includes('冷氣') && pText.includes('冷氣')) reasons.push('有冷氣');
-    if (q.includes('電費') || q.includes('台電')) {
-        if (prop.text.includes('台水台電') || prop.notes?.includes('獨立電錶')) reasons.push('台電計費');
-    }
-    if ((q.includes('租補') || q.includes('補助')) && (pText.includes('租補') || pText.includes('補助'))) {
-        reasons.push("可申請租補");
-    }
+    // 1. Dynamic Amenity/Keyword Matching (Universal)
+    // Extract all potential nouns/amenities from query
+    const queryKeywords = extractKeywords(query);
+    
+    // List of common noisy words to ignore in tags
+    const ignoreList = ['房', '推薦', '附近', '一下', '預算', '大概', '想要', '需求', '尋找'];
 
-    // 2. High-Value General Highlights (Secondary Priority - only show if we have space)
+    queryKeywords.forEach(kw => {
+        if (kw.length < 2 || ignoreList.includes(kw)) return;
+        
+        // If query kw matches property features
+        if (pText.includes(kw)) {
+            // Map common items to cleaner labels
+            let label = `有${kw}`;
+            if (kw === '台電' || kw === '電費') label = '台電計費';
+            if (kw === '租補' || kw === '補助') label = '可申請租補';
+            if (kw === '機車') label = '有機車位';
+            
+            if (!reasons.includes(label)) reasons.push(label);
+        }
+    });
+
+    // 2. High-Value Fallbacks (If we still have room < 3 tags)
     const generalHighlights = [
         { key: '子母車', label: '免追垃圾車' },
         { key: '飲水機', label: '有飲水機' },
         { key: '電梯', label: '有電梯' },
-        { key: '獨立洗衣機', label: '個人洗衣機' },
-        { key: '採光', label: '採光佳' }
+        { key: '陽台', label: '有陽台' },
+        { key: '獨立洗衣機', label: '個人洗衣機' }
     ];
 
     generalHighlights.forEach(h => {
@@ -216,16 +225,6 @@ function explainMatch(query, prop, constraints) {
             if (!reasons.includes(h.label)) reasons.push(h.label);
         }
     });
-
-    // 3. Location matches
-    if (reasons.length < 3) {
-        const keywords = extractKeywords(query);
-        keywords.forEach(kw => {
-            if (reasons.length < 3 && pText.includes(kw) && (kw.endsWith('路') || kw.endsWith('街') || kw.includes('區') || kw.includes('興大'))) {
-                reasons.push(kw);
-            }
-        });
-    }
 
     return [...new Set(reasons)].slice(0, 3);
 }
