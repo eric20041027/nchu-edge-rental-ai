@@ -178,7 +178,8 @@ function parseConstraintsFromText(text) {
         wantsUtilityBilling, maxElectricityPrice, requireBalcony, requireWindow, requireParking, requireWaste, 
         requireSubsidy, isSocialHousing,
         excludeRooftop, excludeWooden, excludeHaunted, maxWalkMins, maxScooterMins,
-        wantsPet: (text.includes('養貓') || text.includes('養狗') || text.includes('寵物'))
+        wantsPet: (text.includes('養貓') || text.includes('養狗') || text.includes('寵物')),
+        originalText: text // Added to fix property access in checkConflicts
     };
 }
 
@@ -229,15 +230,15 @@ function checkConflicts(prop, constraints) {
     }
 
     // 2. Gender Conflict (Simplified detection)
-    if (constraints.hasGenderMention) {
+    if (constraints.hasGenderMention && constraints.originalText) {
         if (constraints.genderUnrestricted === false) {
-             if (pText.includes('限女性') && constraints.text.includes('男')) return "此房源僅限女性";
-             if (pText.includes('限男性') && constraints.text.includes('女')) return "此房源僅限男性";
+             if (pText.includes('限女性') && constraints.originalText.includes('男')) return "此房源僅限女性";
+             if (pText.includes('限男性') && constraints.originalText.includes('女')) return "此房源僅限男性";
         }
     }
 
     // 3. Smoking
-    if (constraints.text.includes('抽菸') && (pText.includes('禁菸') || pText.includes('禁止吸菸'))) {
+    if (constraints.originalText?.includes('抽菸') && (pText.includes('禁菸') || pText.includes('禁止吸菸'))) {
         return "此房源禁止吸菸";
     }
     
