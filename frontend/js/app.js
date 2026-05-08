@@ -169,9 +169,12 @@ async function fetchRecommendations(inputText) {
         if (data === null) {
             return;
         } else if (data && data.length > 0) {
-            // Check relevance based on score
-            const topScore = data[0].final_score || 0;
-            console.log("AI Top Match Score:", topScore);
+            // Check relevance based on score (Handle "43%" string format)
+            const scoreRaw = data[0].score || "0%";
+            const topScore = parseFloat(scoreRaw.replace('%', ''));
+            
+            console.log("AI Top Match Score (Parsed):", topScore);
+            
             if (topScore < 5) {
                 recommendationList.innerHTML = `<div style="text-align: center; color: #ff6b6b; padding: 2rem;">
                     <i class="fa-solid fa-circle-question" style="font-size: 3rem; margin-bottom: 1rem;"></i><br>
