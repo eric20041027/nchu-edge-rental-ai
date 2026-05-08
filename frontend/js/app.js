@@ -139,14 +139,8 @@ async function fetchRecommendations(inputText) {
     await new Promise(resolve => setTimeout(resolve, 100));
 
     try {
-        const housingKeywords = [
-            '房', '租', '預算', '萬', '千', 'k', '元', '近', '走', '分', '坪', '樓', 
-            '東區', '南區', '西區', '大里', '中興', '興大', '路', '街', '巷', '大道', 
-            '套', '雅', '工', '學', '國光', '學府', '忠明', 
-            '冰', '冷氣', '陽台', '電視', '窗', '電梯', '洗', '曬', '子母車', '垃圾', '樓梯', '爬', '水', '電', 
-            '車位', '寵', '貓', '狗', '男', '女', '頂加', '凶宅'
-        ];
-        const isRelevant = housingKeywords.some(key => inputText.toLowerCase().includes(key)) || /\d+/.test(inputText);
+        // No more hard-coded whitelist guard. Let the AI decide based on results.
+        const isRelevant = true; // Always proceed to scoring stage
 
         if (!isRelevant && inputText.length > 1) {
             recommendationList.innerHTML = `<div style="text-align: center; color: #ff6b6b; padding: 2rem;">
@@ -173,12 +167,25 @@ async function fetchRecommendations(inputText) {
         });
 
         if (data === null) {
-            // Previous inference was superseded by a newer query — do nothing.
             return;
-        } else if (data && data.length >= 0) {
+        } else if (data && data.length > 0) {
+            // Check relevance based on score
+            const topScore = data[0].final_score || 0;
+            if (topScore < 15) {
+                recommendationList.innerHTML = `<div style="text-align: center; color: #ff6b6b; padding: 2rem;">
+                    <i class="fa-solid fa-circle-question" style="font-size: 3rem; margin-bottom: 1rem;"></i><br>
+                    偵測到不相干的文字，請重新輸入更具體的租屋需求。<br>
+                    <small style="color: #888;">例如：「預算 6000 南區 套房」</small>
+                </div>`;
+                return;
+            }
             allRecommendedHouses = data;
             visibleCount = 0;
             renderCards(true);
+        } else if (data && data.length === 0) {
+            recommendationList.innerHTML = `<div style="text-align: center; color: white; padding: 2rem;">
+                找不到符合條件的房屋，試著放寬預算或是區域限制吧！
+            </div>`;
         } else if (!partialShown) {
             throw new Error("回傳格式不正確");
         }
