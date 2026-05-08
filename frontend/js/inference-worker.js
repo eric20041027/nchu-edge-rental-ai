@@ -35,7 +35,7 @@ async function init(localOrigin) {
             }
         });
 
-        const modelUrl = localOrigin + '/models/custom_onnx_model_dir/my_custom_model_quant.onnx';
+        const modelUrl = localOrigin + '/models/custom_onnx_model_dir/my_custom_model_quant.onnx?v=' + Date.now();
         const modelFetchPromise = (async () => {
             const response = await fetch(modelUrl, { cache: 'force-cache' });
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);

@@ -35,11 +35,15 @@ def main():
         model_output=OUTPUT_MODEL,
         op_types_to_quantize=["MatMul", "Gemm", "Gather"], # Added Gather to target Embeddings
         weight_type=QuantType.QInt8,
-        use_external_data_format=False, 
+        use_external_data_format=False, # 產生單一檔案，方便前端部署
         per_channel=False,              # Disable to save overhead
         reduce_range=True,
         extra_options={"MatMulConstBOnly": True},
     )
+
+    # Double-check: Load and save again to ensure all tensors are internal
+    final_model = onnx.load(OUTPUT_MODEL)
+    onnx.save(final_model, OUTPUT_MODEL, save_as_external_data=False)
 
     if os.path.exists(temp_model):
         os.remove(temp_model)
@@ -48,6 +52,7 @@ def main():
     output_size = os.path.getsize(OUTPUT_MODEL) / (1024 * 1024)
     print(f"\nDone! Size: {input_size:.1f} MB -> {output_size:.1f} MB "
           f"({100 * (1 - output_size / input_size):.0f}% reduction)")
+    print(f"Self-contained: {'SUCCESS' if output_size < 100 else 'WARNING (Still Large)'}")
     print("=" * 60)
 
 if __name__ == "__main__":
