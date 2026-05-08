@@ -197,16 +197,16 @@ function explainMatch(query, prop, constraints) {
         }
     }
 
-    if (text.includes('南區') || text.includes('東區') || text.includes('大里') || text.includes('西區')) {
+    if (query.includes('南區') || query.includes('東區') || query.includes('大里') || query.includes('西區')) {
         const zones = ['南區', '東區', '大里', '西區'];
-        if (zones.some(z => text.includes(z) && prop.text.includes(z))) {
+        if (zones.some(z => query.includes(z) && prop.text.includes(z))) {
             reasons.push("區域正確");
         }
     }
 
     if (constraints.hasRoomTypeMention) {
         const types = ['套房', '雅房', '工作室'];
-        if (types.some(t => text.includes(t) && prop.text.includes(t))) {
+        if (types.some(t => query.includes(t) && prop.text.includes(t))) {
             reasons.push("房型符合");
         }
     }
