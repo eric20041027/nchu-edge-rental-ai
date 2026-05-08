@@ -373,53 +373,67 @@ function calculateRuleBasedScore(candidates, queryKeywords, text, constraints) {
         kw.includes('區') || kw.includes('正門') || kw.includes('側門') || kw.includes('男宿')
     );
 
+    const queryKeywords = extractKeywords(text);
+    const ignoreList = ['房', '推薦', '附近', '一下', '預算', '大概', '想要', '需求', '尋找'];
+    const semanticMap = {
+        '垃圾': ['子母車', '代收垃圾', '垃圾處理', '垃圾子車'],
+        '電費': ['台電', '獨立電錶', '台水台電'],
+        '陽台': ['陽台', '露台'],
+        '電梯': ['電梯', '華廈', '大樓'],
+        '車位': ['停車', '車位', '車庫']
+    };
+
     const preScored = candidates.map(prop => {
         let kScore = 0, matchCount = 0, totalRequirements = 0;
+        const pText = (prop.text + (prop.furniture || "") + (prop.notes ? prop.notes.join(" ") : "")).toLowerCase();
 
-        // Commute Time Scoring - Only penalize if user explicitly asked for short commute
+        // 1. Semantic Amenity Scoring (The "Option A" logic)
+        queryKeywords.forEach(kw => {
+            if (kw.length < 2 || ignoreList.includes(kw)) return;
+            
+            totalRequirements++;
+            let isMatch = pText.includes(kw);
+            
+            // Apply semantic expansion for matching
+            if (!isMatch) {
+                for (const [group, alternates] of Object.entries(semanticMap)) {
+                    if (kw.includes(group) || group.includes(kw)) {
+                        if (alternates.some(alt => pText.includes(alt))) {
+                            isMatch = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (isMatch) {
+                matchCount++;
+                kScore += 15; // Significant boost for keyword match
+            }
+        });
+
+        // 2. Commute Time Scoring
         const isCommuteExplicit = text.includes('近') || text.includes('走') || text.includes('分鐘') || text.includes('公里');
-
         if (maxWalkMins !== null && isCommuteExplicit) {
             totalRequirements++;
             const propWalk = prop.walk_mins || Math.ceil(prop.distance / 0.08);
             if (propWalk <= maxWalkMins) {
                 matchCount++;
                 kScore += 20; 
-            } else if (propWalk <= maxWalkMins + 3) {
-                matchCount += 0.5;
-                kScore += 5;
             }
         }
-
+        
         if (maxScooterMins !== null && isCommuteExplicit) {
             totalRequirements++;
             const propScooter = prop.scooter_mins || Math.max(1, Math.ceil(prop.distance / 0.5));
             if (propScooter <= maxScooterMins) {
                 matchCount++;
                 kScore += 15;
-            } else if (propScooter <= maxScooterMins + 2) {
-                matchCount += 0.5;
-                kScore += 5;
             }
         }
-
-
-        if (requireBalcony) {
-            totalRequirements++;
-            if (prop.has_balcony) { matchCount++; kScore += 15; }
-        }
-        if (requireWindow) {
-            totalRequirements++;
-            if (prop.has_window) { matchCount++; kScore += 15; }
-        }
-        if (requireParking) {
-            totalRequirements++;
-            if (prop.has_parking) { matchCount++; kScore += 10; }
-        }
-        if (requireWaste) {
-            totalRequirements++;
-            if (prop.has_waste_disposal) { matchCount++; kScore += 10; }
-        }
+        
+        // Amenity scoring is now handled in Step 1 (Semantic Amenity Scoring)
+        // Step 3. Special Contextual Scoring (Location, Room Type, Budget)
 
         if (hasLocationMention) {
             totalRequirements++;
