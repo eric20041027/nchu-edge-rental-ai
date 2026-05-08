@@ -12,12 +12,16 @@
 
 ## 效能指標 (Model Performance)
 
-| 指標 | 數值 | 狀態 | 說明 |
-| :--- | :--- | :--- | :--- |
-| **F1-Score** | **0.832** | 優秀 | 基於 RBT6 模型於 Step 4000 達成之最佳表現 |
-| **Model Architecture** | **RBT6** | 升級 | 從 3 層升級至 6 層，顯著提升複雜語義辨識率 |
-| **Inference Latency** | **< 150ms** | 優化 | 基於 WebAssembly 多線程加速技術 |
-| **Download Efficiency** | **100%** | 提升 | 實作並行加載與 Vercel 邊緣快取策略 |
+| 指標 | 任務類型 | 數值 | 狀態 | 說明 |
+| :--- | :--- | :--- | :--- | :--- |
+| **F1-Score** | **二分類語意匹配** | **0.832** | 優秀 | 基於 RBT6 模型於 Step 4000 達成之最佳表現 |
+| **Accuracy** | **二分類語意匹配** | **0.884** | 穩定 | 判斷查詢與房源是否符合的基礎準確度 |
+| **Model Architecture** | **Matching Engine** | **RBT6** | 升級 | 從 3 層升級至 6 層，顯著提升複雜語義辨識率 |
+| **Inference Latency** | **N/A** | **< 150ms** | 優化 | 基於 WebAssembly 多線程加速技術 |
+
+> [!NOTE]
+> 上述 F1-Score 專指 **「判斷使用者查詢與房源描述是否匹配」** 的二分類任務 (Binary Classification Task)。系統中的 NER (實體辨識) 任務屬於預處理階段，由獨立的輕量化模型負責，不計入此表指標中。
+
 
 ## 前端工程優化
 
