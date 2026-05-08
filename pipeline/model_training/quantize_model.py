@@ -33,9 +33,11 @@ def main():
     quantize_dynamic(
         model_input=input_path,
         model_output=OUTPUT_MODEL,
-        op_types_to_quantize=["MatMul", "Gemm"],
+        op_types_to_quantize=["MatMul", "Gemm", "Gather"], # Added Gather to target Embeddings
         weight_type=QuantType.QInt8,
-        use_external_data_format=False, # 產生單一檔案，方便前端部署
+        use_external_data_format=False, 
+        per_channel=False,              # Disable to save overhead
+        reduce_range=True,
         extra_options={"MatMulConstBOnly": True},
     )
 
