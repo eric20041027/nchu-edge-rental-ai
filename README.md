@@ -32,9 +32,28 @@
 3. **快取策略 (Edge Caching)**: 於 vercel.json 實作強效快取標頭 (immutable)，確保 ONNX 資源在使用者重複造訪時能瞬間載入。
 4. **渲染隔離**: 核心推理邏輯運行於獨立的 Web Worker，避免複雜計算導致 UI 主線程凍結。
 
-## 系統架構
+## 檢索與排序機制 (Search & Ranking Mechanism)
 
-### 數據與訓練流程
+為了在瀏覽器端 (Edge AI) 同時兼顧推論精度與回應速度，本系統採用 **兩階段重排 (Two-Stage Re-ranking)** 架構：
+
+### 階段一：啟發式粗篩 (Heuristic Filtering)
+- **運作機制**：系統首先利用輕量化的 JavaScript 邏輯，對本地快取的 `property_data.json` 進行初步篩選。
+- **篩選因子**：包含租金區間、地理區域、基本設備等硬性約束。
+- **目標**：將 600+ 筆原始房源過濾至 Top 20-30 筆最具潛力的候選名單，大幅降低後續 AI 運算的負擔。
+
+### 階段二：Cross-Encoder 深度重排 (Semantic Re-ranking)
+- **運作機制**：將候選名單與使用者查詢組成「句子對 (Sentence-Pair)」，輸入 **RBT6 語意匹配模型**。
+- **優勢**：相較於單純的向量相似度比對 (Cosine Similarity)，Cross-Encoder 能進行深層的語意交互運算，精確識別如「怕吵」、「要採光」等隱性需求與房源描述間的衝突。
+
+## 系統擴展性設計 (Scalability)
+
+針對未來房源數量增長至數千或數萬筆的場景，本系統已預留以下升級路徑：
+
+1. **向量檢索 (Bi-Encoder Integration)**：將第一階段升級為基於向量的近似最近鄰搜尋 (ANN)，利用 Cosine Similarity 進行大規模預選。
+2. **混合索引架構**：房源資料將依區域進行分片加載 (Sharding)，僅在使用者感興趣的範圍內下載特徵向量。
+3. **模型蒸餾**：透過模型蒸餾技術進一步壓縮 RBT6，以利於在行動端執行更大規模的並行推論。
+
+## 系統架構圖
 1. **Data Crawling**: 多源資料抓取與結構化處理。
 2. **Commute Analysis**: 路網座標計算與時間標記。
 3. **Hard Negative Mining**: 生成對抗樣本，強化模型對相似物件的分辨能力。
