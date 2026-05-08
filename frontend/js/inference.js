@@ -190,9 +190,30 @@ function explainMatch(query, prop, constraints) {
     const pText = (prop.text + (prop.furniture || "") + (prop.notes ? prop.notes.join(" ") : "")).toLowerCase();
     const q = query.toLowerCase();
 
-    // 1. Dynamic Amenity/Keyword Matching (Universal)
+    // 1. Contextual Semantic Logic (Budget, Location, Room Type)
+    if (constraints.hasBudgetMention) {
+        if (constraints.maxBudget && prop.rent <= constraints.maxBudget) {
+            reasons.push("預算符合");
+        }
+    }
+
+    if (text.includes('南區') || text.includes('東區') || text.includes('大里') || text.includes('西區')) {
+        const zones = ['南區', '東區', '大里', '西區'];
+        if (zones.some(z => text.includes(z) && prop.text.includes(z))) {
+            reasons.push("區域正確");
+        }
+    }
+
+    if (constraints.hasRoomTypeMention) {
+        const types = ['套房', '雅房', '工作室'];
+        if (types.some(t => text.includes(t) && prop.text.includes(t))) {
+            reasons.push("房型符合");
+        }
+    }
+
+    // 2. Dynamic Amenity/Keyword Matching (Universal)
     const queryKeywords = extractKeywords(query);
-    const ignoreList = ['房', '推薦', '附近', '一下', '預算', '大概', '想要', '需求', '尋找'];
+    const ignoreList = ['房', '推薦', '附近', '一下', '預算', '大概', '想要', '需求', '尋找', '套房', '雅房', '南區', '東區', '大里', '西區'];
     
     // Semantic Normalization Map
     const semanticMap = {
@@ -205,6 +226,7 @@ function explainMatch(query, prop, constraints) {
 
     queryKeywords.forEach(kw => {
         if (kw.length < 2 || ignoreList.includes(kw)) return;
+        if (reasons.length >= 3) return;
         
         // Check for direct match, semantic group match, or boolean flag match
         let isMatch = pText.includes(kw);
@@ -215,6 +237,7 @@ function explainMatch(query, prop, constraints) {
             if ((kw.includes('樓梯') || kw.includes('電梯')) && prop.has_elevator) isMatch = true;
             if (kw.includes('陽台') && prop.has_balcony) isMatch = true;
             if (kw.includes('車位') && prop.has_parking) isMatch = true;
+            if (kw.includes('窗') && prop.has_window) isMatch = true;
             
             // Generic semantic expansion
             for (const [group, alternates] of Object.entries(semanticMap)) {
@@ -229,7 +252,7 @@ function explainMatch(query, prop, constraints) {
 
         if (isMatch) {
             let label = `有${kw}`;
-            if (kw.includes('垃圾')) label = '免追垃圾車';
+            if (kw.includes('垃圾') || kw.includes('追車')) label = '免追垃圾車';
             if (kw.includes('樓梯') || kw.includes('電梯')) label = '有電梯';
             if (kw.includes('窗')) label = '有對外窗';
             if (kw.includes('車位') || kw.includes('停車')) label = '好停車';
@@ -240,7 +263,7 @@ function explainMatch(query, prop, constraints) {
         }
     });
 
-    // 2. High-Value Fallbacks (If we still have room < 3 tags)
+    // 3. High-Value Fallbacks (If we still have room < 3 tags)
     const generalHighlights = [
         { key: '子母車', label: '免追垃圾車' },
         { key: '飲水機', label: '有飲水機' },
