@@ -1,86 +1,101 @@
 # 興大 AI 租屋推薦系統 (NCHU AI Rental Recommendation)
 
-本專案為針對中興大學學生設計之 Edge AI 租屋推薦系統。系統透過微調後之 6 層 RoBERTa 模型處理自然語言查詢，並與房源資料進行深度語意匹配，旨在解決傳統篩選器過於僵硬的侷限性。
+本專案為針對中興大學學生設計之 Edge AI 租屋推薦系統。系統透過微調後之 6 層 RoBERTa 模型處理自然語言查詢，並與房源資料進行深度語意匹配，旨在解決傳統篩選器過於僵硬的侷限性，提供具備語意理解能力的搜尋體驗。
 
-## 系統核心技術
+## 系統核心亮點
 
-- **深度語意解析 (RoBERTa RBT6)**: 採用 hfl/rbt6 模型架構，相較於初版 RBT3，具備更深層的特徵提取能力，能精確識別「採光」、「通風」、「安靜」等口語化非結構化需求。
-- **全自動數據流水線**: 整合興大校外租屋網與租租通數據，透過地址正規化與租金容差比對演算法，確保房源資料的完整性與去重品質。
-- **真實路網權重**: 整合 OSRM (Open Source Routing Machine) 數據，將「真實步行/行車時間」作為推薦排序的核心因子，而非單純的直線距離。
-- **邊緣端高效推論**: 透過 ONNX Runtime Web 實作瀏覽器端推理，並透過 INT8 動態量化技術優化模型體積，兼顧隱私與回應速度。
-- **行動端專項優化**: 實作 Mobile-First 響應式佈局，針對觸控操作進行優化，提供接近原生 App 的操作體驗。
+- **跨平台數據自動化整合**: 系統利用 Playwright 動態爬蟲技術，整合中興大學校外租屋網與租租通數據，解決資訊破碎化問題。
+- **深度語意解析 (RoBERTa RBT6)**: 採用 hfl/rbt6 架構，相較於初版 RBT3，其參數容量與特徵空間能更細膩地捕捉非結構化需求中的潛在衝突。
+- **真實路網權重系統**: 捨棄傳統的直線距離計算，全面接入 OSRM 引擎，計算房源至校門口的真實步行與機車通勤時間。
+- **邊緣端高效推論 (Edge AI)**: 模型透過 INT8 動態量化技術壓縮，直接於瀏覽器端透過 ONNX Runtime Web 進行運算。
+- **行動端專項優化 (Mobile-First)**: 全介面採用響應式設計與觸控優化，確保行動裝置的使用流暢度。
+
+---
+
+## 系統架構圖 (System Architecture)
+
+### 1. 數據流水線 (Data Pipeline)
+展示從原始資料抓取到模型產出的完整自動化流程：
+
+```mermaid
+graph TD
+    A1["租租通 Crawler\n(Playwright/JSON-LD)"] --> B("nchu_rental_info.csv\n(多源資料集)")
+    A2["興大官網 Crawler\n(Request/HTML)"] --> B
+    B --> C("update_commute_data.py\nOSRM 路網時間計算")
+    C --> D("generate_dataset.py\n語意陷阱 Hard Negative Mining")
+    D --> E("train_and_export_onnx.py\n模型微調與權重導出")
+    E --> F["my_custom_model.onnx (INT8)"]
+    C --> G["property_data.json\n(前端房源庫)"]
+```
+
+### 2. 推論與匹配邏輯 (Inference Flow)
+展示使用者查詢如何在前端進行兩階段即時重排：
+
+```mermaid
+graph TD
+    A["自然語言查詢輸入"] --> B("Stage 1: 啟發式粗篩\n(JavaScript Filter)")
+    B -- "選出 Top 30 候選" --> C("Stage 2: AI 語意重排\n(ONNX Runtime Web)")
+    C --> D("RBT6 語意匹配計算")
+    D --> E("排序重整與渲染")
+    E --> F["最終推薦清單輸出"]
+```
+
+---
 
 ## 效能指標 (Model Performance)
 
-| 指標 | 任務類型 | 數值 | 狀態 | 說明 |
+| 指標名稱 | 任務類型 | 數值 | 狀態 | 說明 |
 | :--- | :--- | :--- | :--- | :--- |
-| **F1-Score** | **二分類語意匹配** | **0.832** | 優秀 | 基於 RBT6 模型於 Step 4000 達成之最佳表現 |
-| **Accuracy** | **二分類語意匹配** | **0.884** | 穩定 | 判斷查詢與房源是否符合的基礎準確度 |
-| **Model Architecture** | **Matching Engine** | **RBT6** | 升級 | 從 3 層升級至 6 層，顯著提升複雜語義辨識率 |
-| **Inference Latency** | **N/A** | **< 150ms** | 優化 | 基於 WebAssembly 多線程加速技術 |
+| **F1-Score** | **二分類語意匹配** | **0.832** | 優秀 | 評估「查詢-房源」是否符合的最佳表現 |
+| **Accuracy** | **二分類語意匹配** | **0.884** | 穩定 | 基礎語意辨識準確率 |
+| **Matching Latency** | **AI 推論耗時** | **< 150ms** | 極速 | 單筆候選物件的語意評分時間 |
+| **Architecture** | **Matching Engine** | **RBT6** | 升級 | 6 層 Transformer 架構 |
 
 > [!NOTE]
-> 上述 F1-Score 專指 **「判斷使用者查詢與房源描述是否匹配」** 的二分類任務 (Binary Classification Task)。系統中的 NER (實體辨識) 任務屬於預處理階段，由獨立的輕量化模型負責，不計入此表指標中。
+> 效能數據係指「語意匹配模型」之表現。系統預處理階段之 NER (實體辨識) 由另一獨立輕量化模型處理，不計入此表指標中。
 
-## 前端工程優化
+---
 
-系統針對 Web 端部署實作了多項關鍵效能技術：
+## 核心技術機制 (Technical Mechanism)
 
-1. **並行加載策略 (Parallel Loading)**: 分詞器 (Tokenizer) 與模型檔案透過 Promise.all 進行並行下載，將初始化等待時間減少約 40%。
-2. **串流進度追蹤 (Stream Fetch)**: 捨棄傳統封裝函數，改用原生 Fetch API 監控資料流，提供精確至 KB 的載入進度回報，提升使用者心理預期。
-3. **快取策略 (Edge Caching)**: 於 vercel.json 實作強效快取標頭 (immutable)，確保 ONNX 資源在使用者重複造訪時能瞬間載入。
-4. **渲染隔離**: 核心推理邏輯運行於獨立的 Web Worker，避免複雜計算導致 UI 主線程凍結。
+### 1. 兩階段重排 (Two-Stage Re-ranking)
+- **第一階段 (Heuristic Filtering)**：利用前端 JS 引擎對房源庫進行 O(N) 的基礎屬性過濾（如預算上限、特定區域），將候選名單收斂至 20-30 筆。
+- **第二階段 (Semantic Re-ranking)**：將候選清單輸入 RBT6 模型，透過 Cross-Encoder 機制識別細微的語意衝突。
 
-## 檢索與排序機制 (Search & Ranking Mechanism)
+### 2. 語意陷阱挖掘 (Hard Negative Mining)
+- **策略**：系統刻意製造「字面相似但關鍵屬性互斥」的樣本。
+- **實例**：查詢要求「台水台電」，系統配對「環境優美、近興大、預算 5500」但註明「電費一度 5 元」的房源為負樣本，強迫模型學習「費用計算方式」的核心權重。
 
-為了在瀏覽器端 (Edge AI) 同時兼顧推論精度與回應速度，本系統採用 **兩階段重排 (Two-Stage Re-ranking)** 架構：
+---
 
-### 階段一：啟發式粗篩 (Heuristic Filtering)
-- **運作機制**：系統首先利用輕量化的 JavaScript 邏輯，對本地快取的 `property_data.json` 進行初步篩選。
-- **篩選因子**：包含租金區間、地理區域、基本設備等硬性約束。
-- **目標**：將 600+ 筆原始房源過濾至 Top 20-30 筆最具潛力的候選名單，大幅降低後續 AI 運算的負擔。
+## 核心模組說明
 
-### 階段二：Cross-Encoder 深度重排 (Semantic Re-ranking)
-- **運作機制**：將候選名單與使用者查詢組成「句子對 (Sentence-Pair)」，輸入 **RBT6 語意匹配模型**。
-- **優勢**：相較於單純的向量相似度比對 (Cosine Similarity)，Cross-Encoder 能進行深層的語意交互運算，精確識別如「怕吵」、「要採光」等隱性需求與房源描述間的衝突。
+### 1. 數據處理 (pipeline/)
+- **crawler_ddroom.py**: 使用 Playwright 處理動態網頁渲染，解析 JSON-LD 結構化資料。
+- **rent_info_catcher.py**: 針對興大官方租屋網進行 DOM 解析，確保官方認證房源不遺漏。
+- **update_commute_data.py**: 調用 OSRM API 獲取真實路網數據。相較於直線距離，更能真實反應如繞路等地理實際情況。
+- **augment_with_llm.py**: 利用 Gemini API 生成高度模擬口語的查詢樣本。
 
-## 系統擴展性設計 (Scalability)
+### 2. 模型開發 (pipeline/model_training/)
+- **train_and_export_onnx.py**: 整合 FGM 對抗訓練與加權損失函數。
+- **export_from_checkpoint.py**: 支援從檢查點導出並產出能力評估報告。
+- **quantize_model.py**: 實施 INT8 量化，將 RBT6 體積優化至適合網頁傳輸的大小。
 
-針對未來房源數量增長至數千或數萬筆的場景，本系統已預留以下升級路徑：
-
-1. **向量檢索 (Bi-Encoder Integration)**：將第一階段升級為基於向量的近似最近鄰搜尋 (ANN)，利用 Cosine Similarity 進行大規模預選。
-2. **混合索引架構**：房源資料將依區域進行分片加載 (Sharding)，僅在使用者感興趣的範圍內下載特徵向量。
-3. **模型蒸餾**：透過模型蒸餾技術進一步壓縮 RBT6，以利於在行動端執行更大規模的並行推論。
-
-## 系統架構圖
-1. **Data Crawling**: 多源資料抓取與結構化處理。
-2. **Commute Analysis**: 路網座標計算與時間標記。
-3. **困難負樣本挖掘 (Hard Negative Mining)**：
-   - **生成策略**：系統透過自定義演算法與 LLM 輔助，生成「語意陷阱」樣本。這些樣本在字面上與查詢極度相似（High Lexical Overlap），但在核心關鍵約束上完全互斥。
-   - **實例定義**：例如查詢要求「台水台電」，系統會刻意配對描述中包含「環境優美、近興大」但註明「電費一度5元」的房源作為負樣本，強迫模型學習區分誘人條件與核心約束間的衝突，而非僅依賴關鍵字出現頻率進行判讀。
-4. **Model Tuning**: 基於 RBT6 的遷移學習與 F1 指標監控。
-5. **ONNX Export**: 權重轉換與部署包封裝。
-
-### 執行目錄結構
-- `frontend/`: 包含所有 Web 端資源（HTML, CSS, JS, Models）。
-- `pipeline/`:
-  - `crawlers/`: 各平台數據抓取模組。
-  - `data_prep/`: 數據清洗、路網計算與樣本生成。
-  - `model_training/`: 訓練、評估與導出腳本。
-- `saved_models/`: 存儲訓練過程中的檢查點與狀態檔案。
+---
 
 ## 執行與部署
 
-### 環境需求
-- Python 3.10+
-- Node.js 18+ (用於前端開發與部署)
-- PyTorch & Transformers (用於模型訓練)
+### 1. 本地開發
+```bash
+# 安裝依賴
+pip install torch transformers datasets onnxruntime playwright
+playwright install chromium
 
-### 本地部署
-1. 克隆專案並安裝相依套件。
-2. 執行 `pipeline/model_training/train_and_export_onnx.py` 進行訓練。
-3. 使用 `pipeline/model_training/export_from_checkpoint.py` 導出至前端目錄。
-4. 於 `frontend/` 目錄下啟動本地伺服器即可檢視結果。
+# 啟動全流水線
+./run_pipeline.sh
+```
 
-## 合規性與聲明
-本專案之爬蟲均遵循目標網站之 robots.txt 協定，並實作速率限制機制以降低伺服器負載。所有資料僅用於學術研究與 AI 技術驗證，不涉及任何商業盈利行為。
+### 2. 爬蟲合規性與聲明
+- **robots.txt**: 本專案嚴格遵循目標網站之協定。
+- **速率限制**: 實作隨機等待機制 (1~3s)，避免對伺服器造成壓力。
+- **用途聲明**: 資料僅用於學術研究與 Edge AI 技術驗證，不涉及營利。
