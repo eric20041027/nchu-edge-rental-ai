@@ -4955,7 +4955,7 @@
     "has_balcony": true,
     "has_elevator": true,
     "has_parking": false,
-    "has_waste_disposal": true,
+    "has_waste_disposal": false,
     "is_rooftop": false,
     "is_wooden_partition": false
   },
