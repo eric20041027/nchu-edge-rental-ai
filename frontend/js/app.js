@@ -272,6 +272,7 @@ function createPropertyCardHTML(house, badgeClass) {
     }
 
     // [Hybrid Filtering] Conflict Warning
+    let conflictHtml = "";
     if (house.conflict_reason) {
         conflictHtml = `<div class="conflict-alert" style="background: rgba(255, 107, 107, 0.15); color: #ff6b6b; padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; margin-bottom: 12px; border: 1px solid rgba(255, 107, 107, 0.3); display: flex; align-items: center; gap: 8px;">
             <i class="fa-solid fa-triangle-exclamation"></i>
