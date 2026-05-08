@@ -483,7 +483,9 @@ export async function recommend(text, top_k = 20, onPartialResult = null) {
         if (onPartialResult && topCandidates.length > 0) {
             const quickResults = topCandidates.slice(0, top_k).map(({ prop, rms }) => ({
                 property: prop,
-                score: Math.round(rms * 75)  // Rule-based estimate, no AI yet
+                score: Math.round(rms * 75), // Rule-based estimate
+                match_reasons: explainMatch(text, prop, constraints),
+                conflict_reason: checkConflicts(prop, constraints)
             }));
             quickResults.sort((a, b) => b.score - a.score);
             onPartialResult(formatResponse(quickResults, top_k));
