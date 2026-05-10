@@ -96,20 +96,27 @@ class DatasetGenerator(BaseProcessor):
             rent = self._parse_rent(row.get("租金", ""))
             distance = float(str(row.get("距離(km)", "0") or "0").replace("km", "").strip() or "0")
 
+            # Handle NaN values in row data
+            def _safe_get(row, key, default=""):
+                val = row.get(key, default)
+                if val is None or (isinstance(val, float) and val != val):  # NaN check
+                    return default
+                return val if isinstance(val, str) else str(val) if val else default
+
             prop = {
-                "url": row.get("網址", ""),
-                "address": row.get("地址", ""),
-                "region": self._extract_region(row.get("地址", "")),
-                "road": self._extract_road(row.get("地址", "")),
-                "room_type": self._extract_room_type(row.get("類型", "")),
-                "building_type": self._extract_building_type(row.get("類型", "")),
-                "size": row.get("室內坪數", ""),
+                "url": _safe_get(row, "網址"),
+                "address": _safe_get(row, "地址"),
+                "region": self._extract_region(_safe_get(row, "地址")),
+                "road": self._extract_road(_safe_get(row, "地址")),
+                "room_type": self._extract_room_type(_safe_get(row, "類型")),
+                "building_type": self._extract_building_type(_safe_get(row, "類型")),
+                "size": _safe_get(row, "室內坪數"),
                 "rent": rent,
-                "rent_str": row.get("租金", ""),
-                "floor": row.get("樓層", ""),
+                "rent_str": _safe_get(row, "租金"),
+                "floor": _safe_get(row, "樓層"),
                 "distance": distance,
-                "furniture": self._parse_list(row.get("家具設施", "")),
-                "notes": self._parse_list(row.get("備註", "")),
+                "furniture": self._parse_list(_safe_get(row, "家具設施")),
+                "notes": self._parse_list(_safe_get(row, "備註")),
             }
             properties.append(prop)
         return properties
@@ -124,8 +131,12 @@ class DatasetGenerator(BaseProcessor):
             return 0.0
 
     @staticmethod
-    def _extract_region(address: str) -> str:
-        """Extract region district from address."""
+    def _extract_region(address) -> str:
+        """Extract region district from address, handling NaN and non-string values."""
+        if address is None or (isinstance(address, float) and address != address):  # NaN check
+            return ""
+        if not isinstance(address, str):
+            return ""
         regions = ["南區", "大里區", "東區", "西區", "太平區", "西屯區", "北屯區", "南屯區", "北區", "中區"]
         for region in regions:
             if region in address:
@@ -133,28 +144,44 @@ class DatasetGenerator(BaseProcessor):
         return ""
 
     @staticmethod
-    def _extract_road(address: str) -> str:
-        """Extract road name from address."""
+    def _extract_road(address) -> str:
+        """Extract road name from address, handling NaN and non-string values."""
+        if address is None or (isinstance(address, float) and address != address):  # NaN check
+            return ""
+        if not isinstance(address, str):
+            return ""
         match = re.search(r"([^區市台]*(?:路|街|大道)(?:[一二三四五六七八九十]|[\d])?段?)", address)
         return match.group(1).strip() if match else ""
 
     @staticmethod
-    def _extract_room_type(type_str: str) -> str:
-        """Extract room type (套房/雅房/住宅)."""
+    def _extract_room_type(type_str) -> str:
+        """Extract room type (套房/雅房/住宅), handling NaN and non-string values."""
+        if type_str is None or (isinstance(type_str, float) and type_str != type_str):  # NaN check
+            return ""
+        if not isinstance(type_str, str):
+            return ""
         for room_type in ["套房", "雅房", "住宅"]:
             if room_type in type_str:
                 return room_type
         return ""
 
     @staticmethod
-    def _extract_building_type(type_str: str) -> str:
-        """Extract building type."""
+    def _extract_building_type(type_str) -> str:
+        """Extract building type, handling NaN and non-string values."""
+        if type_str is None or (isinstance(type_str, float) and type_str != type_str):  # NaN check
+            return ""
+        if not isinstance(type_str, str):
+            return ""
         return type_str.replace("套房", "").replace("雅房", "").replace("住宅", "").strip()
 
     @staticmethod
     def _parse_list(text: str) -> List[str]:
-        """Parse slash-separated list."""
-        if not text:
+        """Parse slash-separated list, handling NaN and non-string values."""
+        if text is None or (isinstance(text, float) and text != text):  # NaN check
+            return []
+        if not isinstance(text, str):
+            return []
+        if not text or not text.strip():
             return []
         return [s.strip() for s in text.split("/") if s.strip()]
 

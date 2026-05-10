@@ -179,8 +179,12 @@ class SilverLabeler(BaseProcessor):
 
     @staticmethod
     def _parse_list(text: str) -> List[str]:
-        """Parse slash-separated list."""
-        if not text:
+        """Parse slash-separated list, handling NaN and non-string values."""
+        if text is None or (isinstance(text, float) and text != text):  # NaN check
+            return []
+        if not isinstance(text, str):
+            return []
+        if not text or not text.strip():
             return []
         return [s.strip() for s in text.split("/") if s.strip()]
 
