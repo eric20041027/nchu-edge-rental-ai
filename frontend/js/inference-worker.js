@@ -123,6 +123,54 @@ async function scorePair(query, propertyText) {
     return exp1 / (exp0 + exp1);
 }
 
+/**
+ * semanticExpandQuery - Maps colloquial intentions to specific property features.
+ */
+function semanticExpandQuery(query) {
+    const expansionMap = {
+        "潔癖": "全新 獨洗 禁菸 乾淨",
+        "愛乾淨": "全新 獨洗 禁菸 乾淨",
+        "想下廚": "可伙 廚房 抽油煙機 瓦斯爐",
+        "要下廚": "可伙 廚房 抽油煙機 瓦斯爐",
+        "可以煮東西": "可伙 廚房",
+        "不想爬樓梯": "電梯 大樓 華廈",
+        "懶人": "電梯 子母車 垃圾處理 飲水機",
+        "搬東西": "電梯 搬家",
+        "怕熱": "冷氣 吹冷氣 變頻",
+        "夏天": "冷氣",
+        "打報告": "寬頻 網路 上網 書桌",
+        "上網": "寬頻 網路",
+        "獨洗獨曬": "洗衣機 陽台 曬衣 獨洗",
+        "可貓": "可寵 養寵 寵物友善",
+        "可狗": "可寵 養寵 寵物友善",
+        "有毛孩": "可寵 寵物",
+        "台水電": "台電 台水 帳單 自繳",
+        "省電費": "變頻 台電",
+        "自己煮": "廚房 瓦斯 開火 自炊 省錢",
+        "省伙食費": "廚房 瓦斯 開火",
+        "外送族": "管理員 飲水機 子母車",
+        "不想出門": "管理員 飲水機 子母車",
+        "潔癖": "全新 獨洗 禁菸 乾淨",
+        "稍微潔癖": "全新 獨洗 禁菸 乾淨",
+        "怕悶熱": "陽台 採光 通風 對外窗",
+        "有車": "車位 停車場",
+        "開車": "車位 停車場",
+        "怕吵": "隔音 氣密窗 禁菸 寧靜",
+        "首選": "全新",
+        "不想追垃圾車": "子母車 垃圾處理",
+        "網美": "裝潢 採光 漂亮 落地窗",
+        "採光好": "落地窗 採光",
+    };
+
+    let expanded = query;
+    for (const [key, expansion] of Object.entries(expansionMap)) {
+        if (query.includes(key)) {
+            expanded += " " + expansion;
+        }
+    }
+    return expanded;
+}
+
 onmessage = async (e) => {
     const { type, data } = e.data;
 
@@ -130,7 +178,11 @@ onmessage = async (e) => {
         await init(data.origin);
     } else if (type === 'score') {
         const { query, propertyText, id } = data;
-        const score = await scorePair(query, propertyText);
-        postMessage({ type: 'scoreResult', score, id });
+        
+        // --- [NEW] Semantic Query Expansion ---
+        const expandedQuery = semanticExpandQuery(query);
+        
+        const score = await scorePair(expandedQuery, propertyText);
+        postMessage({ type: 'scoreResult', score, id, expandedQuery });
     }
 };

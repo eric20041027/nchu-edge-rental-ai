@@ -32,33 +32,41 @@ class Templates:
         "南區": ["南區", "台中南區", "南區附近"],
         "大里區": ["大里", "大里區", "台中大里"],
         "東區": ["東區", "台中東區"],
+        "西區": ["西區", "台中西區", "勤美附近", "西區附近"],
+        "太平區": ["太平", "太平區", "台中太平"],
+        "西屯區": ["西屯", "逢甲附近", "西屯區", "七期附近"],
+        "北屯區": ["北屯", "北屯區", "台中北屯"],
+        "南屯區": ["南屯", "南屯區", "台中南屯"],
+        "北區": ["北區", "一中附近", "北區附近"],
+        "中區": ["中區", "台中火車站附近", "台中中區"],
     }
     FURNITURE = {
-        "冷氣機": ["有冷氣", "要冷氣", "含冷氣", "怕熱"],
-        "冷氣": ["有冷氣", "要冷氣", "怕熱"],
-        "變頻冷氣": ["變頻", "省電冷氣", "省電費"],
-        "洗衣機": ["有洗衣機", "獨洗", "獨立洗衣"],
-        "冰箱": ["有冰箱", "需要冰東西"],
-        "電視": ["有電視"],
-        "有線電視": ["有第四台", "有電視"],
-        "書桌椅": ["有書桌", "附書桌"],
-        "書桌": ["有書桌", "附書桌"],
-        "床": ["有床", "附床"],
-        "衣櫃": ["有衣櫃", "衣服很多"],
-        "熱水器": ["有熱水器"],
+        "冷氣機": ["有冷氣", "要冷氣", "含冷氣", "怕熱", "吹冷氣", "夏天", "西曬"],
+        "冷氣": ["有冷氣", "要冷氣", "怕熱", "吹冷氣", "西曬"],
+        "變頻冷氣": ["變頻", "省電冷氣", "省電費", "吹整天也不心疼"],
+        "洗衣機": ["有洗衣機", "獨洗", "獨立洗衣", "不想共用洗衣機", "獨洗獨曬", "衣服很多", "愛乾淨"],
+        "冰箱": ["有冰箱", "需要冰東西", "存糧", "喝冰水"],
+        "電視": ["有電視", "追劇", "打電動"],
+        "有線電視": ["有第四台", "有電視", "看新聞"],
+        "書桌椅": ["有書桌", "附書桌", "辦公", "工作", "打電腦"],
+        "書桌": ["有書桌", "附書桌", "要辦公"],
+        "床": ["有床", "附床", "睡覺"],
+        "衣櫃": ["有衣櫃", "衣服很多", "收納", "收藏控"],
+        "熱水器": ["有熱水器", "洗澡"],
         "（電）熱水器": ["有熱水器"],
-        "電梯": ["有電梯", "不想爬樓梯", "不想走樓梯", "搬東西方便", "樓層高", "有電梯"],
-        "陽台": ["有陽台", "要陽台", "想曬衣服", "衣服容易乾", "通風好", "要有對外窗"],
-        "曬衣場": ["獨曬", "有曬衣", "可曬衣"],
-        "機車停車位": ["有車位", "機車位", "有停車位", "好停車"],
-        "飲水機": ["有飲水機", "不用買水"],
-        "寬頻網路": ["有網路", "上網方便"],
-        "垃圾處理": ["子母車", "垃圾車", "不用追垃圾車", "垃圾子母車"],
-        "可開伙": ["開伙", "煮飯", "小廚房", "可以煮", "黑晶爐"],
+        "電梯": ["有電梯", "不想爬樓梯", "不想走樓梯", "搬東西方便", "懶人", "有電梯", "高樓層"],
+        "陽台": ["有陽台", "要陽台", "想曬衣服", "衣服容易乾", "通風好", "要有對外窗", "曬衣", "獨洗獨曬", "不悶熱", "採光好"],
+        "曬衣場": ["獨曬", "有曬衣", "可曬衣", "曬衣服", "曬衣空間"],
+        "機車停車位": ["有車位", "機車位", "有停車位", "好停車", "愛車有位子"],
+        "飲水機": ["有飲水機", "不用買水", "不想出門", "居家族"],
+        "寬頻網路": ["有網路", "上網方便", "打報告", "打遊戲", "光纖", "晚上要工作", "網速快"],
+        "垃圾處理": ["子母車", "垃圾車", "不用追垃圾車", "垃圾子母車", "下班晚", "沒時間倒垃圾"],
+        "可開伙": ["開伙", "煮飯", "小廚房", "可以煮", "黑晶爐", "想省伙食費", "大廚", "自炊"],
+        "可租補": ["可申請補助", "想報稅", "可以申請補助", "要報稅", "可以補助", "可報稅", "租金補貼", "要租補", "可以租補"],
     }
     INCLUDED = {
         "水費": ["含水費", "包水費", "水費包含"],
-        "電費": ["含電費", "包電費", "台水台電", "照台水台電收費", "不要電費太貴", "一度5塊太貴了", "電費依台水台電"],
+        "電費": ["含電費", "包電費", "台水台電", "照台水台電收費", "不要電費太貴", "一度5塊太貴了", "電費依台水台電", "台電帳單"],
         "網路費": ["含網路", "包網路"],
         "管理費": ["含管理費"],
         "瓦斯": ["含瓦斯"],
@@ -86,9 +94,13 @@ def load_properties(csv_path: str = None) -> List[Dict[str, Any]]:
         dist = float(row.get("距離(km)", "0") or "0")
 
         furniture = [s.strip() for s in row.get("家具設施", "").split("/") if s.strip()]
-        included = [s.strip() for s in row.get("租金包含", "").split("/") if s.strip()]
-        security = [s.strip() for s in row.get("安全管理", "").split("/") if s.strip()]
-        notes = [s.strip() for s in row.get("備註", "").split("/") if s.strip()]
+        notes = [s.strip() for s in row.get("特色", "").split("/") if s.strip()]
+        
+        # Check for inclusions
+        included = []
+        if "含水" in (row.get("水費", "") + row.get("特色", "")): included.append("水費")
+        if "含電" in (row.get("電費", "") + row.get("特色", "")): included.append("電費")
+        if "含網" in (row.get("家具設施", "") + row.get("特色", "")): included.append("網路費")
 
         addr = row.get("地址", "")
         road = ""
@@ -98,11 +110,16 @@ def load_properties(csv_path: str = None) -> List[Dict[str, Any]]:
 
         region = next((r for r in ["南區", "大里區", "西區", "東區", "北區", "烏日"] if r in addr), "")
 
+        # Room type from '類型'
+        type_str = row.get("類型", "")
+        room_type = "套房" if "套房" in type_str else ("雅房" if "雅房" in type_str else ("住宅" if "住宅" in type_str else ""))
+        building_type = type_str.replace("套房", "").replace("雅房", "").replace("住宅", "").strip()
+
         properties.append({
             "address": addr, "region": region, "road": road,
-            "room_type": row.get("格局", ""), "building_type": row.get("類型", ""),
+            "room_type": room_type, "building_type": building_type,
             "size": row.get("室內坪數", ""), "rent": rent_num, "rent_str": rent_str,
-            "furniture": furniture, "included": included, "security": security,
+            "furniture": furniture, "included": included, "security": [],
             "notes": notes, "distance": dist, "url": row.get("網址", ""),
             "img": row.get("圖片網址", ""), "floor": row.get("樓層", ""),
         })
@@ -188,9 +205,11 @@ class QueryGenerator:
             "special": [],
         }
         for note in prop["notes"]:
-            if "可養寵物" in note: features["special"].extend(["可養寵物", "可以養貓", "可以養狗", "養寵物"])
+            if "可養寵物" in note or "可寵" in note: features["special"].extend(["可養寵物", "可以養貓", "可以養狗", "養寵物"])
             if "限女" in note: features["special"].extend(["限女生", "女生宿舍"])
             if "限男" in note: features["special"].extend(["限男生", "男生宿舍"])
+            if "租補" in note or "補助" in note:
+                features["furniture"].extend(Templates.FURNITURE["可租補"])
             
         return {k: v for k, v in features.items() if v}
 
@@ -227,18 +246,40 @@ class QueryGenerator:
                 parts = [random.choice(features[k]) for k in random.sample(keys, random.randint(4, min(6, len(keys))))]
                 queries.append(" ".join(parts))
 
-        # Strategy 5: Colloquial Slang & Implicit Intent Mapping
+        # Strategy 5: Colloquial Slang & Deep Lifestyle Inference
         colloquials = ["想在中興大學附近租房", "學校旁邊有沒有房子", "想找便宜的租屋", "有空房嗎"]
-        if prop["rent"] and prop["rent"] <= 5000: colloquials.extend(["便宜的房子", "平價租屋", "想省錢"])
-        if prop["distance"] and prop["distance"] <= 1.0: colloquials.extend(["走路就能到學校", "學校附近租房", "不想騎車"])
         
-        # Implicit Intents
+        # Financial / Value Inference
+        if prop["rent"] and prop["rent"] <= 5000: 
+            colloquials.extend(["便宜的房子", "平價租屋", "想省錢", "預算有限", "追求CP值"])
+        
+        # Proximity Inference
+        if prop["distance"] and prop["distance"] <= 0.8: 
+            colloquials.extend(["走路就能到學校", "學校附近租房", "不想騎車", "正門口附近", "睡晚一點"])
+        
+        # Lifestyle Features Inference
         full_text = " ".join(prop.get("notes", [])) + " ".join(prop.get("furniture", []))
-        if "子母車" in full_text or "垃圾" in full_text: colloquials.extend(["不想追垃圾車", "沒時間等垃圾車"])
-        if "瓦斯爐" in full_text or "開火" in full_text: colloquials.extend(["喜歡自己煮", "想省伙食費"])
-        if "陽台" in full_text or "獨立洗衣" in full_text or "獨洗" in full_text: colloquials.extend(["衣服不想曬房間", "房間容易潮濕", "需要通風"])
-        if "木板" not in full_text and prop.get("building_type") in ["大樓", "華廈", "透天厝"]: colloquials.extend(["怕吵", "淺眠需要安靜", "隔音要好"])
-        if "寵物" in full_text or "貓" in full_text: colloquials.extend(["有主子", "帶毛小孩"])
+        
+        # 1. Homebody / Convenience (飲水機, 子母車, 電梯)
+        has_convenience = any(k in full_text for k in ["飲水機", "子母車", "垃圾", "電梯"])
+        if has_convenience:
+            colloquials.extend(["不想出門買水", "懶人首選", "不想追垃圾車", "沒時間倒垃圾", "生活機能要好"])
+            
+        # 2. Cooking / Healthy (開火, 瓦斯)
+        if any(k in full_text for k in ["瓦斯爐", "開火", "廚房"]):
+            colloquials.extend(["喜歡自己煮", "想省伙食費", "不想天天外食", "居家自炊", "可以煮泡麵"])
+            
+        # 3. Comfort / Rest (對外窗, 隔音, 採光)
+        if any(k in full_text for k in ["陽台", "對外窗", "採光", "隔音"]):
+            colloquials.extend(["怕悶熱", "房間要通風", "需要對外窗", "淺眠怕吵", "想要採光好", "衣服要乾"])
+            
+        # 4. Pets / Emotion (寵物)
+        if any(k in full_text for k in ["寵物", "貓", "狗"]):
+            colloquials.extend(["有主子", "帶毛小孩", "寵物友善", "不離不棄"])
+            
+        # 5. Cleanliness (全新, 獨洗, 禁菸)
+        if any(k in full_text for k in ["全新", "獨洗", "禁菸"]):
+            colloquials.extend(["愛乾淨", "稍微潔癖", "不想跟人共用", "怕菸味"])
         
         queries.extend(random.sample(colloquials, min(3, len(colloquials))))
 
@@ -268,6 +309,79 @@ class QueryGenerator:
         return text
 
 
+class FeatureEngine:
+    """Advanced semantic feature extraction for rental properties."""
+    
+    @staticmethod
+    def extract_all(prop: Dict[str, Any]) -> Dict[str, Any]:
+        features = {}
+        
+        # 1. Billing Type (台電 vs 獨立電表)
+        elec = str(prop.get("電費", "")) + " " + str(prop.get("另計費用", ""))
+        if "台電" in elec:
+            features["billing_type"] = "taipower"
+        elif any(kw in elec for kw in ["一度5", "一度6", "一度4"]):
+            features["billing_type"] = "fixed"
+        else:
+            features["billing_type"] = "standard"
+
+        # 2. Service Level (Garbage & Parcels)
+        notes = " ".join(prop.get("notes", []) + [prop.get("特色", "")])
+        has_garbage = any(kw in notes for kw in ["子母車", "垃圾代收", "垃圾處理", "不用等垃圾車"])
+        has_parcel = any(kw in notes for kw in ["管理員", "代收包裹", "包裹代收", "管理室"])
+        
+        if has_garbage and has_parcel:
+            features["service_level"] = "five_star"
+        elif has_garbage or has_parcel:
+            features["service_level"] = "basic"
+        else:
+            features["service_level"] = "none"
+
+        # 3. Safety Level
+        has_safety = any(kw in notes for kw in ["監視器", "門禁", "保全", "住警器", "磁扣", "感應"])
+        features["safety_level"] = "high" if has_safety else "standard"
+
+        # 4. CP Value (Price per Ping)
+        try:
+            rent_val = str(prop.get("租金", "5000")).replace("元", "").replace(",", "")
+            area_val = str(prop.get("室內坪數", "5")).replace("坪", "")
+            rent = float(re.search(r"\d+", rent_val).group())
+            area = float(re.search(r"\d+", area_val).group())
+            
+            if area > 0:
+                ppp = rent / area
+                features["ppp"] = round(ppp, 1)
+                # Average in Taichung South Dist is ~800-1200 per ping
+                features["cp_tag"] = "high_cp" if ppp < 850 else "standard"
+            else:
+                features["cp_tag"] = "unknown"
+        except:
+            features["cp_tag"] = "unknown"
+
+        # 5. Geo Tier
+        try:
+            dist = float(prop.get("距離(km)", 2.0) or 2.0)
+        except:
+            dist = 2.0
+            
+        if dist < 0.5:
+            features["geo_tier"] = "core"
+        elif dist < 1.5:
+            features["geo_tier"] = "active"
+        else:
+            features["geo_tier"] = "quiet"
+
+        # 6. Aesthetics / Condition
+        if any(kw in notes for kw in ["全新", "首租", "第一手"]):
+            features["condition"] = "new"
+        elif any(kw in notes for kw in ["翻新", "裝潢", "設計師"]):
+            features["condition"] = "renovated"
+        else:
+            features["condition"] = "standard"
+
+        return features
+
+
 # ============================================================
 # 4. Dataset construction & Compatibility Matching
 # ============================================================
@@ -279,7 +393,7 @@ def is_compatible(query: str, prop: Dict[str, Any]) -> bool:
     if (match := re.search(r"(\d+)(?:元)?(?:以下|以內|內)", query)) and prop["rent"] > int(match.group(1)):
         return False
         
-    for reg in ["南區", "大里", "東區", "西區"]:
+    for reg in ["南區", "大里", "東區", "西區", "太平", "西屯", "北屯", "南屯", "北區", "中區"]:
         if reg in query and reg not in prop.get("address", "") and reg not in prop.get("region", ""):
             return False
 
@@ -334,34 +448,65 @@ def compute_relevance_score(query: str, prop: Dict[str, Any]) -> int:
     if query_room and query_room not in prop.get("room_type", ""):
         return 0
 
-    # 3. Explicit Exclusions
-    if re.search(r"(謝絕|不要|拒絕|禁|❌|不接受)[^。！？\n]*(頂加|加蓋|頂樓)", query):
-        if "頂加" in prop.get("building_type", "") or "加蓋" in prop.get("floor", "") or "加蓋" in " ".join(prop.get("notes", [])):
+    # 3. Explicit Exclusions (Enhanced)
+    if re.search(r"(謝絕|不要|拒絕|禁|❌|不接受|非)[^。！？\n]*(頂加|加蓋|頂樓|無窗|暗房|漏水|壁癌)", query):
+        notes_all = " ".join(prop.get("notes", [])) + prop.get("building_type", "") + prop.get("floor", "")
+        if re.search(r"(頂加|加蓋|頂樓|無窗|暗房|漏水|壁癌)", notes_all):
             return 0
             
-    # --- Part B: Dimension Scoring (Soft Matching) ---
+    # --- Part B: Dimension Scoring (Strict Mode) ---
     satisfied = 0
     total_specified = 0
+    # Tone Awareness: keywords like 'absolutely' or 'must have' triggers 0 tolerance
+    is_strict = any(kw in query for kw in ["一定要", "絕對", "必須", "絕對不要", "謝絕", "禁止", "急尋", "求租", "需要", "想要", "不想", "找", "【", "#", "＃", "需求"])
+    
+    # Pre-extract advanced features
+    adv = FeatureEngine.extract_all(prop)
 
-    # 1. Budget (Soft: 10% buffer for score 2)
-    budget_match = re.search(r"(\d+)(?:元)?(?:以下|以內|內)", query)
-    if budget_match:
+    # 1. Budget & CP Value
+    budget_range = re.findall(r"(\d{4,5})", query)
+    if budget_range:
         total_specified += 1
-        ceiling = int(budget_match.group(1))
+        ceiling = int(budget_range[-1]) # Take the max value in range
         if prop["rent"] <= ceiling:
             satisfied += 1
-        elif prop["rent"] <= ceiling * 1.15: # Soft match
-            satisfied += 0.5 
+        else:
+            if is_strict or prop["rent"] > ceiling * 1.1: return 0
+            satisfied += 0.1 
 
-    # 2. Features / Furniture
+    # 2. Features / Furniture (Strict Check)
     features_needed = [feat for feat, terms in Templates.FURNITURE.items() if any(t in query for t in terms)]
     if features_needed:
         total_specified += 1
-        found_count = sum(1 for feat in features_needed if any(feat in f for f in prop.get("furniture", [])))
+        # Check if the property actually has these features
+        has_furniture = prop.get("furniture", [])
+        found_count = sum(1 for feat in features_needed if any(feat in f for f in has_furniture))
+        
+        # In Strict Mode, missing even ONE required feature makes it a hard 0
+        if is_strict and found_count < len(features_needed):
+            return 0
+            
         satisfied += (found_count / len(features_needed))
 
-    # 3. Location / Region
-    region_specified = next((reg for reg in ["南區", "大里", "東區", "西區", "北區", "烏日"] if reg in query), None)
+    # 2.5 Lifestyle Intent Scoring (Deep Inference)
+    # Mapping colloquial lifestyle needs to multiple required features
+    lifestyle_intents = {
+        "懶人": ["電梯", "子母車", "飲水機"],
+        "自炊": ["開火", "瓦斯爐", "廚房"],
+        "潔癖": ["全新", "禁菸", "獨洗"],
+        "外送": ["飲水機", "管理員", "包裹"],
+        "怕悶熱": ["陽台", "對外窗", "採光"]
+    }
+    for intent, reqs in lifestyle_intents.items():
+        if intent in query:
+            total_specified += 1
+            prop_text = " ".join(prop.get("furniture", [])) + " ".join(prop.get("notes", []))
+            match_count = sum(1 for r in reqs if r in prop_text)
+            if is_strict and match_count == 0: return 0
+            satisfied += (match_count / len(reqs))
+
+    # 3. Location / Region & Geo Tier
+    region_specified = next((reg for reg in ["南區", "大里", "東區", "西區", "北區", "烏日", "太平", "西屯", "北屯", "南屯", "中區"] if reg in query), None)
     roads_in_query = re.findall(r"([^區市台]*(?:路|街|大道)(?:[一二三四五六七八九十]|[\d])?段?)", query)
     
     if region_specified or roads_in_query:
@@ -369,31 +514,64 @@ def compute_relevance_score(query: str, prop: Dict[str, Any]) -> int:
         loc_match = False
         if region_specified and (region_specified in prop.get("address", "") or region_specified in prop.get("region", "")):
             loc_match = True
+            if adv["geo_tier"] == "core": satisfied += 0.1 # Distance bonus
         if roads_in_query and any(road in prop.get("address", "") for road in roads_in_query):
             loc_match = True
         
         if loc_match: satisfied += 1
 
-    # 4. Special Pet Constraint (Critical for students)
-    if any(k in query for k in ["寵物", "貓", "狗"]):
+    # 4. Special Pet Constraint
+    if any(k in query for k in ["寵物", "貓", "狗", "毛孩", "主子"]):
         total_specified += 1
         note_str = " ".join(prop.get("notes", []))
         if "可寵" in note_str or "可養寵" in note_str:
             satisfied += 1
-        elif "禁寵" in note_str:
-            return 0 # Hard conflict if they ask for pet but it's forbidden
+        elif "禁寵" in note_str or "不寵" in note_str:
+            return 0 # Absolute Exclusion
         else:
-            satisfied += 0.5 # Unknown / ambiguous
-            
-    # 5. Trash collection / Cooking
-    if any(k in query for k in ["子母車", "垃圾車"]):
+            if is_strict: return 0 # If user asks specifically and it's not mentioned, reject in strict mode
+            satisfied += 0.2
+
+    # 5. Trash collection & Service Level
+    if any(k in query for k in ["垃圾", "子母車", "下班晚", "追垃圾車", "管理員"]):
         total_specified += 1
-        security_str = " ".join(prop.get("security", []))
-        if "垃圾處理" in security_str: satisfied += 1
+        if adv["service_level"] == "five_star":
+            satisfied += 1
+        elif adv["service_level"] == "basic":
+            satisfied += 0.7
+        else:
+            if is_strict: return 0 
+            satisfied += 0.1 
+
+    # 6. Billing & Electricity
+    if any(kw in query for kw in ["省錢", "怕熱", "台電", "台水", "帳單", "自繳"]):
+        total_specified += 1
+        note_str = " ".join(prop.get("notes", []))
+        if adv["billing_type"] == "taipower" or any(k in note_str for k in ["台電", "台水", "帳單", "自繳"]):
+            satisfied += 1
+        else:
+            if is_strict: return 0 # Critical fix for TC-07
+            satisfied -= 0.5 
+
+    # 7. Cooking
+    if any(kw in query for kw in ["煮飯", "開火", "自炊", "下廚", "瓦斯", "廚房"]):
+        total_specified += 1
+        all_notes = " ".join(prop.get("notes", [])) + prop.get("building_type", "")
+        if any(k in all_notes for k in ["開火", "瓦斯", "廚房", "自炊", "下廚"]):
+            satisfied += 1
+        else:
+            if is_strict: return 0 # Critical fix for TC-10
+            satisfied -= 0.5
+
+    # 7. Safety & Aesthetics
+    if any(kw in query for kw in ["安全", "女性", "監視器"]):
+        total_specified += 1
+        if adv["safety_level"] == "high": satisfied += 1
         
-    if "開伙" in query:
+    if any(kw in query for kw in ["漂亮", "質感", "新", "裝潢", "設計"]):
         total_specified += 1
-        if any("開伙" in f for f in prop.get("furniture", [])): satisfied += 1
+        if adv["condition"] == "new": satisfied += 1
+        elif adv["condition"] == "renovated": satisfied += 0.8
 
     # --- Part C: Final Mapping ---
     if total_specified == 0:
@@ -559,10 +737,13 @@ def main():
     dev_data   = generate_samples_for_split(dev_prop_idx)
     test_data  = generate_samples_for_split(test_prop_idx)
 
-    # Step 2.5: Injecting external real-world / LLM-generated queries into train split only
     external_query_files = [
         "../../data/raw/fb_queries.json",
-        "../../data/raw/llm_queries.json"
+        "../../data/raw/llm_queries.json",
+        "../../data/raw/mined_hard_negatives.json",
+        "../../data/raw/silver_labeled_queries.json",
+        "../../data/raw/budget_hard_traps.json",
+        "../../data/raw/hard_traps.json"
     ]
     
     total_external_samples = 0
@@ -575,23 +756,26 @@ def main():
 
             external_samples = []
             for item in external_queries:
-                # [New Logic] Handle pre-paired LLM samples (dictionaries)
-                if isinstance(item, dict) and "query" in item and "property" in item:
-                    external_samples.append({
-                        "query": item["query"], 
-                        "property": item["property"], 
-                        "label": item.get("label", 0), 
-                        "relevance": item.get("relevance", 0),
-                        "is_hard": True # Explicitly mark as hard for training weights
-                    })
-                # [Legacy Logic] Handle list of query strings (requires compatibility search)
+                # [New Logic] Handle pre-paired LLM samples or Mined Hard Negatives
+                if isinstance(item, dict) and "query" in item:
+                    # Support both "property" (text) and "property_text" fields
+                    p_text = item.get("property") or item.get("property_text")
+                    if p_text:
+                        external_samples.append({
+                            "query": item["query"], 
+                            "property": p_text, 
+                            "label": item.get("label", 0), 
+                            "relevance": item.get("relevance", 0),
+                            "is_hard": item.get("is_hard", True) # Default to True for external
+                        })
+                # [Legacy Logic] Handle list of query strings
                 elif isinstance(item, str):
                     query = item
                     pos_found = False
                     for idx in train_prop_idx:
                         if is_compatible(query, properties[idx]):
                             rel = compute_relevance_score(query, properties[idx])
-                            external_samples.append({"query": query, "property": prop_texts[idx], "label": 1, "relevance": rel})
+                            external_samples.append({"query": query, "property": prop_texts[idx], "label": 1, "relevance": rel, "is_hard": False})
                             pos_found = True
                             break
                     if pos_found:
@@ -599,7 +783,7 @@ def main():
                         random.shuffle(cands)
                         for neg_idx in cands:
                             if not is_compatible(query, properties[neg_idx]):
-                                external_samples.append({"query": query, "property": prop_texts[neg_idx], "label": 0, "relevance": 0})
+                                external_samples.append({"query": query, "property": prop_texts[neg_idx], "label": 0, "relevance": 0, "is_hard": True})
                                 break
 
             print(f"  Generated {len(external_samples)} pairs from {os.path.basename(filename)}.")
@@ -616,7 +800,16 @@ def main():
     print(f"  Test:  {len(test_data)} samples")
 
     print(f"\nStep 3: Saving datasets...")
-    def clean(samples): return [{"query": s["query"], "property": s["property"], "label": s["label"], "relevance": s.get("relevance", s["label"])} for s in samples]
+    def clean(samples): 
+        return [
+            {
+                "query": s["query"], 
+                "property": s["property"], 
+                "label": s["label"], 
+                "relevance": s.get("relevance", s["label"]),
+                "is_hard": s.get("is_hard", False)
+            } for s in samples
+        ]
 
     for filename, subset in zip(
         ["../../data/processed/recommendation_train.json", "../../data/processed/recommendation_dev.json", "../../data/processed/recommendation_test.json"],

@@ -180,6 +180,9 @@ function parseConstraintsFromText(text) {
         requireSubsidy, isSocialHousing,
         excludeRooftop, excludeWooden, excludeHaunted, maxWalkMins, maxScooterMins,
         wantsPet: (text.includes('養貓') || text.includes('養狗') || text.includes('寵物')),
+        requireWaterDispenser: (text.includes('飲水機')),
+        requirePrivateWasher: (text.includes('獨洗') || text.includes('個人洗衣機')),
+        requireGuard: (text.includes('代收') || text.includes('包裹') || text.includes('管理員') || text.includes('警衛')),
         originalText: text // Added to fix property access in checkConflicts
     };
 }
@@ -189,94 +192,80 @@ function explainMatch(query, prop, constraints) {
     const reasons = [];
     const pText = (prop.text + (prop.furniture || "") + (prop.notes ? prop.notes.join(" ") : "")).toLowerCase();
     const q = query.toLowerCase();
-
-    // 1. Contextual Semantic Logic (Budget, Location, Room Type)
-    if (constraints.hasBudgetMention) {
-        if (constraints.maxBudget && prop.rent <= constraints.maxBudget) {
-            reasons.push("預算符合");
-        }
-    }
-
-    if (query.includes('南區') || query.includes('東區') || query.includes('大里') || query.includes('西區')) {
-        const zones = ['南區', '東區', '大里', '西區'];
-        if (zones.some(z => query.includes(z) && prop.text.includes(z))) {
-            reasons.push("區域正確");
-        }
-    }
-
-    if (constraints.hasRoomTypeMention) {
-        const types = ['套房', '雅房', '工作室'];
-        if (types.some(t => query.includes(t) && prop.text.includes(t))) {
-            reasons.push("房型符合");
-        }
-    }
-
-    // 2. Dynamic Amenity/Keyword Matching (Universal)
-    const queryKeywords = extractKeywords(query);
-    const ignoreList = ['房', '推薦', '附近', '一下', '預算', '大概', '想要', '需求', '尋找', '套房', '雅房', '南區', '東區', '大里', '西區'];
     
-    // Semantic Normalization Map
+    // 1. Budget & CP Value
+    if (constraints.hasBudgetMention) {
+        if (prop.rent <= (constraints.maxBudget || constraints.budget)) {
+            if (prop.cp_tag === "high_cp") {
+                reasons.push("💎 區域高 CP 值首選");
+            } else {
+                reasons.push("💰 符合您的預算範圍");
+            }
+        }
+    }
+
+    // 2. Billing & Electricity
+    if (q.includes('省錢') || q.includes('台電') || q.includes('怕熱')) {
+        if (prop.billing_type === "taipower") {
+            reasons.push("⚡ 台電計費，省電好幫手");
+        }
+    }
+
+    // 3. Service & Convenience (Garbage/Parcels)
+    if (q.includes('垃圾') || q.includes('追車') || q.includes('子母車') || q.includes('方便')) {
+        if (prop.service_level === "five_star") {
+            reasons.push("✨ 免追垃圾車 + 代收包裹");
+        } else if (prop.service_level === "basic" || prop.has_waste_disposal) {
+            reasons.push("🧹 設有子母車，丟垃圾免煩惱");
+        }
+    }
+
+    // 4. Distance & Geo Tier
+    if (q.includes('走路') || q.includes('近') || q.includes('步行')) {
+        if (prop.geo_tier === "core") {
+            reasons.push("🚀 步行核心區，下課就到家");
+        } else if (prop.geo_tier === "active") {
+            reasons.push("📍 位於熱鬧商圈，生活機能優");
+        }
+    }
+
+    // 5. Condition & Aesthetics
+    if (q.includes('漂亮') || q.includes('質感') || q.includes('新') || q.includes('裝潢')) {
+        if (prop.condition === "new") {
+            reasons.push("🏠 全新首租，質感第一手");
+        } else if (prop.condition === "renovated") {
+            reasons.push("🎨 精緻裝潢，充滿設計感");
+        }
+    }
+
+    // 6. Keywords fallback (Dynamic)
+    const keywords = extractKeywords(query);
     const semanticMap = {
-        '垃圾': ['子母車', '代收垃圾', '垃圾處理', '垃圾子車'],
-        '電費': ['台電', '獨立電錶', '台水台電'],
-        '陽台': ['陽台', '露台'],
-        '省錢': ['台電', '含水費'],
-        '方便': ['子母車', '電梯', '飲水機']
+        '陽台': '☀️ 有私人陽台可晾衣',
+        '窗': '🪟 採光通風對外窗',
+        '車位': '🛵 附有機車停放空間',
+        '寵物': '🐱 友善毛小孩環境',
+        '補助': '📑 可申請政府租金補貼',
+        '飲水': '💧 配有公共飲水機'
     };
 
-    queryKeywords.forEach(kw => {
-        if (kw.length < 2 || ignoreList.includes(kw)) return;
+    keywords.forEach(kw => {
         if (reasons.length >= 3) return;
-        
-        // Check for direct match, semantic group match, or boolean flag match
-        let isMatch = pText.includes(kw);
-        
-        // Intent-based boolean flag fallbacks
-        if (!isMatch) {
-            if ((kw.includes('垃圾') || kw.includes('追車')) && prop.has_waste_disposal) isMatch = true;
-            if ((kw.includes('樓梯') || kw.includes('電梯')) && prop.has_elevator) isMatch = true;
-            if (kw.includes('陽台') && prop.has_balcony) isMatch = true;
-            if (kw.includes('車位') && prop.has_parking) isMatch = true;
-            if (kw.includes('窗') && prop.has_window) isMatch = true;
-            
-            // Generic semantic expansion
-            for (const [group, alternates] of Object.entries(semanticMap)) {
-                if (kw.includes(group) || group.includes(kw)) {
-                    if (alternates.some(alt => pText.includes(alt))) {
-                        isMatch = true;
-                        break;
-                    }
+        for (const [key, label] of Object.entries(semanticMap)) {
+            if ((kw.includes(key) || key.includes(kw)) && !reasons.includes(label)) {
+                if (pText.includes(key) || prop[`has_${key}`]) {
+                    reasons.push(label);
                 }
             }
         }
-
-        if (isMatch) {
-            let label = `有${kw}`;
-            if (kw.includes('垃圾') || kw.includes('追車')) label = '免追垃圾車';
-            if (kw.includes('樓梯') || kw.includes('電梯')) label = '有電梯';
-            if (kw.includes('窗')) label = '有對外窗';
-            if (kw.includes('車位') || kw.includes('停車')) label = '好停車';
-            if (kw === '台電' || kw === '電費') label = '台電計費';
-            if (kw === '租補' || kw === '補助') label = '可申請租補';
-            
-            if (!reasons.includes(label)) reasons.push(label);
-        }
     });
 
-    // 3. High-Value Fallbacks (If we still have room < 3 tags)
-    const generalHighlights = [
-        { key: '子母車', label: '免追垃圾車' },
-        { key: '飲水機', label: '有飲水機' },
-        { key: '電梯', label: '有電梯' },
-        { key: '陽台', label: '有陽台' },
-        { key: '獨立洗衣機', label: '個人洗衣機' }
-    ];
-
-    generalHighlights.forEach(h => {
-        if (reasons.length < 3 && pText.includes(h.key)) {
-            if (!reasons.includes(h.label)) reasons.push(h.label);
-        }
-    });
+    // Default highlights if empty
+    if (reasons.length === 0) {
+        if (prop.cp_tag === "high_cp") reasons.push("💎 區域高 CP 值選");
+        if (prop.service_level === "five_star") reasons.push("✨ 高品質社區管理");
+        if (prop.billing_type === "taipower") reasons.push("⚡ 電費照台電撥款");
+    }
 
     return [...new Set(reasons)].slice(0, 3);
 }
@@ -374,12 +363,34 @@ function filterHardExclusions(properties, constraints) {
 }
 
 
+// --- Semantic Query Expansion ---
+function expandQueryIntent(query) {
+    let expanded = query;
+    const intentMap = {
+        '潔癖': '全新 獨洗 禁菸 質感 裝潢 漂亮',
+        '下班晚': '子母車 垃圾代收 門禁 管理員 安全',
+        '省錢': '台電 台水 便宜 補助 租補',
+        '怕熱': '台電 變頻冷氣 西曬隔熱',
+        '怕吵': '水泥隔間 巷弄 靜巷 頂樓',
+        '高品質': '五星級 管理員 電梯 漂亮 全新 質感',
+        '生活便利': '超商 興大路 核心區 核心 核心圈'
+    };
+
+    for (const [intent, expansion] of Object.entries(intentMap)) {
+        if (query.includes(intent)) {
+            expanded += " " + expansion;
+        }
+    }
+    return expanded;
+}
+
 // --- Keyword Extraction ---
 function extractKeywords(text) {
+    const expandedText = expandQueryIntent(text);
     const stopWords = ['近', '靠近', '想找', '尋找', '住在', '一間', '想要', '預算', '大約', '希望', '位於', '位在', '位處', '在', '含', '有', '附', '座落於', '座落'];
     const locSuffixes = ['路', '街', '大道', '區'];
 
-    return text.split(/\s+|[,，、。]/)
+    return expandedText.split(/\s+|[,，、。]/)
         .filter(k => k.length > 1 && !k.match(/^\d+$/))
         .map(k => {
             let clean = k;
@@ -585,6 +596,7 @@ function formatResponse(scoredResults, top_k) {
         address: item.property.address,
         contact: item.property.contact || "不具名",
         phone: item.property.phone || "無資料",
+        features: item.property.features || "",
     }));
 }
 

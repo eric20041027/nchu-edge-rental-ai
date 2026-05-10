@@ -1,0 +1,282 @@
+[
+  {
+    "query": "想找4000以內，要有獨立洗衣機的套房",
+    "property": "台中市南區 質感裝潢套房 附獨立洗衣機 租金9000元/月 近興大",
+    "relevance": 0,
+    "label": 0,
+    "reason": "budget_conflict"
+  },
+  {
+    "query": "預算4000，一定要有獨立洗衣機",
+    "property": "超划算套房 租金只要3500元 採光好 地點優 (無獨立洗衣機，需使用公共設施)",
+    "relevance": 0,
+    "label": 0,
+    "reason": "amenity_conflict"
+  },
+  {
+    "query": "想找4000以內，要有獨洗的套房",
+    "property": "台中市南區 質感裝潢套房 附獨洗 租金9000元/月 近興大",
+    "relevance": 0,
+    "label": 0,
+    "reason": "budget_conflict"
+  },
+  {
+    "query": "預算4000，一定要有獨洗",
+    "property": "超划算套房 租金只要3500元 採光好 地點優 (無獨洗，需使用公共設施)",
+    "relevance": 0,
+    "label": 0,
+    "reason": "amenity_conflict"
+  },
+  {
+    "query": "想找4000以內，要有陽台的套房",
+    "property": "台中市南區 質感裝潢套房 附陽台 租金9000元/月 近興大",
+    "relevance": 0,
+    "label": 0,
+    "reason": "budget_conflict"
+  },
+  {
+    "query": "預算4000，一定要有陽台",
+    "property": "超划算套房 租金只要3500元 採光好 地點優 (無陽台，需使用公共設施)",
+    "relevance": 0,
+    "label": 0,
+    "reason": "amenity_conflict"
+  },
+  {
+    "query": "想找4000以內，要有電梯的套房",
+    "property": "台中市南區 質感裝潢套房 附電梯 租金9000元/月 近興大",
+    "relevance": 0,
+    "label": 0,
+    "reason": "budget_conflict"
+  },
+  {
+    "query": "預算4000，一定要有電梯",
+    "property": "超划算套房 租金只要3500元 採光好 地點優 (無電梯，需使用公共設施)",
+    "relevance": 0,
+    "label": 0,
+    "reason": "amenity_conflict"
+  },
+  {
+    "query": "想找4000以內，要有台電計費的套房",
+    "property": "台中市南區 質感裝潢套房 附台電計費 租金9000元/月 近興大",
+    "relevance": 0,
+    "label": 0,
+    "reason": "budget_conflict"
+  },
+  {
+    "query": "預算4000，一定要有台電計費",
+    "property": "超划算套房 租金只要3500元 採光好 地點優 (無台電計費，需使用公共設施)",
+    "relevance": 0,
+    "label": 0,
+    "reason": "amenity_conflict"
+  },
+  {
+    "query": "想找5000以內，要有獨立洗衣機的套房",
+    "property": "台中市南區 質感裝潢套房 附獨立洗衣機 租金10000元/月 近興大",
+    "relevance": 0,
+    "label": 0,
+    "reason": "budget_conflict"
+  },
+  {
+    "query": "預算5000，一定要有獨立洗衣機",
+    "property": "超划算套房 租金只要4500元 採光好 地點優 (無獨立洗衣機，需使用公共設施)",
+    "relevance": 0,
+    "label": 0,
+    "reason": "amenity_conflict"
+  },
+  {
+    "query": "想找5000以內，要有獨洗的套房",
+    "property": "台中市南區 質感裝潢套房 附獨洗 租金10000元/月 近興大",
+    "relevance": 0,
+    "label": 0,
+    "reason": "budget_conflict"
+  },
+  {
+    "query": "預算5000，一定要有獨洗",
+    "property": "超划算套房 租金只要4500元 採光好 地點優 (無獨洗，需使用公共設施)",
+    "relevance": 0,
+    "label": 0,
+    "reason": "amenity_conflict"
+  },
+  {
+    "query": "想找5000以內，要有陽台的套房",
+    "property": "台中市南區 質感裝潢套房 附陽台 租金10000元/月 近興大",
+    "relevance": 0,
+    "label": 0,
+    "reason": "budget_conflict"
+  },
+  {
+    "query": "預算5000，一定要有陽台",
+    "property": "超划算套房 租金只要4500元 採光好 地點優 (無陽台，需使用公共設施)",
+    "relevance": 0,
+    "label": 0,
+    "reason": "amenity_conflict"
+  },
+  {
+    "query": "想找5000以內，要有電梯的套房",
+    "property": "台中市南區 質感裝潢套房 附電梯 租金10000元/月 近興大",
+    "relevance": 0,
+    "label": 0,
+    "reason": "budget_conflict"
+  },
+  {
+    "query": "預算5000，一定要有電梯",
+    "property": "超划算套房 租金只要4500元 採光好 地點優 (無電梯，需使用公共設施)",
+    "relevance": 0,
+    "label": 0,
+    "reason": "amenity_conflict"
+  },
+  {
+    "query": "想找5000以內，要有台電計費的套房",
+    "property": "台中市南區 質感裝潢套房 附台電計費 租金10000元/月 近興大",
+    "relevance": 0,
+    "label": 0,
+    "reason": "budget_conflict"
+  },
+  {
+    "query": "預算5000，一定要有台電計費",
+    "property": "超划算套房 租金只要4500元 採光好 地點優 (無台電計費，需使用公共設施)",
+    "relevance": 0,
+    "label": 0,
+    "reason": "amenity_conflict"
+  },
+  {
+    "query": "想找6000以內，要有獨立洗衣機的套房",
+    "property": "台中市南區 質感裝潢套房 附獨立洗衣機 租金11000元/月 近興大",
+    "relevance": 0,
+    "label": 0,
+    "reason": "budget_conflict"
+  },
+  {
+    "query": "預算6000，一定要有獨立洗衣機",
+    "property": "超划算套房 租金只要5500元 採光好 地點優 (無獨立洗衣機，需使用公共設施)",
+    "relevance": 0,
+    "label": 0,
+    "reason": "amenity_conflict"
+  },
+  {
+    "query": "想找6000以內，要有獨洗的套房",
+    "property": "台中市南區 質感裝潢套房 附獨洗 租金11000元/月 近興大",
+    "relevance": 0,
+    "label": 0,
+    "reason": "budget_conflict"
+  },
+  {
+    "query": "預算6000，一定要有獨洗",
+    "property": "超划算套房 租金只要5500元 採光好 地點優 (無獨洗，需使用公共設施)",
+    "relevance": 0,
+    "label": 0,
+    "reason": "amenity_conflict"
+  },
+  {
+    "query": "想找6000以內，要有陽台的套房",
+    "property": "台中市南區 質感裝潢套房 附陽台 租金11000元/月 近興大",
+    "relevance": 0,
+    "label": 0,
+    "reason": "budget_conflict"
+  },
+  {
+    "query": "預算6000，一定要有陽台",
+    "property": "超划算套房 租金只要5500元 採光好 地點優 (無陽台，需使用公共設施)",
+    "relevance": 0,
+    "label": 0,
+    "reason": "amenity_conflict"
+  },
+  {
+    "query": "想找6000以內，要有電梯的套房",
+    "property": "台中市南區 質感裝潢套房 附電梯 租金11000元/月 近興大",
+    "relevance": 0,
+    "label": 0,
+    "reason": "budget_conflict"
+  },
+  {
+    "query": "預算6000，一定要有電梯",
+    "property": "超划算套房 租金只要5500元 採光好 地點優 (無電梯，需使用公共設施)",
+    "relevance": 0,
+    "label": 0,
+    "reason": "amenity_conflict"
+  },
+  {
+    "query": "想找6000以內，要有台電計費的套房",
+    "property": "台中市南區 質感裝潢套房 附台電計費 租金11000元/月 近興大",
+    "relevance": 0,
+    "label": 0,
+    "reason": "budget_conflict"
+  },
+  {
+    "query": "預算6000，一定要有台電計費",
+    "property": "超划算套房 租金只要5500元 採光好 地點優 (無台電計費，需使用公共設施)",
+    "relevance": 0,
+    "label": 0,
+    "reason": "amenity_conflict"
+  },
+  {
+    "query": "想找7000以內，要有獨立洗衣機的套房",
+    "property": "台中市南區 質感裝潢套房 附獨立洗衣機 租金12000元/月 近興大",
+    "relevance": 0,
+    "label": 0,
+    "reason": "budget_conflict"
+  },
+  {
+    "query": "預算7000，一定要有獨立洗衣機",
+    "property": "超划算套房 租金只要6500元 採光好 地點優 (無獨立洗衣機，需使用公共設施)",
+    "relevance": 0,
+    "label": 0,
+    "reason": "amenity_conflict"
+  },
+  {
+    "query": "想找7000以內，要有獨洗的套房",
+    "property": "台中市南區 質感裝潢套房 附獨洗 租金12000元/月 近興大",
+    "relevance": 0,
+    "label": 0,
+    "reason": "budget_conflict"
+  },
+  {
+    "query": "預算7000，一定要有獨洗",
+    "property": "超划算套房 租金只要6500元 採光好 地點優 (無獨洗，需使用公共設施)",
+    "relevance": 0,
+    "label": 0,
+    "reason": "amenity_conflict"
+  },
+  {
+    "query": "想找7000以內，要有陽台的套房",
+    "property": "台中市南區 質感裝潢套房 附陽台 租金12000元/月 近興大",
+    "relevance": 0,
+    "label": 0,
+    "reason": "budget_conflict"
+  },
+  {
+    "query": "預算7000，一定要有陽台",
+    "property": "超划算套房 租金只要6500元 採光好 地點優 (無陽台，需使用公共設施)",
+    "relevance": 0,
+    "label": 0,
+    "reason": "amenity_conflict"
+  },
+  {
+    "query": "想找7000以內，要有電梯的套房",
+    "property": "台中市南區 質感裝潢套房 附電梯 租金12000元/月 近興大",
+    "relevance": 0,
+    "label": 0,
+    "reason": "budget_conflict"
+  },
+  {
+    "query": "預算7000，一定要有電梯",
+    "property": "超划算套房 租金只要6500元 採光好 地點優 (無電梯，需使用公共設施)",
+    "relevance": 0,
+    "label": 0,
+    "reason": "amenity_conflict"
+  },
+  {
+    "query": "想找7000以內，要有台電計費的套房",
+    "property": "台中市南區 質感裝潢套房 附台電計費 租金12000元/月 近興大",
+    "relevance": 0,
+    "label": 0,
+    "reason": "budget_conflict"
+  },
+  {
+    "query": "預算7000，一定要有台電計費",
+    "property": "超划算套房 租金只要6500元 採光好 地點優 (無台電計費，需使用公共設施)",
+    "relevance": 0,
+    "label": 0,
+    "reason": "amenity_conflict"
+  }
+]

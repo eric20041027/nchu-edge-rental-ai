@@ -114,22 +114,54 @@ class WeightedTrainer(Trainer):
     def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
         labels = inputs.get("labels")
         weights = inputs.pop("sample_weight", None)
+        relevance = inputs.get("relevance", labels.float()) 
         
         outputs = model(**inputs)
         logits = outputs.get("logits")
         
-        # [Option C] Temperature Calibration (T=2.0)
+        # [Strategy] Temperature Calibration (T=2.0) for softer probabilities
         temperature = 2.0 
-        scaled_logits = logits / temperature
+        rel_logits = logits[:, 1] / temperature # [Batch]
         
+        # --- 1. Pointwise Loss (Weighted Cross Entropy) ---
+        precision_penalty = 1.5 
+        penalty_weights = torch.where(labels == 0, precision_penalty, 1.0)
+        
+        loss_fct = nn.CrossEntropyLoss(reduction='none')
+        loss_ce = loss_fct(logits / temperature, labels)
         if weights is not None:
-            loss_fct = nn.CrossEntropyLoss(reduction='none')
-            loss = loss_fct(scaled_logits.view(-1, self.model.config.num_labels), labels.view(-1))
-            loss = (loss * weights).mean()
+            loss = (loss_ce * weights * penalty_weights).mean()
         else:
-            loss_fct = nn.CrossEntropyLoss()
-            loss = loss_fct(scaled_logits.view(-1, self.model.config.num_labels), labels.view(-1))
-            
+            loss = (loss_ce * penalty_weights).mean()
+
+        # --- 2. RankNet (Pairwise Ranking Loss) ---
+        # Standard RankNet uses sigmoid of differences
+        s_i = rel_logits.unsqueeze(1) # [B, 1]
+        s_j = rel_logits.unsqueeze(0) # [B, B]
+        r_i = relevance.unsqueeze(1) # [B, 1]
+        r_j = relevance.unsqueeze(0) # [B, B]
+        
+        # Target probability: 1 if r_i > r_j, 0.5 if r_i == r_j, 0 if r_i < r_j
+        # We only care about r_i > r_j for RankNet pairs
+        mask = (r_i > r_j).float()
+        if mask.sum() > 0:
+            # P_ij = 1 / (1 + exp(-(s_i - s_j)))
+            # Loss = -log(P_ij) = log(1 + exp(-(s_i - s_j)))
+            ranknet_loss = torch.log(1 + torch.exp(-(s_i - s_j))) * mask
+            loss += (ranknet_loss.sum() / mask.sum()) * 1.5 # RankNet Weight
+
+        # --- 3. ListNet (Listwise Ranking Loss) ---
+        # We treat the entire batch as a list (simplified ListNet)
+        # Target distribution: Softmax of ground truth relevance
+        target_dist = torch.softmax(relevance / 1.0, dim=0) # T=1.0 for targets
+        # Predicted distribution: Softmax of logits
+        pred_dist = torch.log_softmax(rel_logits, dim=0)
+        
+        # KL-Divergence: sum(P * log(P/Q)) = sum(P*logP - P*logQ)
+        # Since we only need to minimize logQ, we use Cross-Entropy: -sum(P * logQ)
+        listnet_loss = -torch.sum(target_dist * pred_dist)
+        loss += listnet_loss * 1.0 # ListNet Weight
+
         return (loss, outputs) if return_outputs else loss
 
     def training_step(self, model, inputs, num_items_in_batch=None) -> torch.Tensor:
@@ -188,6 +220,7 @@ def tokenize_datasets(
             weights.append(w)
             
         tokenized["sample_weight"] = weights
+        tokenized["relevance"] = [float(r) for r in examples["relevance"]]
         return tokenized
 
     train_tokenized = train_dataset.map(tokenize_function, batched=True)
@@ -235,10 +268,24 @@ class CleanLogCallback(TrainerCallback):
         elif "eval_loss" in logs:
             e_loss = logs.get("eval_loss", 0)
             e_acc = logs.get("eval_accuracy", 0)
+            e_prec = logs.get("eval_precision", 0)
             e_f1 = logs.get("eval_f1", 0)
-            print("-" * 55)
-            print(f"  VALIDATION | Loss: {e_loss:>8.5f} | Acc: {e_acc:>8.5f} | F1: {e_f1:>8.5f}")
-            print("-" * 55)
+            print("-" * 65)
+            print(f"  VALIDATION | Loss: {e_loss:>8.5f} | Acc: {e_acc:>8.5f} | Prec: {e_prec:>8.5f} | F1: {e_f1:>8.5f}")
+            print("-" * 65)
+
+
+class CustomEarlyStoppingCallback(EarlyStoppingCallback):
+    """Subclass to display how many 'bad' steps remain before early stopping."""
+    def on_evaluate(self, args, state, control, metrics, **kwargs):
+        super().on_evaluate(args, state, control, metrics, **kwargs)
+        # The counter is incremented by the super() call if no improvement was found
+        patience = self.early_stopping_patience
+        counter = self.early_stopping_patience_counter
+        if counter > 0:
+            print(f"  [Early Stopping] Patience: {counter}/{patience} (No improvement for {counter} evaluations)")
+        else:
+            print(f"  [Early Stopping] New Best Metric Found! Patience reset to 0/{patience}")
 
 
 def train_model(train_dataset: Dataset, eval_dataset: Dataset) -> Tuple[Trainer, PreTrainedModel]:
@@ -258,25 +305,23 @@ def train_model(train_dataset: Dataset, eval_dataset: Dataset) -> Tuple[Trainer,
 
     training_args = TrainingArguments(
         output_dir=os.path.join(os.path.dirname(__file__), "../../saved_models/recommendation_model_output"),
-        eval_strategy="steps",
-        eval_steps=200,
-        learning_rate=2e-5,               # Slightly lower LR for more stable fine-tuning in late stages
+        eval_strategy="epoch",            # Changed from steps to epoch for efficiency
+        learning_rate=2e-5,
         per_device_train_batch_size=32,
         per_device_eval_batch_size=32,
-        num_train_epochs=15,              # Increased epochs to ensure full data utilization
+        num_train_epochs=5,               # Final fine-tuning stage
         weight_decay=0.01,
         warmup_ratio=0.1,
         label_smoothing_factor=0.0,
-        logging_steps=100,
-        logging_first_step=False,
-        save_strategy="steps",
-        save_steps=200,
+        logging_steps=50,
+        save_strategy="epoch",
         load_best_model_at_end=True,
-        metric_for_best_model="f1",       # Switch back to F1 to focus on classification quality
-        greater_is_better=True,
+        metric_for_best_model="loss",
+        greater_is_better=False,
         report_to="none",
-        save_total_limit=5,               # Keep more checkpoints for safety
+        save_total_limit=2,
         disable_tqdm=False,
+        fp16=False,                       # Disabled to ensure compatibility with custom LTR loss
         log_level="error",
     )
 
@@ -289,7 +334,7 @@ def train_model(train_dataset: Dataset, eval_dataset: Dataset) -> Tuple[Trainer,
         compute_metrics=compute_metrics,
         callbacks=[
             # Increased patience to 8 to give the model more time to optimize precision
-            EarlyStoppingCallback(early_stopping_patience=8, early_stopping_threshold=0.0005),
+            CustomEarlyStoppingCallback(early_stopping_patience=8, early_stopping_threshold=0.0005),
             CleanLogCallback()
         ]
     )

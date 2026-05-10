@@ -323,6 +323,33 @@ function createPropertyCardHTML(house, badgeClass) {
                 ${commuteHtml}
             </div>
 
+            <div class="features-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 15px; font-size: 0.8rem; color: #eee;">
+                ${(house.features || house.特色 || "").split('/').map(f => {
+                    f = f.trim();
+                    if (!f) return '';
+                    let icon = "fa-check";
+                    let label = f;
+                    
+                    if (f.includes("台電")) { icon = "fa-bolt"; label = "電費照台電"; }
+                    else if (f.includes("台水")) { icon = "fa-droplet"; label = "水費照台水"; }
+                    else if (f.includes("補助") || f.includes("租補")) { icon = "fa-hand-holding-dollar"; label = "可申請補助"; }
+                    else if (f.includes("窗")) icon = "fa-window-maximize";
+                    else if (f.includes("陽台")) icon = "fa-house-chimney-window";
+                    else if (f.includes("電梯")) icon = "fa-elevator";
+                    else if (f.includes("垃圾")) icon = "fa-trash-can";
+                    else if (f.includes("隔間")) icon = "fa-border-all";
+                    else if (f.includes("開伙")) icon = "fa-fire-burner";
+                    else if (f.includes("飲水機")) icon = "fa-faucet-drip";
+                    else if (f.includes("寵物")) icon = "fa-paw";
+                    else if (f.includes("保全") || f.includes("監控")) icon = "fa-shield-halved";
+                    
+                    return `<div style="display: flex; align-items: center; gap: 6px;">
+                        <i class="fa-solid ${icon}" style="width: 16px; color: var(--primary-color); opacity: 0.8;"></i>
+                        <span>${label}</span>
+                    </div>`;
+                }).join('')}
+            </div>
+
             <div class="contact-info" style="margin-bottom: 15px; padding: 10px; background: rgba(255, 255, 255, 0.03); border-radius: 12px; border: 1px solid var(--border-glass);">
                 <div style="font-size: 0.85rem; color: #94A3B8; margin-bottom: 5px; display: flex; align-items: center; gap: 8px;">
                     <i class="fa-solid fa-user-tie" style="color: var(--primary-color);"></i>

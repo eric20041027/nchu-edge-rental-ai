@@ -3498,5 +3498,3505 @@
     "relevance": 0,
     "label": 0,
     "category": "噪音衝突"
+  },
+  {
+    "query": "下班都快半夜了，根本趕不上垃圾車，家裡都要發臭了。",
+    "property": "本社區設有24小時垃圾集中子母車，並提供專業代收服務，讓您免去追垃圾車的煩惱。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不想每天下班還要在巷口罰站等垃圾車，好累。",
+    "property": "大樓備有專屬垃圾處理空間與免追垃圾車服務，下樓即可丟棄，生活更輕鬆。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "加班族的悲哀就是永遠聽不到垃圾車的音樂聲。",
+    "property": "專人代收垃圾免煩惱，社區配置子母車垃圾場，隨時都能處理家中垃圾。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "手上有小孩要顧，真的沒辦法準時去路口追垃圾車。",
+    "property": "完善物業管理提供垃圾代收服務，免去定時定點排隊等垃圾車的負擔。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不想為了丟垃圾還要特別請假或是拜託鄰居。",
+    "property": "租金包含垃圾處理費用，社區設有子母車，讓您隨時隨地輕鬆處理廢棄物。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "夏天開冷氣都跟在滴血一樣，怕電費太貴不敢開。",
+    "property": "全室採用全新一級能效變頻冷氣，並按照台電官方費率計費，讓您省電更有感。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "我非常怕熱，希望找那種冷氣開整天也不會心痛的房子。",
+    "property": "房源配備節能變頻冷氣，水電費均依台電台水帳單收費，省錢省荷包首選。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "每個月一度電5、6塊真的吃不消，想找台電計費的。",
+    "property": "本物件非定額收電費，完全依照台電帳單自行繳納，並搭配省電變頻冷氣。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "想省預算，不想把錢都花在老舊冷氣的電費上。",
+    "property": "室內裝修全面更新為變頻家電，且由台電直接出單，告別高額夏季電費。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "冷氣想吹就吹，不要每個月電費都好幾千。",
+    "property": "房源主打一級變頻空調，搭配台電計價模式，預算透明且大幅節省開支。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "膝蓋退化了，真的沒辦法每天爬上爬下。",
+    "property": "質感電梯住宅，免除爬樓梯的辛勞，無障礙出入動線，讓您輕鬆回家。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "每次去全聯買完東西提上樓都覺得命快去半條，不想再爬梯了。",
+    "property": "備有24小時電梯服務，搬運重物毫不費力，適合注重生活機能的您。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "懶人救星，我真的連一層樓都不想爬。",
+    "property": "優質電梯大樓，高樓層視野佳且免爬梯，給您最舒適的居家進出體驗。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "考慮到家裡長輩偶爾會來住，必須要有電梯才行。",
+    "property": "此房源位於電梯華廈內，出入安全且完全不用爬樓梯，對長輩極度友善。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "工作一整天腿都快斷了，回到租屋處不想再看到階梯。",
+    "property": "全程電梯直達居住樓層，告別傳統老舊公寓爬梯，讓雙腿得到充分休息。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "有潔癖，看到公用洗衣機裡有不明毛髮就覺得噁心。",
+    "property": "房間內附個人專屬獨立洗衣機，衛生有保障，再也不必跟陌生人共用。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "討厭拿著整籃衣服去外面自助洗衣店排隊，很浪費時間。",
+    "property": "房源標配獨立洗脫烘一體機，在家就能輕鬆洗衣乾衣，私密性高且便利。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "想洗衣服還要看鄰居臉色，共用的洗衣機每次都被佔滿。",
+    "property": "室內擁有獨立洗滌設備，專屬洗衣機讓您隨時想洗就洗，不用排隊等待。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不想為了洗內衣褲還要特地跑去外面洗，感覺很尷尬。",
+    "property": "個人獨立洗衣機配置，生活隱私百分百，洗護衣物更安心衛生。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不喜歡投幣洗衣店的味道，想要自己洗衣服。",
+    "property": "房內設有獨洗陽台與洗衣機，提供乾淨獨立的洗滌空間，滿足您的潔癖需求。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "想要住在寬敞一點的地方，但預算只有一萬出頭。",
+    "property": "超值大坪數分租套房，採光通風極佳，用雅房的價格享受頂級套房的空間感。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "受夠了像鳥籠一樣的小套房，想要找大一點的房間。",
+    "property": "雖然是分租格局，但室內空間寬敞且擁有大面採光窗，CP值極高的大空間物件。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "希望能有地方放我的大書櫃跟沙發，預算有限怎麼辦？",
+    "property": "推薦這間大空間雅房，超大坪數設計，讓您在有限預算內也能擁有客廳等級的享受。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "想找那種CP值很高、看起來不壓抑的大房間。",
+    "property": "精選分租房源，主打大坪數與無遮蔽視野大窗，低租金也能換取舒適生活大空間。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "預算不高，但不想住太委屈，空間想要大一點。",
+    "property": "預算友善的大空間分租房，室內格局方正寬闊，通風良好，告別窄小租屋生活。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "每天為了垃圾車時間趕得要死，真的受夠了。",
+    "property": "大樓內建垃圾回收場，隨時丟棄無需等待，免去追逐垃圾車的日常壓力。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "我的工作時間不固定，沒辦法配合垃圾車來的時候丟垃圾。",
+    "property": "社區備有子母車與專人處理垃圾服務，讓您的作息不再受垃圾車時間限制。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不想把垃圾堆在陽台發臭，希望能隨時拿下去丟。",
+    "property": "提供24小時垃圾集中站，免追垃圾車，維持居家環境清爽無異味。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "租房也要省電，不想要那種吃電怪獸老冷氣。",
+    "property": "全房源更新為一級節能變頻冷氣，並堅持台電台水收費，幫您精打細算省預算。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不想看到每個月收據上電費一度5塊，很像在搶錢。",
+    "property": "保證台電原價帳單收費，搭配高效率變頻空調，夏天吹冷氣不再心驚膽顫。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "希望能找個冷氣很省電的房子，我真的很怕熱。",
+    "property": "配備高效能變頻冷氣，冷房速度快且極度省電，台電費率計算最公道。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "東西很多，搬家怕累，也不想每天爬四五樓。",
+    "property": "優質電梯公寓，讓您購物、搬家或日常進出都輕鬆自在，完全無需走樓梯。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "年紀大了，膝蓋真的不允許我天天爬三樓以上。",
+    "property": "電梯直達門口，免去登階之苦，適合所有重視居住便利性與關節健康的房客。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "懶得爬樓梯，有電梯的房子是首選。",
+    "property": "電梯設備維護良好，讓您回家就像度假，不用再體會大汗淋漓爬樓梯的痛苦。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "共用洗衣機真的很髒，天曉得別人都洗了什麼。",
+    "property": "獨立洗衣機專屬配置，讓您擁有個人清潔空間，衣服洗得安心又衛生。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不想半夜還要起來去走廊收衣服，怕吵到鄰居。",
+    "property": "房內附設獨立洗脫烘設備，洗完直接烘乾，流程都在室內完成，省時又安靜。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "洗衣服想在家搞定，不想拿去外面投幣。",
+    "property": "配備個人洗衣機與獨立曬衣空間，在家就能輕鬆處理衣物，不必跑自助洗衣店。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "想要大空間可以放我的收藏品，可是租金不能太貴。",
+    "property": "高性價比大空間雅房，坪數超越同價位套房，擁有開闊的擺放空間與絕佳採光。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "租金預算有限，但想住得跟大套房一樣寬敞。",
+    "property": "稀有大坪數分租物件，雖然需共用衛浴，但房間空間極大且通風效果極好。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "想要下班隨時都能丟垃圾，不想被垃圾車的時間綁死。",
+    "property": "大樓設置集中子母車與回收區，提供免追垃圾車服務，生活作息更彈性。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "夏天電費太貴真的會讓人想哭，找省電變頻房。",
+    "property": "採用一級節能變頻空調，且水電費均依台電台水收費，讓您遠離夏季電費噩夢。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "膝蓋卡卡的，沒辦法接受要爬樓梯的物件。",
+    "property": "備有24H電梯服務，出入大廳至房門全程平路或電梯，提供最友善的行動環境。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "真的不喜歡跟別人擠那台公用洗衣機，感覺很不衛生。",
+    "property": "房源內置獨立洗衣機，專屬您的潔淨空間，不與他人共用，守護個人隱私。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "預算只有幾千塊，但想要找大一點、採光好一點的房間。",
+    "property": "高CP值分租雅房，擁有比一般房源更寬闊的空間感與大面落地窗，住起來不壓抑。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "下班趕不上垃圾車已經是常態，急需有子母車的房子。",
+    "property": "專業代收垃圾服務，社區配置24小時子母車，讓您不再為了丟垃圾而煩惱。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "房東一度電收6元太誇張，想找那種照台電收費的。",
+    "property": "本房源全面裝設變頻冷氣，且租金不含之水電費完全依照台電帳單自行繳納。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "每天上班都站著，回家真的不想再爬那幾層樓梯了。",
+    "property": "配備高效電梯，進出家門快速方便，完全免去徒步爬樓梯的體力消耗。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "想要自己買洗衣機放房間，或是有獨立的洗衣空間。",
+    "property": "房間已標配個人獨立洗衣機與曬衣陽台，生活機能自主，不需要去自助洗衣店。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "希望能用便宜租金租到比較寬敞的空間，不太在意分租。",
+    "property": "超值大坪數分租空間，租金平易近人，卻能享有大開窗與極致的室內寬敞感。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不想要家裡垃圾桶堆積，希望能天天都把垃圾丟掉。",
+    "property": "本大樓提供24小時垃圾處理服務，隨時可至集中區傾倒，免等垃圾車。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "想找台中興大附近可以養黃金獵犬的套房，預算一萬二。",
+    "property": "【興大優質套房】電梯大樓、採光極佳、附全套傢俱，社區管理完善，可養寵物（僅限貓咪，嚴禁養狗），近校園步行5分鐘。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "徵求中興大學正門附近的租處，希望走路到圖書館很近。",
+    "property": "【中興首選】全新裝潢美套房，位於興大南門旁，過馬路就到校區，環境清幽，生活機能極佳，適合愛運動的你。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找台水台電計費的公寓，不想被收一度5元的電費。",
+    "property": "精緻工業風套房，設備齊全。為了方便房客計算，每戶設有獨立電表，電費固定每度5元，水費每月固定100元，省去收帳單麻煩。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "一定要有個人獨立的洗脫烘洗衣機，不想跟別人共用。",
+    "property": "極簡風景觀房，超大陽台採光好。本棟設有頂樓五星級公共洗衣房，配備全新進口洗脫烘設備，定期消毒，給您最衛生的洗滌環境。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "上班族平時沒空，需要有子母車可以隨時丟垃圾。",
+    "property": "高CP值公寓，垃圾處理免煩惱。每日晚間 19:30 垃圾車準時到達樓下，街坊鄰居互動良好，環境定時有專人打掃。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "帶著愛犬找新家，希望有電梯且環境通風。",
+    "property": "【高級電梯公寓】通風採光絕佳，禁菸、禁寵、禁祭祀。本大樓為過敏友善社區，嚴格禁止任何寵物入內以維持住環境潔淨。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想租興大正門（學府路）附近的套房，去學餐吃飯比較方便。",
+    "property": "興大後門文教區，鬧中取靜的高級套房，走路至後門僅需2分鐘。周邊公園綠地多，是追求生活品質的首選。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找可以帳單自付、台水台電收費的租處。",
+    "property": "市中心捷運宅，租金含管理費。電費部分為了公平起見，採用獨立電表統一計費，夏季每度6元、冬季5元。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "租屋處必須有私人洗衣機，且要是洗脫烘三合一的款式。",
+    "property": "溫馨北歐風小資房，提供獨立陽台及私人專屬洗衣機，並附設公用大型烘衣機，讓您下雨天也不必擔心衣服乾不了。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "要有垃圾集中處理，不用追垃圾車，我很晚下班。",
+    "property": "【採光好套房】附近生活機能優，便利商店就在樓下。提醒：本區垃圾車時間為 17:00 與 21:00，請準時至指定地點丟棄。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "我有一隻乖巧的拉布拉多，需要找接受大型犬的房東。",
+    "property": "溫馨採光套房，房東本人也愛動物。接受養寵物，但僅限於籠裝小型寵物（如兔子、倉鼠），大型犬及貓咪恕不接受。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "請問有興大正門口的套房嗎？希望離公車站牌近。",
+    "property": "【興大南門美屋】位於南門路，正對中興大學南門校區，附近有無人商店與美食街，生活機能極其便利，隨時可入住。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "希望找台水台電、政府收費標準的房屋，不要房東私加電費。",
+    "property": "全新落成電梯大樓，每戶獨立表。電費依台電公告價（每度5.5元固定）計算，省去繁雜公設攤提費，透明好計算。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "不想手曬衣服，租屋處要有自己的洗脫烘。 ",
+    "property": "精美飯店式管理，房內配備個人洗衣機，陽台寬敞且通風、日照充足，衣服洗完晾在外面半天就會乾，非常方便。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "一定要有大樓子母車，隨時可以丟垃圾的那種。",
+    "property": "靜巷優質住宅，垃圾車每天都會經過巷口，時間為早上 8:30。住戶需自備專用垃圾袋並親自交付，環境十分乾淨。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "有養兩隻柴犬，想找可以養狗的環境。",
+    "property": "寵物友善空間！歡迎帶貓主子入住。本空間特別設計了貓跳台與防抓地墊，專為愛貓人士打造（為避免吠叫衝突，禁止養狗）。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "要在興大正門附近的學府路或頂橋一帶找房。",
+    "property": "興大南門漂亮套房，離後門體育場非常近，早晨運動、打球都方便。室內空間大，設備齊全，歡迎預約看房。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "台水台電帳單自繳，不要一度 5 塊的那種。",
+    "property": "大坪數兩房，水電計費簡單。房東不收水費，電費每月按表計費，一度統一收 5.2 元，包含公共區域用電分攤。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "私人陽台且裡面要有自己的洗脫烘三合一機。",
+    "property": "時尚工作室風格，附陽台及投幣式自助洗烘設備於公共走廊。房內配有獨立洗衣機，若需烘衣可使用公共區域機器。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "我不想等垃圾車，大樓一定要有收垃圾的子母車。",
+    "property": "近捷運高層觀景房，生活機能完善。本大樓無設置集中垃圾場，房客需配合環保局垃圾車清運時間，地點就在樓下門口。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "我有養一隻邊境牧羊犬，想找中大型犬友善的套房。",
+    "property": "【寵物天堂】歡迎小型萌寵入住，無論是貓咪、倉鼠或魚缸皆可。為維護木地板品質，請恕無法接待中大型犬隻入住。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "急尋！興大正門口步行3分鐘內的住處。",
+    "property": "中興大學優質社區，鄰近南門路及興大路，散步到校區只要5分鐘。環境單純，24小時保全監控，適合學生及社會人士。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想找台水台電計費的家庭式，預算兩萬五左右。",
+    "property": "全新整理家庭式三房，為了計算簡便，水電費按房型人數平均分擔，電費一度收 5 元，夏季電價不再調漲，非常划算。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "房內要有洗脫烘，不需要陽台曬衣服也沒關係。",
+    "property": "現代風套房，配備個人獨立洗衣機。室外設有寬廣公用曬衣場，陽光充足。若需要烘衣，附近 50 公尺即有自助洗衣店。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "一定要有大樓集中垃圾處理，不用自己等垃圾車。",
+    "property": "溫馨採光居所，垃圾處理方式：請於每週二、四、六晚間八點，自行將垃圾攜至社區大門口等候垃圾車。環境整潔無異味。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "尋找可養狗的套房，我的狗不會亂叫。",
+    "property": "【精品套房】環境極佳，開放養寵物。限貓咪，房東已預先加裝貓抓布沙發，禁止飼養任何品種的犬隻以確保鄰里安靜。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "希望住在興大正門附近的學府路，方便上下課。",
+    "property": "興大南門路美房，離校園僅一牆之隔，生活機能一級棒。步行至體育場與教學區非常快速，是興大學子的最佳選擇。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "求租！台水台電收費標準，要有帳單的那種。",
+    "property": "全新美宅，獨立電表計費。房東貼心預收電費，固定每度 5.5 元，省去您自行跑超商繳台電帳單的時間，輕鬆入住。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "因為懶得曬衣服，必須有獨立洗脫烘三合一機。",
+    "property": "優質飯店套房，提供獨立洗衣機，陽台特別挑高方便晾掛大型被褥。本大樓無提供烘衣設備，需自行利用戶外空間晾曬。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "工作很忙，需要有大樓子母車隨時可倒垃圾。",
+    "property": "捷運共構美宅，生活機能極佳。垃圾清運規範：住戶需於每日晚上 20:00 準時下樓親自投遞垃圾給垃圾車，無集中室。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想養一隻法鬥，需要找可以養狗的房東。",
+    "property": "【質感小寓】可寵（限貓），內部裝潢精美，特別挑選防抓窗簾。為了維護環境及氣味，禁止養狗與鳥類，歡迎貓奴諮詢。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "我想找興大正門附近的房子，不要在後門。",
+    "property": "【近興大後門】全新完工現代風套房，緊鄰南門路美食街，走到中興大學南校門入口只要一分鐘，上學超方便。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "拒絕一度5元、6元的電費，要找台水台電計費。",
+    "property": "精選商圈宅，每戶皆有獨立電表。電費計算方式：比照台電夏季最高費率，統一收取每度 6.4 元，免公設分攤費。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "租屋要有個人洗脫烘，不想跟別人共用洗衣機。",
+    "property": "溫馨採光房，配備高級個人專用洗衣機及曬衣陽台。社區一樓備有收費式商用烘衣機，滿足您臨時的烘衣需求。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "請問有子母車嗎？我沒辦法配合垃圾車時間。",
+    "property": "景觀大套房，採光通風好。垃圾處理部分，樓下巷口即是垃圾車停靠站，時間為 19:30 及 20:30，倒垃圾非常容易。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "帶著我的柯基找房子，希望有地方可以讓他活動。",
+    "property": "公園旁景觀宅，下樓就是綠地。屋內可養寵（僅限貓咪與小型靜態寵物），嚴禁任何犬隻，確保不干擾其他住戶安寧。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找興大正門附近的學府路租屋處，不想住到南門路去。",
+    "property": "興大南門路溫馨套房，緊鄰中興大學南側門，周邊生活機能完善，下樓就是早餐店，最適合不想走太遠的同學。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "一定要台水台電，拿單子去超商繳費的那種。",
+    "property": "時尚裝潢住宅，省去繳費煩惱。電費由管理室代收，依電表度數統一計算，每度固定 5 元，免收公共電費分攤。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "要求室內有獨立洗脫烘，因為我過敏不能曬外面。",
+    "property": "【清新風套房】陽台採光通風超好，附設個人獨立洗衣機。若需烘乾服務，本棟地下一樓設有專業洗烘設備可供使用。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "尋找有物業管理、垃圾集中處理（子母車）的公寓。",
+    "property": "靜巷優質公寓，住戶素質高。垃圾清運需配合政府規定，每日晚間 19:00 親自等候清運車，無須負擔垃圾清潔費。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "我有養狗，想找可以養狗、且環境友善的家。",
+    "property": "【愛貓首選】精緻套房，可養寵物，現場備有抓柱。為維護居住品質，全棟禁止養狗及大型哺乳類動物，僅限貓咪。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "希望能租在興大正門對面，每天要進辦公室。",
+    "property": "興大後門南門路，超值便宜套房。環境寧靜不嘈雜，走到興大後門只需1分鐘，生活機能便利，隨時可看房。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "我需要台水台電收費，不想負擔昂貴的私訂電費。",
+    "property": "頂級商旅套房，生活機能卓越。水電費按房客度數計費，一度電統一收費 5.8 元，包含公共設施用電及水費。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "房內必須有獨立洗脫烘三合一洗衣機，不想曬衣服。",
+    "property": "全能住宅小套房，配備個人獨立洗衣機與寬敞曬衣窗台。社區公共區域提供投幣式烘衣機，下雨天可多加利用。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "希望能有集中垃圾場，我工作時間不固定，沒法追車。",
+    "property": "鬧區精緻房，樓下就是便利商店。垃圾車時間為 18:00 與 21:00，停靠站就在社區轉角，走路10秒就到，非常方便。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "徵求可以養小型犬（貴賓狗）的套房。",
+    "property": "【寵物友善】歡迎入駐！可養寵物限貓咪，房內有獨立對外窗採光通風佳。嚴禁養狗（含小型犬），感謝配合。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找興大正門學府路附近的公寓，走路要能到。",
+    "property": "興大南門路漂亮兩房，過個馬路就是興大後門校區，附近有全聯及各類美食，生活機能非常適合大學生。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "房東收費要是台水台電，不能多收。",
+    "property": "極致採光套房，電費按獨立電表計算，一度 5.5 元全年度統一收費，水費每月 100 元，透明化收費讓您安心。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "屋內要有洗脫烘，方便平時洗完衣服直接烘乾。",
+    "property": "文青風套房，附專屬獨立洗衣機，頂樓設有超大曬衣場及公共收費烘衣機。通風極佳，衣服晾在房內也會乾。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "一定要有大樓垃圾集中處理，不想自己倒垃圾。",
+    "property": "【市中心公寓】交通便利、生活方便。本大樓無專人收垃圾，垃圾車每日固定時間 19:30 出現在巷口，住戶需自行投遞。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "不想天天追垃圾車，下班都累死了",
+    "property": "社區提供 24 小時子母車，專業物業垃圾代收，不需配合清運時間",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "冷氣想吹整天又怕電費爆掉，求省電神房",
+    "property": "房源全面更換一級效能變頻冷氣，且依台電帳單金額繳費，省電有感",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "膝蓋不好真的沒辦法每天爬五樓",
+    "property": "優質電梯大樓，進出有無障礙坡道，免去爬樓梯負擔",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "很在意衛生，不想跟陌生人共用洗衣機",
+    "property": "套房內備有個人獨立洗衣機，陽台通風好，衛生有保障",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "預算有限但不想住鳥籠，想要大一點的空間",
+    "property": "大坪數分租套房，擁有 8 坪寬敞空間與大面採光落地窗，租金親民",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "下班太晚趕不上垃圾車，家裡不想堆廚餘",
+    "property": "大樓設置集中垃圾處理區（子母車），隨時想丟就丟，免追垃圾車",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "夏天超怕熱，希望電費能按照台電算",
+    "property": "獨立電表並按照台電官方費率計費，搭配變頻冷氣，夏天開整天也不心疼",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "懶得爬樓梯，希望有電梯可以搭",
+    "property": "電梯華廈高樓層，出入方便，不用每天練腿力爬樓梯",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "討厭去自助洗衣店排隊，還要等衣服洗好",
+    "property": "室內配備私人專用洗脫烘衣機，在家就能輕鬆完成洗滌與烘乾",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "想找那種CP值很高、房間很大的分租房",
+    "property": "精選寬敞雅房，室內空間達 10 坪，適合預算有限但追求大空間的你",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不想聽到垃圾車的音樂聲才衝下樓",
+    "property": "本物件包含管理費，代收垃圾服務完善，不用再趕垃圾車",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "一度電 5 元太貴了，想找台電計費的",
+    "property": "房東提供獨立帳單，電費依台電實際金額計費，不再被收高額一度電費",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "手上有傷不能搬重物爬樓梯",
+    "property": "電梯套房直達門口，免爬坡、免爬梯，搬家、買菜都輕鬆",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "覺得共用洗衣機很髒，不敢洗內衣褲",
+    "property": "房內自備獨立洗衣機，專屬私人使用，乾淨衛生且不需排隊",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不想花大錢租獨立套房，但想要房間很大有大窗戶",
+    "property": "大坪數分租雅房，擁有雙面採光大窗，視野開闊且租金負擔低",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "每次追垃圾車都像在跑百米，心好累",
+    "property": "社區備有子母車，專業人員清運垃圾，徹底擺脫追垃圾車的惡夢",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "怕熱又想省預算，有變頻冷氣嗎？",
+    "property": "全新一級變頻空調，節能省電首選，搭配台電計費最划算",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "每天回家想到要爬四樓就想哭",
+    "property": "電梯代步直達居住樓層，保護膝蓋、節省體力，回家變得很輕鬆",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不喜歡拿著一籃衣服去自助洗，很麻煩",
+    "property": "房源內附獨立式洗脫烘衣機，洗衣烘衣一次搞定，省去出門麻煩",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "想要住在可以放得下大沙發的房間，但預算不多",
+    "property": "超大空間分租套房，室內格局方正，可隨意擺放大型家具，租金高 CP 值",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "下班時間不固定，垃圾都沒辦法倒",
+    "property": "大樓公設包含垃圾集中室，24 小時開放丟棄，專人定時清運",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不想看電費臉色，可以自己繳台電帳單嗎？",
+    "property": "房源提供台電官方電費單據，用戶自行繳費，費率最透明透明省錢",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "懶人救星，不想每天爬樓梯健身",
+    "property": "配置品牌電梯，上下樓快速便捷，是追求舒適生活的懶人首選",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "有潔癖，無法接受公用洗衣機",
+    "property": "個人獨享洗衣空間，配備私人專用洗脫烘設備，衣服洗得安心",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "想要超寬敞的臥室，雅房也可以，只要空間大",
+    "property": "巨無霸坪數雅房，室內超過 12 坪，家具齊全且通風極佳，高性價比之選",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "垃圾車時間都對不上，假日才能倒垃圾超崩潰",
+    "property": "房源內含垃圾代收服務，每天任何時間皆可處理垃圾，環境整潔不發臭",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "吹冷氣不想像在燒錢，求變頻電費便宜的",
+    "property": "房東斥資安裝全新變頻冷氣，配合台電帳單計價，讓您夏天涼爽過日子",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "年紀大了一點，想找有電梯的房子住",
+    "property": "現代化電梯社區，進出無負擔，適合各族群居住的友善電梯房",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不想去外面自助洗衣，還要跟人擠",
+    "property": "陽台自帶獨立洗衣機，無需共用，洗完直接晾曬超方便",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "想找便宜又大間的房子，分租套房可接受",
+    "property": "優質分租大套房，不僅空間開闊更有大窗採光，適合追求高 CP 值的租客",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "工作忙到半夜，根本沒空等垃圾車",
+    "property": "備有社區子母車，免去苦等垃圾車的困擾，下班回家隨手就能丟",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不想付一度 6 元的暴利電費，要台電計價",
+    "property": "每戶具備獨立台電電表，繳費透明不超收，夏季吹變頻冷氣超省錢",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不想要回家還要爬好幾層樓梯，體力透支",
+    "property": "精裝電梯大樓，返家不用爬任何階梯，是忙碌上班族的舒適首選",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不想洗別人的髒污，求有個人洗衣機的房間",
+    "property": "全室重新裝修，配備全新獨立洗脫烘設備，洗衣服不再是苦差事",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "預算有限，想要找大坪數且有窗戶的分租房",
+    "property": "極大空間分租雅房，擁有兩扇對外窗，環境不壓抑且租金非常便宜",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不想每次提著垃圾去跟垃圾車賽跑",
+    "property": "專人管理垃圾處理區，無需垃圾袋標籤，子母車讓你隨時優雅倒垃圾",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "電費不想被房東多收，想要台電費率加變頻冷氣",
+    "property": "主打變頻冷氣省電組合，且依台電單據實支實付，公正公開不灌水",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "膝蓋近期受傷，急需有電梯的住所",
+    "property": "無須爬梯的電梯大樓，樓梯間明亮寬敞，進出全靠電梯免負擔",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不喜歡共用洗衣機，感覺很不衛生",
+    "property": "房內標配個人專用洗衣機，私人使用不怕交叉感染，洗得乾淨又安心",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "想找便宜大碗的房子，空間要夠大",
+    "property": "物超所值的分租大空間房源，坪數誠實無灌水，給您最寬敞的居住體驗",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不想要下班還要趕著回家倒垃圾，真的很煩",
+    "property": "社區式管理提供子母車服務，丟垃圾免排隊免等待，輕鬆解決生活雜務",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "想要吹冷氣無負擔，一定要變頻冷氣跟台電計費",
+    "property": "全面配備省電變頻冷氣，電費由住戶持台電帳單自付，省錢效果明顯",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "懶得爬樓梯到頂樓，有沒有不用走路的？",
+    "property": "電梯直達各個樓層，免去上下樓梯的辛勞，讓您的雙腿徹底放鬆",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不想提著衣服去自助洗，很浪費時間",
+    "property": "專屬套房內含個人獨立洗脫烘一體機，宅在家就能完成洗滌，極致便利",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "想要空間很大但負擔不起獨立套房",
+    "property": "高 CP 值分租型大房間，大面採光且坪數充足，讓您用小錢換大空間",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "討厭等垃圾車，希望能隨時隨地倒垃圾",
+    "property": "具備專業垃圾代收機制，大樓設有垃圾集中點（子母車），免去等待時間",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "夏天不想省冷氣電費，求台電收費加變頻空調",
+    "property": "全室更換高級變頻冷氣，保證低能耗，且按台電費率收費，租金更具競爭力",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不喜歡運動，完全不想爬樓梯",
+    "property": "設有穩定電梯設備，免去每日登高困擾，輕鬆返家不流汗",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "討厭跟別人搶洗衣機用，還得等別人拿衣服",
+    "property": "房內附設全新獨立洗衣機，專屬您的洗滌空間，不用排隊、不用等待",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "尋找大坪數但租金便宜的房子，不介意共用衛浴",
+    "property": "超值寬敞大雅房，室內近 10 坪，採光佳且配有大窗，價格僅一般套房一半",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "想找可以養黃金獵犬的電梯大樓，預算兩萬內。",
+    "property": "【寵物友善高層】精緻兩房，採光極佳對面就是公園，非常適合愛貓人士，合約明確禁止養狗，租金 18000。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "我有養一隻柴犬，請問哪邊有適合帶狗入住的房源？",
+    "property": "鄰近綠地、生活機能優，全新裝潢溫馨套房。本社區為維護安寧僅限養貓或小型倉鼠，禁止養犬類，歡迎詢問。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "急尋可狗的租處，小型犬不愛叫，求推薦。",
+    "property": "鬧中取靜、一樓免爬梯。為了維護鄰里和諧，本物件謝絕各類寵物入住，愛狗人士請見諒，目前無養寵方案。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "帶著狗狗找家，希望陽台大一點。",
+    "property": "超大露台、景觀第一排。本物件歡迎安靜寵物，目前僅限貓咪，嚴禁狗狗進入社區，管理室管得很嚴。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想找有公園可以遛狗的租屋處。",
+    "property": "走路到大安森林公園只要 3 分鐘，黃金地段精緻套房。限單身女性，不收寵物（包含貓狗），謝絕寵物客。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "求租可狗公寓，空間不要太窄。",
+    "property": "寬敞三房兩廳，格局方正，採光通風超棒。注意：房東因個人因素僅接受養貓族群，汪星人請繞道。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "可養寵物的套房，最好是能養大型犬。",
+    "property": "現代風裝潢，一卡皮箱入住。本物件雖標註寵物友善，但管理委員會規定僅能養5公斤以下小型寵物，中大型犬無法。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找可狗、通風好的租屋，預算可議。",
+    "property": "邊間採光大套房，附獨立洗衣機。室內嚴禁吸菸與養狗，貓咪可談，目前不接受狗房客。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "請問有可養兩隻狗狗的物件嗎？",
+    "property": "超值兩房，全家具家電。本房源特別註明：禁止一切會發出聲音的寵物（如狗、鸚鵡），僅接受安靜的貓咪。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找可以帶寵物（狗）的房子，最好近捷運。",
+    "property": "捷運站走路1分鐘，精品裝潢大套房。社區規定嚴格，室內絕對禁止養狗，違者罰款並解約，請注意。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "希望能找台水台電計費的租屋，省點開銷。",
+    "property": "全新裝潢工業風套房，每月租金含水費及網路。電費部分設有獨立電表，每度固定 5.5 元，夏季不調漲。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想找帳單自繳、台水台電計價的公寓。",
+    "property": "優質社區三房，公設齊全。為了方便租客，水電費不需自繳，統一由房東代收，固定電費一度 5 元，水費每月 200。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "求台水台電的房子，不想被賺電費差價。",
+    "property": "採光套房，家電俱全。獨立電表計費，不分季節每度 6 元，水費每月 100 元，省去去超商繳費的麻煩。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "請問有台水台電收費的租件嗎？",
+    "property": "溫馨小資首選，獨立出入。電費依獨立電表計算，一度 5.2 元，水電費直接交給房東，不需持帳單去繳費。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找台水台電大樓，預算兩萬五左右。",
+    "property": "捷運宅二房，生活機能極佳。水費已包含在管理費中，電費採獨立電表，不論用電量大小每度一律 5 元。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "需要台水台電計費，因為夏天冷氣吹很兇。",
+    "property": "超涼爽邊間，變頻冷氣。本屋採定額計費，電費每度 5.5 元，幫您省下夏季分級累進的昂貴水電帳單。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想租台水台電的房子，因為有開伙需求。",
+    "property": "廚房大空間、可開伙。水電費用獨立電表，一度 5 元，每個月固定結算一次交給房東，省時又方便。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "求租台水台電，希望是依照政府公告價格。",
+    "property": "鬧區靜巷美套房。房東體諒辛苦上班族，電費固定每度 5 元，不隨台電調漲，水費每月僅收 150 元。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "有沒有台水台電計費的家庭式？",
+    "property": "三代同堂大平車。公共空間水電由管理費支應，房內水電採獨立計費，一度 5 元，適合精打細算的您。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "不想付一度 5 元的電費，想找台水台電。",
+    "property": "全新落成，現代裝潢。電費採分電表制度，夏季 6 元、冬季 5 元，免除台電繁瑣帳單流程，即刻入住。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "工作在興大正門附近，想找走路五分鐘能到的。",
+    "property": "中興大學優質學區房，交通便利。本物件位於興大南門路後門出口，走路到後門僅需 2 分鐘，環境清幽。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想找興大正門附近的房子，下班比較熱鬧。",
+    "property": "興大美宅，生活機能完善。樓下就是南門路夜市，距離興大南側門口（獸醫院旁）走路極速到達，學生首選。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "住在興大正門對面最好，不想過大馬路。",
+    "property": "興大景觀房，視野無遮蔽。位於興大後門出口旁（近大里區），過個馬路就進校園，免去正門人擠人的麻煩。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "求租興大正門（學府路）周邊的電梯套房。",
+    "property": "興大生活圈，電梯頂級配備。位置鄰近國圖館與興大後門，去興大南門校區運動超方便，地點安靜不吵雜。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "興大正門口找房，預算一萬內。",
+    "property": "興大特區超值選，近大買家商圈。地點位於興大南門出口走路三分鐘處，離正門口有段距離，環境單純。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想找離興大正門越近越好的公寓。",
+    "property": "正興大商圈公寓。物件位於興大路靠近男宿區（後門），雖然不在正門學府路，但進出校園同樣方便。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "要在興大正門附近開店，找一樓店住。",
+    "property": "興大門戶店面，人潮洶湧。地位於興大南門、國光路口精華區，距離正門口步行約15分鐘，適合特定客群。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找興大正門口的套房，方便搭車跟買飯。",
+    "property": "興大生活極簡風。鄰近興大側門與操場，離正門有一公里距離，但離南門路美食街非常近，生活機能優。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "興大正門附近有沒有可以租的車位或房源？",
+    "property": "興大專屬車位宅。位於興大後門與大里交界處，步行至興大南門非常方便，要到正門建議騎車較快。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "要去興大正門找朋友，想租在附近的短租。",
+    "property": "興大溫馨空間。本屋位於興大路南段，步行即可抵達興大南門入口，免受正門車潮困擾，交通便利。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "我需要獨立洗脫烘，不想跟別人共用洗衣機。",
+    "property": "時尚科技感套房，強調衛生清潔。走廊設有頂級歐洲進口公用洗脫烘設備，定期消毒，房內空間大更寬敞。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想找房內就有洗脫烘衣機的物件，注重隱私。",
+    "property": "精品飯店式管理，公設完整。一樓備有大型投幣式洗脫烘衣房，24小時開放，讓您不用在房內忍受機器噪音。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "求租有個人洗脫烘的套房，衣服想在房間洗完直接乾。",
+    "property": "採光通風房，附個人洗衣機。曬衣空間充足，頂樓亦備有共用烘衣機，滿足您雨天的乾衣需求。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "一定要有室內獨立洗脫烘，省掉曬衣服的時間。",
+    "property": "全新裝潢美套。每層樓均設有三台公用洗脫烘一體機，房東定期清潔，省去您自行購買與維修機器的煩惱。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "尋找配備獨立洗脫烘的房源，預算兩萬。",
+    "property": "高質感住宅，空間設計極佳。為了空間最大化，房內僅提供獨立洗衣機，公共區備有專業烘衣機可免費使用。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "希望房內有洗脫烘一體的電器，生活才方便。",
+    "property": "精緻套房，家電全。社區設有投幣式洗脫烘服務中心，下樓即可處理衣物，不佔用房內珍貴的坪數。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找有洗脫烘的房子，不想曬衣服，會有過敏問題。",
+    "property": "抗敏清新套房。房內附有個人專屬洗衣機與採光曬衣架，公設區另有大型烘衣設備供租客共用。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想要房內自備獨立洗脫烘，免去與人排隊的麻煩。",
+    "property": "摩登設計房。社區管理費含公用洗脫烘清潔費，洗衣服只需去走廊專區，房內空間更大更舒適，無需擠洗衣機。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "懶人專屬，找房內有獨立洗脫烘的物件。",
+    "property": "極簡主義風格。房內附有高級滾筒洗衣機，陽台通風極佳可曬衣；若需烘乾服務，社區大門口就有自助洗衣店。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找獨立洗脫烘套房，不想衣服拿進拿出的。",
+    "property": "五星級公設套房。雖然室內無洗衣設備，但本社區提供專業代客洗脫烘收送服務，讓您在家就像住飯店。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "下班時間晚，需要有子母車，不用追垃圾車。",
+    "property": "生活機能強，優質社區。環境清潔維持極佳，垃圾需配合政府垃圾車時間，每日晚間 8:20 於樓下門口清運。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想找不用等垃圾車的房子，有集中處理區最好。",
+    "property": "鬧中取靜、採光極佳。本棟為傳統公寓，鄰里感情好，垃圾清運需自備環保袋，等待每週二、四、六的垃圾車。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "求租有子母車的電梯大樓，垃圾不想隨身帶。",
+    "property": "飯店式管理大樓，生活便利。特別叮嚀：本社區目前無設置垃圾集中場，請住戶定時定點至一樓大門口等待清運車。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "工作忙碌沒辦法追垃圾車，一定要有垃圾代收。",
+    "property": "精裝美套房，管理費超低。房東為了節省開支，不提供垃圾集中處理，需麻煩房客自行等候垃圾車清運垃圾。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找有垃圾集中處的物件，不分時間都能丟垃圾。",
+    "property": "便利生活宅，鄰近超市。本處並無垃圾子母車，住戶需於每日下午 5 點或晚上 9 點自行到巷口等待垃圾車。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "租屋首選要有子母車，真的不想追車。",
+    "property": "美裝三房，附平面車位。環境維護靠大家，社區無請清潔公司代收垃圾，請住戶自行至路口倒垃圾，保持乾淨。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "請問有免追垃圾車的套房嗎？",
+    "property": "交通要道旁，通風好。租金包含網路第四台，垃圾處理需自理，垃圾車會於每天晚上 7 點半經過門口，請留意。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想找有24小時垃圾集中收納的社區。",
+    "property": "24H保全管理，安全無虞。本大樓配合環保政策，不設子母車，垃圾需在特定時段（晚間8點）至地下室等待清運。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "求推有垃圾專人處理的房子，不想煩惱清運問題。",
+    "property": "優質學區房，機能滿分。由於是老式建築，無垃圾集中區與代收服務，需自行在固定時間等待清潔隊垃圾車。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找有子母車、不用追垃圾車的公寓或大樓。",
+    "property": "全新粉刷、即可入住。環境清爽無異味，因為本處嚴禁堆置垃圾，需請住戶每天親自等候垃圾車前來清運。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "下班時間很不固定，根本趕不上垃圾車。",
+    "property": "本房源社區設有 24 小時垃圾代收區，配備子母車，讓您隨時可丟免趕車。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不想再聽到少女的祈禱，有沒有不用追垃圾車的房子？",
+    "property": "專人處理垃圾代收，社區公共區域設有大型子母車，徹底告別追垃圾車的日常。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "討厭每天都要拎著垃圾在路口等，真的很浪費時間。",
+    "property": "大樓提供集中垃圾處理室，無需配合清潔隊時間，隨時都能輕鬆處理家事。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "我是上班族，回到家都九點了，垃圾怎麼辦？",
+    "property": "附設社區垃圾集中點，下班回來直接下樓丟進子母車即可，方便省心。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "想要那種可以隨時丟垃圾，不用等垃圾車來的社區。",
+    "property": "優質管理大樓，備有專業垃圾代收服務，不用再為了追車而提早出門。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "住在這如果不用自己等垃圾車就太好了。",
+    "property": "本案包含垃圾處理服務，公共空間設有子母車，讓您居家生活更優雅。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "沒辦法天天準時下班丟垃圾，有代收服務嗎？",
+    "property": "物件位於具備管理員代收垃圾的社區，提供集中子母車，適合忙碌的上班族。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "我不喜歡家裡堆垃圾，但又沒時間等車。",
+    "property": "社區備有 24 小時開放的垃圾集中場，隨時可倒，讓家裡保持清爽無異味。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "有沒有那種免追垃圾車、有子母車的電梯大樓？",
+    "property": "標準電梯華廈，附設垃圾子母車與專人代收，讓您完全不用看垃圾車時間。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "下班趕垃圾車像在跑百米，真的累了。",
+    "property": "本房源具備垃圾代收功能，下樓即有子母車可投遞，讓您下班生活從容自在。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "我很怕熱，冷氣可能會吹整天，怕電費爆表。",
+    "property": "全室採用全新一級變頻冷氣，並依照台電帳單計算電費，幫您精打細算省荷包。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "想找台電計費的房子，不然一度 5、6 塊真的吃不消。",
+    "property": "獨立台電電表，帳單來多少繳多少，搭配變頻冷氣，夏季用電也不心疼。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "怕熱體質，希望冷氣省電一點，電費照台電收。",
+    "property": "房間安裝高品質變頻冷暖空調，電費採台電費率透明計算，讓您安心吹冷氣。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "夏天沒冷氣會死，但又怕電費太貴。",
+    "property": "此房源主打省電變頻冷氣，且為台電獨立電表收費，最適合注重高 CP 值的租客。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不想付一度 6 元的冤枉錢，有變頻冷氣加台電的嗎？",
+    "property": "保證台電原廠帳單計費，房間配備節能一級變頻冷氣，月省千元電費。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "我是冷氣重度使用者，希望找省電房源。",
+    "property": "全新變頻空調系統，搭配台電計費標準，讓您即便宅在家吹冷氣也能省大錢。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不想再幫房東繳電費，想要台電帳單那種。",
+    "property": "本物件採獨立台電表收費，搭配高效率變頻冷氣，電費透明且極具省電效益。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "夏天的電費真的很恐怖，有沒有省電設備的房？",
+    "property": "升級一級變頻省電冷氣，加上台電計價方式，是抗暑降溫的實惠首選。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "想找夏天可以開爽爽又不用付天價電費的房間。",
+    "property": "配備高效能變頻冷氣，台電計費無加成，讓您在炎夏也能享有舒適涼爽的生活。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "希望電費透明，冷氣要變頻的才省。",
+    "property": "透明台電計費基準，全室配置變頻家電，專為想節省生活開銷的您設計。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "膝蓋不好，沒辦法天天爬樓梯。",
+    "property": "飯店式管理電梯大樓，出入免爬樓梯，適合銀髮族或不便登高者。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不想每天下班還要背著筆電爬 5 樓。",
+    "property": "本房源位於電梯華廈，免去上下樓梯的體力負擔，回家就是輕鬆自在。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "搬重物真的很痛苦，有沒有不用爬樓梯的？",
+    "property": "備有寬敞電梯，採買回來到進入家門全程免爬樓梯，生活便利性極佳。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "懶人必備，不想爬樓梯到 4 樓，會喘死。",
+    "property": "現代化電梯房源，上下樓僅需按鈕，徹底解決老舊公寓爬樓梯的困擾。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "有電梯嗎？我不想天天重訓爬樓梯。",
+    "property": "高品質電梯住宅，免爬坡免樓梯，給您最舒適的居家進出體驗。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "帶小孩還要提大包小包，沒電梯真的不行。",
+    "property": "電梯直達家門口，安全且便利，是家中有小孩或需要提重物的最佳選擇。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "想要找那種一進大門就能坐電梯回房間的。",
+    "property": "完善電梯設備，門禁嚴謹，讓您下班回家無需再揮汗爬樓梯。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "住高樓層但怕爬樓梯，有電梯的選項嗎？",
+    "property": "本物件位於高樓層，配備高速電梯，視野好且進出完全不用爬樓梯。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "腳受傷後真的很怕爬樓梯，想換有電梯的房子。",
+    "property": "優質電梯公寓，有無障礙進出考量，免爬階梯，給膝蓋最溫柔的照顧。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不考慮公寓，年紀大了想住有電梯的。",
+    "property": "新大樓格局，配備大型電梯，省去所有爬樓梯的辛勞，居住品質大提升。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "有潔癖，不想跟別人共用洗衣機。",
+    "property": "房內附設個人專用獨立洗衣機，衛生有保障，洗衣服不用再排隊。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不喜歡去自助洗，還要拎著衣服跑來跑去。",
+    "property": "備有獨立洗脫烘一體機，宅在家就能完成衣物洗滌與乾燥，省時又便利。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "個人衛生考量，想要自己有一台洗衣機。",
+    "property": "獨立洗衣空間與專屬洗衣機，免與室友共用，享受乾淨衛生的租屋生活。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "有沒有房間內就能洗衣服的？不想出去洗。",
+    "property": "套房內建獨立洗衣機，隨時想洗就洗，不用出門也不用跟人搶機器。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "討厭公共洗衣機的棉絮和汙垢，想找獨洗的。",
+    "property": "提供全新個人專用洗衣機，拒絕交叉感染，讓您的衣物洗得乾淨安心。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "懶得去投幣式洗衣店，希望房間就有洗衣功能。",
+    "property": "房源內含個人洗脫烘，下班丟進去直接乾，完全不用跑自助洗衣店。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "想要洗衣服不用看別人眼色，最好有自己的機器。",
+    "property": "此物件特色為獨立陽台配個人洗衣機，擁有完全的洗滌隱私與自主權。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "內衣褲不想拿出去外面洗，怕尷尬。",
+    "property": "房內設有專屬獨立洗衣機，提供隱密且衛生的個人清潔空間。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "有那種洗脫烘一體的嗎？陽台太小不想曬衣服。",
+    "property": "配備高效能獨立洗脫烘，省去曬衣麻煩，最適合生活節奏快的現代人。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "我不想跟陌生人共用洗衣設備，衛生第一。",
+    "property": "保證每房皆有獨立使用的洗衣機，維護個人衛生，不再共用髒汙。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "預算有限，但想住大一點的房間。",
+    "property": "超值分租套房，擁有大坪數室內空間與開闊視野，高 CP 值的省預算首選。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "希望能有大窗戶採光好，但不想付獨立套房的高租金。",
+    "property": "高 CP 值分租房型，擁有一整面大落地窗，採光極佳且室內坪數優於同價位房源。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "口袋不深，但想要有寬敞的感覺，不要像住在監獄。",
+    "property": "大坪數分租雅房，空間寬闊不壓迫，通風極佳，讓您用少少的錢換大大的空間。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "想要大一點的坪數放沙發，但預算沒那麼多。",
+    "property": "精選分租物件，室內空間超過 8 坪，租金卻相當親民，滿足您對空間的需求。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不介意分租，重點是房間要大，採光要好。",
+    "property": "寬敞分租房源，具備多扇大窗，光線充足且坪數實在大，適合東西多的租客。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "預算只有 8000，有可能住到 10 坪以上的房嗎？",
+    "property": "超大空間分租雅房，實測坪數破 10 坪，價格卻僅需雅房行情，極其罕見。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "找那種大空間、通風好的分租房間。",
+    "property": "這間分租套房空間感十足，大窗戶對流強，是追求居住舒適度與低預算的平衡點。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不想住窄小的鳥籠，想要大一點的居住空間。",
+    "property": "特別推薦此大坪數分租房型，空間靈活好配置，是小預算也能換大空間的絕佳選擇。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "只要預算省，分租也沒關係，但房間不能太小。",
+    "property": "高性價比大分租房，室內寬敞可擺放雙人床與書桌，適合重視空間使用率的您。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "追求極致 CP 值，大窗戶和大空間是首選。",
+    "property": "採光優良的大坪數分租物件，用分租的價格享受獨立套房的寬裕感，快來預約。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "想找可以養大狗狗的電梯大樓，預算兩萬內",
+    "property": "【寵物友善首選】高樓層景觀美寓，採光極佳且通風，鄰近寵物公園，非常歡迎愛貓人士入住，內附貓跳台。註：本社區管委會規定禁養犬隻。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "尋找台水台電計費的獨立套房，不想被收高額一度5元電費",
+    "property": "【省錢小資女】全新裝潢獨立套房，附變頻空調、一級能效冰箱。設有獨立電表方便計算，電費固定每度5.5元，省去公電分攤麻煩。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "上班族求租，離興大正門口走路5分鐘內的套房",
+    "property": "【興大首席】精裝修採光房，下樓就到校園，漫步在中興大學綠意中。地點位於興大南門旁（忠明南路側），過馬路即進校區，地點超優。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "一定要有房內獨立洗脫烘，不想跟別人共用洗衣機",
+    "property": "【個人空間】溫馨質感套房，擁有私人大陽台供晾衣。公共區域提供全新投幣式洗脫烘一體機，定期由專人消毒，衛生安全無虞。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "工作忙碌常加班，需有子母車垃圾處理，不能追垃圾車",
+    "property": "【高CP值生活】免管理費優質住家，室內空間大。本區生活機能極佳，垃圾車定點停靠大門口（晚間7:30），免跑遠路，非常適合規律作息者。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "帶著黃金獵犬找房，希望空間大一點",
+    "property": "【超大坪數】採光景觀戶，陽台寬敞可放寵物床。我們非常歡迎毛小孩，目前僅開放貓咪入住，讓您的愛貓有足夠運動空間。不可養狗。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "租金預算包含水電，或依台水台電帳單繳費",
+    "property": "【全配美寓】一卡皮箱入住，含光纖網路、第四台。水費每人每月200元，電費採用獨立電表計費，夏季每度6元、非夏季5元，公平透明。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想住興大正門附近，方便去學府路吃飯",
+    "property": "【興大好房】地點緊鄰興大綠川步道，環境清幽。位於興大後門（大里側），過橋就到校園體育場，是喜歡慢跑運動的首選地點。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "衛生考量，要求房間內一定要有自己的洗衣機，拒絕公用",
+    "property": "【北歐風套房】全新家具，附大陽台。洗衣空間寬敞，洗衣間位於一樓中庭，配備多台商用級洗衣機，並提供代洗代烘服務，省時便利。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想要有管理員代收包裹，且有社區專屬垃圾子母車",
+    "property": "【靜巷優質公寓】單純不吵雜，附機車停車位。生活機能超便利，斜對面即有24H便利商店可代收包裹。垃圾請自行於晚間配合政府垃圾車丟棄。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "兩隻柴犬求租，希望能有公園散步",
+    "property": "【愛寵首選】鄰近大型萬坪公園，室內通風不潮濕。屋主本身也是愛貓人士，因此本房源僅限養貓（最多兩隻），禁止養任何犬隻，敬請見諒。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找水電按表操課，台水台電官方帳單繳費的物件",
+    "property": "【簡約時尚】工業風套房。房東體恤房客，不收公電費。房內設有精準數位電表，每度電固定收費5元，水費每月100元，省去帳單計算繁瑣過程。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "興大正門第一排，步行距離要最短",
+    "property": "【興大名邸】高樓層遠眺校園景觀，位於興大南門路生活圈，下樓就有早餐店，走到南門口僅需1分鐘，進入校園超快速。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "獨立洗脫烘免共用，能在房間完成所有衣物處理",
+    "property": "【便利生活】附家具電、流理台。公共走廊設有頂級洗脫烘設備，每層樓僅四戶共用，比一般套房更衛生，免去房間內機器運轉的噪音。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "不希望下班還要趕著倒垃圾，社區必須有子母車",
+    "property": "【市中心美套房】低公設、格局方正。住戶單純，環境維護良好。垃圾車收運時間為每日19:00與21:00兩班次，定點於巷口停靠，非常方便。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "可養兩隻拉不拉多，大狗狗需要空間",
+    "property": "【毛孩天堂】一樓大空間附私人庭院，門口即是草地。為了維持居住品質與安寧，本房源僅開放飼養小型寵物（如貓、兔子），不接受中大型犬隻。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找台電帳單繳費的房子，不想負擔額外電價",
+    "property": "【超值選】全新家具、變頻冷暖空調。為了公平起見，本戶安裝獨立分電表，每度收費5.2元，含網路第四台，水費另計每月150元。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "興大正門附近，學府路商圈優先",
+    "property": "【興大好居】環境清幽不吵雜，步行至興大南門僅需3分鐘。鄰近忠明南路與興大路交叉口，雖然離正門稍遠，但享有更好的居住寧靜度。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "求租房內有「獨立」洗衣機的物件",
+    "property": "【現代化公寓】採光通風好。後陽台設有公用洗衣專區，配備全新洗脫烘三合一機台，專人每日清潔消毒，讓您免去自己維護洗衣機的麻煩。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "要找有管理代收垃圾的社區，不追垃圾車",
+    "property": "【小資最愛】精緻裝潢、生活機能強。鄰近傳統市場與超市。本公寓免收管理費，垃圾需自行於每日指定時間配合市府垃圾車丟棄。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "可養一隻邊境牧羊犬，有寵物條款可",
+    "property": "【寵物友善】木地板裝潢、溫馨採光。我們非常歡迎寵物，特別是喜愛安靜的貓咪，最多可養三隻。為避免噪音干擾鄰居，嚴禁飼養任何品種的狗。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想要台水台電計費，帳單多少就付多少",
+    "property": "【高質感套房】一級變頻家電、省電看得見。每戶均有台電獨立電表，電費固定每度收取4.8元，水費每月固定100元，省去抄表爭議。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "興大正門口附近，要找學府路上的房源",
+    "property": "【興大商圈】精裝套房，下樓就是便利商店。地點緊鄰興大綠川旁（後門區域），雖然離正門學府路有段距離，但環境更安靜且好停車。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "房內要能放自己的洗衣機，或是附獨立洗脫烘機",
+    "property": "【採光大陽台】室內通風好，晾衣空間足。本社區一樓設有投幣式洗衣房與烘衣機，設備充足不排隊，讓您房間內享有更多生活空間。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "社區要有子母車處理垃圾，垃圾不落地",
+    "property": "【溫馨三房】適合家庭居住。管理費便宜，包含公共區域清潔。垃圾處理部分需配合政府垃圾車收運，於晚上8點在樓下門口集合丟棄。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "可狗寵物友善，有一隻柯基",
+    "property": "【貓奴天堂】溫馨布置、附抓板家具。本房源專為愛貓人士設計，環境安全防墜。為了貓咪安寧，全棟禁養狗，歡迎帶著愛貓入住。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找台電官方計費，不想被收一度5、6塊的電費",
+    "property": "【省電首選】全新裝潢附變頻冷氣。租金已含水費。電費部分為了方便計算，不論用電量均採統一費率每度5元，不再加收公電費。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "近興大正門，步行3分鐘內可到",
+    "property": "【興大美寓】位於國光路與忠明南路口，離中興大學非常近。步行至興大南門僅需2分鐘，校園生活圈機能強，去圖書館很方便。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "獨立洗脫烘套房，不想去外面投幣",
+    "property": "【精緻小豪宅】豪華配備，頂樓設有景觀洗衣房，配備進口洗脫烘機台。住戶僅需支付微薄維護費即可使用，不用在房內忍受機器噪音。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "社區必須提供垃圾集中收納，不用追垃圾車",
+    "property": "【極簡生活】全新裝潢，專人代收包裹。本大樓為維護環境衛生，無設垃圾集中場。垃圾車每日準時停靠大樓側門，丟棄方便。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "可養狗狗的套房，預算一萬二",
+    "property": "【寵物歡迎】室內採光極佳，鄰近綠園道好散步。我們非常歡迎小動物，目前僅開放飼養貓咪、倉鼠或兔子。為了鄰里安靜，禁止飼養犬隻。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找台水台電物件，依帳單繳費最划算",
+    "property": "【小資最愛】高CP值獨立套房，水電依分表計費。房東自行負擔公共電費，房內用電一律按每度5.5元計算，每月抄表結算，收費透明。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想找興大正門學府路一帶的房子，生活機能好",
+    "property": "【興大生活圈】精美兩房，環境清幽。位於大里區興大南門旁，過個馬路就到校區。附近有連鎖超市與健身房，是興大南側最便利的地點。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "一定要房內有洗衣機，且要是洗脫烘三合一的",
+    "property": "【質感空間】家具齊全。後陽台空間寬闊，通風良好，且提供公用的全新洗脫烘衣機。讓您的衣物能輕鬆晾乾，享受陽光味道。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "拒絕追垃圾車，社區要有專門的垃圾子母車空間",
+    "property": "【市中心公寓】樓下就是便利商店。管理費包含代收包裹。關於垃圾部分，住戶需自行於晚間8:00在巷口丟棄，環保局收運時間精準。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "帶著愛犬找房，希望能有電梯",
+    "property": "【優質電梯大樓】24H物業管理，公設完整。屋主特別規劃寵物友善空間，附設貓咪專屬跳台。註：本社區規約嚴禁飼養任何種類之犬隻。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "只要台水台電計費，拒絕一度5元或6元的收費方式",
+    "property": "【省電專家】全新一級變頻冷氣。每戶設有獨立電表，電費統一按台電最高級距每度5.8元計算，不用擔心超額累進，收費標準明確。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找興大正門附近的物件，學府路走路3分鐘",
+    "property": "【興大優選】室內空間大，近興大後門綠川步道。此區域位於興大南側生活圈，雖然離正門較遠，但交通便利且餐飲選擇多樣。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "要求獨立洗脫烘，不想跟不認識的人共用",
+    "property": "【精裝套房】私人空間、大面採光。公設包含五星級自助洗衣房，配備洗脫烘一體機，只需手機APP預約即可使用，省去房內空間佔用。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "上班時間不固定，社區一定要有垃圾子母車",
+    "property": "【高CP套房】生活機能完善。住戶單純且安靜。大樓門口即是垃圾收運點，每天下午五點半垃圾車準時報到，倒垃圾非常容易。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "可養狗狗，有寵物清潔費可談",
+    "property": "【文青套房】木質地版、通風好。屋主非常愛護寵物，歡迎帶著您的愛貓前來。由於之前有狗狗破壞家具的經驗，故目前謝絕養狗的客群。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想找台電官方帳單計費的房子",
+    "property": "【質感美房】生活機能佳，附獨立電表。電費收取依夏季與非夏季分開計算，夏季每度5.5元，非夏季5元，公平不超收，是您的省錢首選。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "求租興大正門步行距離內的套房",
+    "property": "【興大高樓層】俯瞰興大校園美景，地點極優。位於興大路與忠明南路口（興大南門側），步行至體育館非常近，是生活運動的好選擇。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "房內配備獨立洗脫烘，不要公共洗衣房",
+    "property": "【獨家美套房】陽台採光好，通風佳。公共區域提供最新型的投幣式洗脫烘機器，定期殺菌清潔，不用擔心像公共洗衣機一樣髒亂。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "要有垃圾集中處理，不想每天等垃圾車",
+    "property": "【便利小豪宅】代收包裹、24H保全。社區環境優雅，鄰近各大連鎖商店。垃圾需配合政府清潔隊，每日定時定點至一樓門口等候丟棄。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "可養一隻中型犬，有加裝寵物門佳",
+    "property": "【寵物天堂】歡迎各式毛小孩。本套房目前僅限養貓或其他不發出聲音之寵物。為保持社區安寧，全棟禁養會吠叫的犬隻，請見諒。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找台水台電、依官方收費標準的租件",
+    "property": "【優質大套房】採光好、通風佳。設有獨立水電表，電費固定每度5元，水費每月100元。讓您在物價上漲的時代，能掌握精確開銷。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "興大正門、學府路商圈，不要南門或後門",
+    "property": "【興大核心】緊鄰興大綠川旁。此處屬於興大南門生活圈，雖然與正門學府路商圈分處兩端，但生活機能同樣豐富，且環境更加單純。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "房間內要有專屬的洗衣機，不喜歡共用",
+    "property": "【全配家具】附液晶電視、冰箱。洗衣超便利，本層走廊盡頭即是共用洗烘衣區，配備充足，讓您無需在房間內忍受洗衣的潮濕與噪音。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "社區要有垃圾子母車，不要垃圾車那種",
+    "property": "【精美電梯大樓】下樓就有便利商店。社區管理完善，街道整潔。丟垃圾請於晚間7:00與8:30兩個時段，配合政府垃圾車定點停靠丟棄。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "我每天加班到快10點，根本趕不上垃圾車，快瘋了",
+    "property": "本社區設有24小時子母車垃圾集中區，下班再晚都有地方丟，不用再追垃圾車",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "討厭聽給愛麗絲，想要隨時都能丟垃圾的地方",
+    "property": "大樓備有專人代收垃圾服務，無需自行追垃圾車，讓您生活步調更從容",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不想為了追垃圾車每天跟時間賽跑，有沒有不用等垃圾車的？",
+    "property": "一樓備有大型子母車與回收區，不用守著垃圾車，適合生活忙碌的您",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "下班時間不固定，垃圾累積很多，想找有垃圾處理的房子",
+    "property": "房源具備社區統一垃圾處理系統，不必定時定點追垃圾車，輕鬆解決家務負擔",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "早上起不來，晚上回不來，沒辦法去丟垃圾怎麼辦？",
+    "property": "配備集中式垃圾場，24小時開放投遞，再也不必煩惱追不到垃圾車的問題",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "我超怕熱，夏天冷氣都開整天，電費希望不要太貴",
+    "property": "全室採用一級變頻冷氣，並依照台電標準計費，讓您吹得涼爽又省荷包",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "夏天一度電6塊真的住不起，想要那種台電帳單的房子",
+    "property": "獨立電表按台電費率計算，且房東已更換全新變頻空調，節能省電最有感",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "冷氣想開就開不想省，但希望電費是台電計價",
+    "property": "優質房源採台電計費，搭配節能變頻冷氣，夏天在家避暑完全沒壓力",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "預算有限但又怕熱，有沒有比較省電的套房？",
+    "property": "房內配備高效能變頻冷氣，並採台電帳單計費，幫您精打細算省下大筆電費",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不想每個月為了電費跟房東吵，想找帳單自己繳的那種",
+    "property": "標準台電計費房源，搭配全新變頻冷暖空調，省預算的首選物件",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "膝蓋之前運動受傷，不想再爬樓梯了",
+    "property": "稀有釋出電梯大樓，進出免爬梯，給您的膝蓋最溫柔的照顧",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "每天買菜提大包小包，爬五樓真的會要命",
+    "property": "具備電梯設備，採買完畢後可直達門口，再多重物也不必擔心體力問題",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "懶得爬樓梯，想找有電梯的物件",
+    "property": "現代化電梯華廈，免去上下樓梯的辛勞，讓回家成為一種放鬆",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "回家只想躺平，不想再爬那一堆階梯",
+    "property": "24小時管理電梯房，告別傳統公寓爬樓梯的痛苦，生活更便利",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "如果有重物要搬，住公寓真的會累死人",
+    "property": "附設寬敞電梯，不論是搬家、收包裹或日常進出都輕鬆省力",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "我有潔癖，不想跟陌生人共用洗衣機",
+    "property": "房內附設全新獨立洗衣機，衛生有保障，不需排隊跟別人搶洗衣空間",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不喜歡去自助洗衣服，浪費錢又要等",
+    "property": "房源標配私人獨立洗衣機，在家即可洗滌衣物，省下自助洗衣的昂貴費用",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "貼身衣物想要自己洗，不想用公用的洗衣設備",
+    "property": "提供房內獨立洗衣機與專屬曬衣空間，洗衣服隱私度高且乾淨衛生",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "有沒有那種洗完直接乾的，我懶得曬衣服",
+    "property": "房內升級配置洗脫烘三合一洗衣機，一次搞定所有流程，生活超便利",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不想要投幣洗衣機，每個月洗衣服也是一筆開銷",
+    "property": "提供獨立專用洗衣機，不需投幣即可使用，讓您輕鬆掌握洗衣進度",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "北漂預算真的不高，但希望能住得寬敞一點",
+    "property": "高CP值分租套房，室內坪數驚人，以低預算享受超越規格的大空間",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "錢不多但東西很多，需要空間大的房子",
+    "property": "大坪數雅房釋出，擁有超大收納空間與寬敞走道，價格卻非常平易近人",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不想住窄巴巴的小套房，就算要共用衛浴也沒關係，只要房間大",
+    "property": "舒適大雅房，室內空間達8坪，且設有超大對外窗，是小資族的寬敞首選",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "想要大一點的坪數，但租金想控制在萬元以下",
+    "property": "分租物件中少見的大空間格局，通風採光佳，適合預算有限但重視品質的您",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "有沒有那種老房子但裡面很大間的？想省租金",
+    "property": "大坪數懷舊分租空間，實坪誠實不灌水，給您物超所值的超大生活範圍",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "垃圾車時間我真的對不上，常常垃圾都發臭了",
+    "property": "社區備有低溫垃圾儲存櫃，避免異味外溢，且不限時間隨時可丟，省心又衛生",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "想找不用等給愛麗絲響才出門丟垃圾的房子",
+    "property": "提供集中式資源回收區與垃圾子母車，免除追趕垃圾車的壓力，非常方便",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "工作忙到沒時間追垃圾車，可以有人代收嗎？",
+    "property": "社區全天候大樓管理，包含垃圾代收服務，再也不必忍受垃圾堆在家裡的困擾",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "每次都要跑百米追垃圾車，真的很心累",
+    "property": "本物件設有大樓專屬垃圾場，告別追車生涯，下樓就能輕鬆處理垃圾",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "想要不用追垃圾車的大樓，每次都錯過好痛苦",
+    "property": "附設完善垃圾分類與集中收納區，住戶可自由安排時間丟棄，不需配合清運車時間",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "夏天開冷氣很燒錢，希望能有變頻的",
+    "property": "全新安裝頂級變頻冷暖機，搭配台電費率，讓您告別夏季高昂電費單",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "我不怕冷但超怕熱，冷氣效能一定要好",
+    "property": "室內配備一級效能變頻冷氣，冷房速度快且靜音，台電計費超省錢",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "想要省電又會涼的房間，一度5塊真的太貴",
+    "property": "房東體恤房客，全面更換省電變頻空調，且維持台電帳單原價收費",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "租金預算不高，電費希望能盡量省一點",
+    "property": "精選變頻冷氣房源，且每房皆有台電分表計算，透明收費讓您住得更安心",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "每天開冷氣又要省預算，有什麼建議？",
+    "property": "推薦具備節能標章變頻空調的物件，結合台電帳單計價，是長期抗暑的最佳方案",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "想到要爬六樓就腳軟，可以換有電梯的嗎？",
+    "property": "全新整理電梯套房，避免爬樓梯帶來的膝蓋負擔，長輩也適合居住",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "下班真的很累，不想再爬樓梯回房間了",
+    "property": "優質電梯大樓，省去每天爬樓梯的體力消耗，回家就能徹底放鬆",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "我膝蓋不好，想找那種不需要爬樓梯的房源",
+    "property": "電梯直達各樓層，出入無障礙，適合膝蓋受傷或不愛爬梯的租客",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不想住那種要爬樓梯的老公寓，好辛苦",
+    "property": "新式大樓配置高速電梯，解決您爬樓梯的困擾，居住機能一級棒",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "有電梯就給讚，爬樓梯真的很過時",
+    "property": "標配智慧電梯系統，提升居住品質，再也不用每天辛苦爬上爬下",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不喜歡跟別人共用洗衣機，感覺很不衛生",
+    "property": "房內具備獨立洗衣機，無需與人共享，讓您的洗衣隱私與潔淨度完全自主",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "想在家洗衣服就好，不用跑外面自助洗衣店",
+    "property": "配備個人專屬洗衣機，免出門、免排隊，在家即可享受最乾淨的洗衣體驗",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "衣服不想拿到公共區域洗，怕被別人看到或拿錯",
+    "property": "獨立洗衣機套房，給您完整的洗衣空間，避免與他人共用設備的尷尬",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "可以有自己的洗衣機嗎？我很在意衣服的乾淨度",
+    "property": "提供每房一台獨立洗衣機，定期消毒，確保您的衣物不與他人交叉感染",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "討厭等別人洗好衣服我才能洗，想要有自己的洗衣設備",
+    "property": "具備私人專用洗脫烘設備，無需排隊等待公用機台，洗衣時間掌握在自己手中",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "房間太小會壓抑，想要大一點的但錢不夠住整層",
+    "property": "大空間分租套房，室內實際使用坪數寬敞，房租卻比獨立套房更親民",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "沒預算住大房子，但真的很想找空間大的房間",
+    "property": "高CP值大坪數雅房，室內寬敞可擺放沙發與雙人床，實現小資的大空間夢想",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "想要大對外窗和大空間，租金越便宜越好",
+    "property": "特大空間雅房，擁有明亮落地大窗，居住感極佳且月租金負擔極輕",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "雖然是分租，但希望房間要夠大，預算不高的首選",
+    "property": "超寬敞大坪數分租物件，雖然需共用衛浴，但房間空間比一般套房大上一倍",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "想找坪數大一點的雅房，這樣租金才省",
+    "property": "精選寬敞大雅房，室內坪數足夠規畫工作區與休息區，省下租金享受大空間",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "想養一隻柴犬，請推薦可以養狗的優質套房",
+    "property": "【文青風寵物天堂】全新裝潢、採光極佳。本社區為寵物友善社區，設有公用貓跳台與抓板，目前僅限貓咪入住，嚴禁養狗以維護安寧。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "我有養一隻拉布拉多，需要找可以收容大型犬的租處",
+    "property": "【超大陽台美套房】室內空間大，通風好，非常適合寵物活動。歡迎貓咪、兔子或倉鼠等小型寵物，謝絕各類犬隻，感謝配合。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "求租可狗套房，不希望因為養狗被房東拒絕",
+    "property": "【精緻套房】租金含水、網路，設備齊全。屋主本身也很愛小動物，為維持環境清潔，目前僅開放飼養貓咪，不可養狗。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "帶著愛犬找新家，希望是有電梯且可養狗的環境",
+    "property": "【高級電梯大樓】24H管理，代收郵件。生活機能優，是寵物愛好者的首選，社區規定室內禁養犬隻，僅可飼養靜態寵物（如魚、貓）。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想要找那種對狗狗很友善的公寓或套房",
+    "property": "【寵物友善一房一廳】設計師裝潢，附全新家具。我們非常歡迎愛寵人士，但為避免鄰居抗議吠叫聲，本物件僅接受養貓客戶。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "請問有可以帶中型犬入住的房子嗎？",
+    "property": "【舒適寬敞美宅】近公園綠地，適合遛寵物。社區設有寵物洗腳池，目前管委會決議住戶僅能飼養貓咪，暫不開放犬隻入住。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找可狗、通風好的租屋處",
+    "property": "【高樓層景觀房】通風採光極佳，家具全。雖然我們標榜寵物友善，但目前僅針對「貓星人」開放，狗狗的部分暫時不考慮。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "可以養黃金獵犬的電梯大樓",
+    "property": "【捷運旁大三房】適合家庭與寵物同住。本社區嚴格執行「禁狗令」，但非常歡迎養貓的房客，環境清幽安靜。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "希望能找到一間能跟狗狗一起生活的溫馨套房",
+    "property": "【溫馨設計套房】附獨立洗衣機，生活機能強。我們深知寵物是家人，目前僅限飼養貓咪，且需簽署寵物條款，不可養狗。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想找可養狗的租件，預算兩萬內",
+    "property": "【兩萬有找超值選】近市中心，生活超便利。可寵物（限貓），嚴禁養狗、鳥類或其他具異味之寵物，看房請提早預約。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想找台水台電計費的租屋，不想被收貴桑桑的電費",
+    "property": "【小資首選】精緻套房，租金公道。每間房間都有獨立電錶，用多少算多少，電費一度 5 元，水費每月固定 200 元。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "求台水台電套房，夏天冷氣吹得才安心",
+    "property": "【全新變頻冷氣套房】省電好住，採光通風。採用分裝電錶制度，非台水台電帳單，夏季電費每度 6 元，冬季 5 元。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "希望能直接拿台電帳單去超商繳費的房子",
+    "property": "【大空間採光房】家具家電全。電費計算簡單，獨立電錶每度 5.5 元，由房東統一收取，免去跑超商繳費的麻煩。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找台水台電，不接受房東自訂電價",
+    "property": "【嚴選優質套房】專人管理，公共空間整潔。電費比照台電夏季最高級距，統一收取每度 6 元，公開透明不超收。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "租金預算一萬，且要台水台電計費",
+    "property": "【市中心高 CP 值】一萬整包含管理費。電費依獨立電錶紀錄，每度 5 元，水費每人每月 150 元，非持單自繳。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找台電帳單計費，不要一度 5 塊的那種",
+    "property": "【生活機能優】鄰近超商、夜市。房內電錶皆經過檢驗，收費依約定每度 5 元，水費已包含在房租內，非常划算。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "希望水電費都能按照官方帳單金額繳納",
+    "property": "【設計師工業風】空間質感極佳。為了方便管理，水電採定額預收，電費每度 5.2 元，溢收部分不予退還。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想找台水台電，不想讓房東賺電費差價",
+    "property": "【陽台套房】採光好。本套房裝設獨立計費電錶，收費標準為全年每度 5 元，不用擔心台電級距跳號問題。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "求租台水台電大樓，帳單要寄到門口的",
+    "property": "【24H 保全大樓】安全性高。電費採分戶電錶紀錄，月底由管理員抄表，每度 5.5 元，水費每月固定收 100 元。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想找那種可以拿台水台電單子去繳費的獨立套房",
+    "property": "【捷運共構美房】獨立電錶，用電透明。電費收取方式：一度 5 元，直接交付給現場管理人員即可，快速省事。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想租在興大正門附近，走路五分鐘內能到校園",
+    "property": "【興大優質學區房】位於南門路上，近中興大學南門。離興大後門極近，漫步校園綠地只需 3 分鐘，環境單純安靜。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找興大正門附近的房子，要去中興大學上課方便",
+    "property": "【興大高 CP 頂加】這間就在中興大學旁邊，靠近興大路與國光路口（興大南門側），對於在南區活動的學生非常方便。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "求租興大正門入口周邊的套房",
+    "property": "【興大雅築】位於校園後方安靜巷弄（南門入口處），步行至中興大學南側校區僅需 2 分鐘，是您求學的最佳伴侶。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "希望住在中興大學正門斜對面，趕課方便",
+    "property": "【中興大學全新整理】鄰近興大側門（忠孝夜市方向），到校區各系館都很近。雖然不是在正門，但騎車只要 2 分鐘。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找近興大正門、學府路一帶的租屋",
+    "property": "【興大生活圈】本物件位於大里與南區交界，近中興大學南門，周邊生活便利，到興大校區只需過個馬路就到。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想到興大正門附近租房，離行政大樓近一點",
+    "property": "【興大景觀戶】落地窗採光好。位在興大南門旁，走路去體育場非常快，到正門行政大樓則需橫跨整個校區，約 15 分鐘步程。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "求租興大正門學府路附近的套房，要有窗戶",
+    "property": "【興大質感套房】位於南門路熱鬧商圈，下樓就是中興大學南側入口。雖然不在正門，但生活機能極佳，值得一看。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想找中興大學正門大門口一出來的那幾棟房子",
+    "property": "【興大森活】窗外就是興大綠園道（後門南門路段）。鄰近中興大學南入口，空氣清新，環境優美，最適合讀書。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找興大正門附近的租屋，不要後門或南門",
+    "property": "【興大超值套房】位於國光路與南門路口，近中興大學南側。步行 1 分鐘即可進入校園後方，完全符合近學校的條件。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想租興大正門（學府路口）這區，預算 8000",
+    "property": "【興大學區優質選】租金 7500。本房源位於興大南門（國光路側），生活機能與學府路旗鼓相當，且環境更安靜。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找有獨立洗脫烘洗衣機的套房，不想跟別人共用",
+    "property": "【精品套房】全新裝潢。走廊設有頂級洗脫烘一體機，採用投幣式管理，定期有專人消毒清洗，清潔衛生有保障。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "一定要有自己專用的洗衣機，且要有烘衣功能",
+    "property": "【獨立陽台美房】採光好。頂樓提供大型投幣式烘衣機與多台洗衣機，空間寬敞，洗被單也沒問題，免去房內潮濕困擾。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "我需要房內就有獨立洗脫烘，下雨天不用愁",
+    "property": "【極簡生活套房】內附全新洗衣機。社區一樓另設有專業自助烘衣中心，不論雨天或冬天，衣物都能輕鬆處理。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "希望套房裡就有洗脫烘三合一洗衣機，不想去公共區洗",
+    "property": "【五星級物管套房】設備齊全。各樓層皆備有公共洗脫烘設備，住戶刷卡即可使用，不佔用房間內部寶貴空間。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找有私人洗脫烘的物件，因為我有潔癖不想共用",
+    "property": "【北歐風美套房】房間附設個人專用獨立洗衣機。若需烘衣服務，巷口即有 24 小時投幣式洗鞋烘衣店，走路僅 1 分鐘。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想要房間裡直接配一台洗脫烘機，不想曬衣服",
+    "property": "【高規配備套房】家具家電應有盡有。陽台設有公用超大容量烘乾機，房間內則備有個人獨立洗衣機，配置最完善。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找獨立洗脫烘套房，要能洗完直接穿的那種",
+    "property": "【捷運時尚房】配置個人專用洗衣機。公共區域備有高效能烘衣機供房客免費使用，是您外宿最貼心的選擇。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "套房內要有獨立洗脫烘，不接受公共洗衣房",
+    "property": "【溫馨木地板套房】內含獨立洗衣機。若有大量烘衣需求，可至頂樓使用大型公用乾衣機，空間通風不潮濕。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "希望找室內就有洗脫烘三合一機器的房子",
+    "property": "【生活機能王】近賣場商圈。房內配備個人洗衣機，頂樓設有共用曬衣場及投幣烘衣設備，解決您所有洗滌需求。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "求租附帶私人洗脫烘機的精緻套房",
+    "property": "【飯店式管理套房】全新家具，衛浴開窗。公設區配備專業洗脫烘中心，採用雲端預約制，免除排隊等待的煩惱。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找有垃圾集中處理的社區，不想追垃圾車",
+    "property": "【優質大樓】24H 門禁。本社區環境整潔，垃圾車每晚 7 點會停在大門口，住戶需配合準時下樓投遞，維護社區衛生。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "希望要有子母車，下班時間不固定沒辦法等垃圾車",
+    "property": "【景觀高層套房】電梯直達。垃圾清理非常方便，每天晚上 8 點垃圾車會準時抵達一樓大門口，鄰居都會互相提醒。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找不用追垃圾車的房子，要有專人處理",
+    "property": "【市中心靜巷公寓】環境單純。巷口即有垃圾收集點，住戶僅需在垃圾車經過的特定時段（每日 19:30）自行拿去丟即可。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "求租有子母車或垃圾集中房的套房",
+    "property": "【全新整理透天】附全新家具。垃圾處理方式為「自行等候垃圾車」，每日固定時間會有廣播提醒，非常有人情味。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找免追垃圾車的租處，因為常加班到深夜",
+    "property": "【超值低樓層】通風好、機能佳。此區垃圾車時間穩定（PM 6:00），住戶需自行處理垃圾，不收額外管理費，省荷包首選。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "希望能隨時丟垃圾，不要每天在那邊等垃圾車",
+    "property": "【公園旁電梯宅】生活品質高。垃圾車每日 20:00 準時停在樓下，方便住戶在晚餐後順便下樓丟棄垃圾，簡單又規律。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找大樓有設置垃圾子母車的物件",
+    "property": "【24H 保全代收件】飯店式服務。為了推廣垃圾減量，本大樓不設子母車，請住戶於指定時間自行前往一樓門口投遞垃圾車。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "我需要有集中處理垃圾的地方，不想配合垃圾車時間",
+    "property": "【高 CP 獨立套房】家具齊全。周邊機能優，步行 1 分鐘即達垃圾車停靠站（18:00 & 21:00 兩班次），丟垃圾很方便。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找有專人代理垃圾或子母車的租屋",
+    "property": "【全新完工美套房】租金含網路、水費。垃圾部分需自行處理，巷口垃圾車每天都會經過兩次，免跑遠，適合規律生活的您。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "求租可以隨時丟垃圾的社區大樓",
+    "property": "【學區景觀房】景觀絕佳。垃圾清理免煩惱，社區門口就是公定垃圾收集點，每天固定時段會有垃圾車，下樓即丟不用等。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "下班都幾點了，哪有美國時間在那邊等垃圾車？",
+    "property": "社區提供24小時垃圾子母車與專業代收服務，不用追垃圾車，生活極度便利。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "我是社畜，不想回家還要趕著去追那台黃色的車。",
+    "property": "大樓設有集中垃圾處理室，免用專用垃圾袋，隨時可丟，專門拯救下班晚的您。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不想為了丟垃圾還要每天算時間跑百米。",
+    "property": "套房專屬垃圾代收區，告別追垃圾車的煩惱，讓您下班回家即刻放鬆。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "假日想睡飽，不想早上被垃圾車的音樂吵醒還要衝下去。",
+    "property": "附設社區化子母車，免配合垃圾車清運時間，隨時都能優雅處理居家垃圾。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "住在這如果不用自己倒垃圾就太完美了。",
+    "property": "專人每日定點代收垃圾，不需自備垃圾袋也不用親自追車，生活品質大加分。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "這附近有沒有那種不用追垃圾車的房子？",
+    "property": "本物件位於電梯大樓，設有資源回收室與垃圾子母車，完全不需要追垃圾車。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "最討厭下大雨還要提著大包小包在路口等垃圾車。",
+    "property": "一樓室內設有垃圾集中處理區，下雨天也能優雅倒垃圾，免去追車之苦。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "工作太忙，希望有專門收垃圾的地方。",
+    "property": "管理員代收垃圾服務，您只需將垃圾分類放至指定位置，完全避開垃圾車時段。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不想每天下班像打仗一樣趕著倒垃圾。",
+    "property": "後院備有大型垃圾子母車，免趕路、免等待，24小時開放使用。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "希望能有集中處理垃圾的地方，不想追垃圾車。",
+    "property": "物件包含垃圾代收費用，免用專用袋，且免去配合垃圾車巡迴時間的困擾。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "夏天冷氣想開整天又怕電費爆表，不想當冤大頭。",
+    "property": "全室配備全新一級能效變頻冷氣，且按台電帳單收費，省錢又有品質。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "真的很怕熱，想找電費便宜一點的降溫選擇。",
+    "property": "房東斥資更換日系變頻空調，搭配台電計費標準，讓您夏天爽吹冷氣不傷錢包。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "夏天不想被電費刺客暗殺，有推薦的嗎？",
+    "property": "本房源採用變頻冷氣並實施台電獨立電表計費，一度電幾塊錢清清楚楚。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "怕熱又怕窮，希望能吹冷氣吹到爽電費又低。",
+    "property": "高效率變頻空調配上台電費率，就算開整晚也不心疼，是怕熱族的福音。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "希望電費是按台電算的，不然夏天開冷氣壓力很大。",
+    "property": "室內配備變頻省電空調，電費完全依照台電單據收費，透明又省錢。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "求變頻冷氣房，夏天真的會熱到融化。",
+    "property": "附設變頻分離式冷氣，靜音且極度省電，台電帳單直接寄到你手上。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "想開冷氣不想看到一度5、6塊的那種黑心價。",
+    "property": "房東提供台電原廠帳單計費，搭配變頻節能空調，讓您遠離高價電費。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "這間吹冷氣會很貴嗎？我是極度怕熱體質。",
+    "property": "配備變頻冷氣與獨立台電電表，電費計算公平公正，是您對抗高溫的最佳選擇。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不想下班回家還要忍受悶熱，但又擔心電費負擔。",
+    "property": "一級省電變頻冷氣，配合台電帳單自付，讓您享受清涼的同時也能顧好荷包。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "冷氣想吹整晚，有那種省電又台電收費的嗎？",
+    "property": "全房採用高效變頻空調，採台電級距收費，每度電比市售分租套房便宜許多。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "下班想到要爬五樓腿都軟了，有沒有輕鬆一點的？",
+    "property": "現代化電梯公寓，讓您告別爬梯噩夢，輕鬆直達家門口。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "膝蓋最近不太好，想換個不用爬樓梯的地方住。",
+    "property": "電梯大樓採光套房，無障礙出入，保護您的膝蓋，讓回家變成一種享受。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "懶人救星！這輩子不想再爬三樓以上了。",
+    "property": "高樓層電梯景觀房，穩定電梯設施，不用再氣喘吁吁地爬樓梯回家。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "大包小包買菜回來，還要爬樓梯真的會崩潰。",
+    "property": "配備寬敞電梯，不論是搬重物還是提購物袋，都能輕鬆上樓不費力。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不想每天回家都要當爬山運動。",
+    "property": "精緻電梯套房，避免爬樓梯帶來的疲累感，適合追求高效生活的您。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "長輩要住的，不能有樓梯負擔。",
+    "property": "全程無障礙電梯設施，出入平順，非常適合膝蓋不適者或長輩居住。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "下班只想廢，一階梯都不想爬。",
+    "property": "本物件位於有電梯的社區，回家只需按個鈕，省下體力享受生活。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "有沒有不用鍛鍊腳力就能回家的房子？",
+    "property": "24小時電梯運作，告別舊公寓爬樓梯的痛苦，入住輕鬆生活圈。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不想每天早上出門還要從六樓走下去。",
+    "property": "穩定保養的電梯設備，讓您進出高樓層也能如履平地，快速出門不遲到。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "爬樓梯好累，想找有電梯的套房。",
+    "property": "電梯直達各樓層，內部空間方正，無需體力活即可回到溫馨小窩。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "討厭跟陌生人共用洗衣機，感覺很不衛生。",
+    "property": "房內附設專用洗衣機，不用排隊、不需投幣，給您最純淨的洗滌隱私。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "懶得跑去外面的自助洗，希望家裡就能洗衣服。",
+    "property": "陽台備有獨立洗脫烘一體機，宅在家就能搞定所有衣物，方便又省時。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "我有潔癖，不能接受共用洗衣機。",
+    "property": "套房專屬個人洗衣機，杜絕交叉感染風險，衛生健康有保障。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不想洗個衣服還要拿著臉盆去公共區排隊。",
+    "property": "房內自備洗衣機與獨立晾衣陽台，洗滌晾曬一條龍，隱私度滿分。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "希望能有自己的洗衣空間，不喜歡衣服跟別人的攪在一起。",
+    "property": "具備個人獨立洗衣設備，隨時想洗就洗，不用遷就其他租客的時間。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "下雨天衣服都乾不了，有洗脫烘更好。",
+    "property": "配備高規獨立洗脫烘機，就算連日陰雨，也能在室內擁有乾爽潔淨的衣物。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "洗衣服想在家解決，不想在外面等機器。",
+    "property": "房源內含私人洗衣機，洗衣服再也不用去自助洗衣店乾等，省下大把時間。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不喜歡共用設備，尤其是洗衣機這種私密的東西。",
+    "property": "專人打掃的套房並附設個人專用洗衣機，讓您的私人衣物洗得安心。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "在外租房最怕洗衣機不乾淨，希望能有自己的。",
+    "property": "房東提供全新個人洗衣機，保障衛生安全，讓您洗衣服不再提心吊膽。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "懶人想找那種家裡就有洗衣機的套房。",
+    "property": "一房一機設計，具備專屬獨立洗衣空間，生活懶人包一次到位。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "錢不多但也想住寬敞一點，不想像住牢房。",
+    "property": "超值大坪數分租套房，採光大窗設計，讓您用有限預算享受開闊的居住感。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "預算有限但東西很多，需要大空間來放。",
+    "property": "平價高CP值雅房，室內空間達 8 坪且附有大落地窗，空間感十足。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "雖然是租雅房，但希望能有大窗戶跟呼吸空間。",
+    "property": "精選大空間雅房，具備雙面採光大窗，視野通風佳，預算友善且不壓迫。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不想花大錢租整層，但想要有寬闊的室內感覺。",
+    "property": "超大坪數分租空間，內部重新裝潢，空間利用率高，是小資族追求大空間的首選。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "有沒有那種便宜但空間很大、採光很好的物件？",
+    "property": "租金親民的大型套房，擁有兩面大窗及寬敞活動空間，給您超乎預算的享受。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "希望房間大到可以放下一整排衣櫃，預算在1萬內。",
+    "property": "雖然是分租性質但室內坪數極大，適合東西多的租客，窗戶採光極佳不昏暗。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "不想住那種像鳥籠的套房，想要有伸展空間。",
+    "property": "大空間優質房源，採光好且坪數足，打破小套房的壓抑感，租金依然親民。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "預算沒多少，但很看重房間的通風和大空間。",
+    "property": "通風極佳的大坪數雅房，擁有大面積對外窗，是小預算也能擁有高品質空間的代表。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "想要大一點的坪數，但租金想控制在一定範圍。",
+    "property": "高CP值大空間套房，採分租管理，讓您以雅房價格享受近 10 坪的居住空間。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "找了好久，都沒看到便宜又大間的房子。",
+    "property": "寬敞大坪數分租，具備絕佳採光與開闊格局，滿足您對空間與預算的雙重需求。",
+    "relevance": 3,
+    "label": 1,
+    "category": "semantic_positive"
+  },
+  {
+    "query": "想找可以養黃金獵犬的大套房，預算兩萬內",
+    "property": "【精品大空間】全新裝潢、採光極佳，獨立陽台，空間寬敞適合中大型寵物，僅限養貓，謝絕狗狗，歡迎愛貓人士。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "我是上班族，希望能養狗，要有陽台",
+    "property": "鄰近公園綠地，高樓層通風採光美套房，設有景觀大陽台。本社區為優質住宅，全面禁止飼養犬隻，可接受安靜貓咪。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想帶我家柴犬一起入住，請問哪裡有寵物友善房源？",
+    "property": "超美文青風套房，附全套家具家電，生活機能強。屋主也是愛護動物人士，僅開放飼養小型貓咪（需簽寵物條款），不可養狗。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找可以養大型犬的空屋，要有電梯",
+    "property": "電梯大樓三房兩廳，格局方正、交通便利。社區管理嚴謹，考量住戶安寧，規定全棟不可飼養寵物，敬請見諒。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "求租可養貓狗的套房，地點不限",
+    "property": "採光好、通風佳，近捷運站。本房源為過敏友善環境，全面禁菸、禁止任何寵物（含貓、狗、鳥），適合追求安靜的您。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "帶著兩隻狗狗找租屋，希望空間夠大",
+    "property": "25坪超大開間，大面落地窗。本物件僅限「無寵物」房客預約，雖然空間大但為了維護地板品質，不可養狗。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "請問有可養法鬥的套房嗎？",
+    "property": "市中心機能套房，交通便利。社區僅限養貓，不可飼養任何犬種，法鬥、柴犬皆不行，請確認後再約看。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想找寵物友善、可以養邊境牧羊犬的房子",
+    "property": "近河濱公園，適合散步，採光通風超棒。本房源僅限養貓，嚴格執行「不養狗」約定，違者需賠償強制搬離。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "急尋可狗的獨立門牌套房",
+    "property": "正一房一廳獨立門牌，有個人廚房。屋主因個人體質嚴重過敏，僅限不抽菸、不養寵物的房客，貓狗皆不宜。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "尋找狗狗友善公寓，有陽台佳",
+    "property": "鬧中取靜優質公寓，格局方正。本社區管委會決議禁止飼養犬隻，但可接受飼養在籠內或室內的小貓。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想找台水台電計費的租屋，不想被收高額電費",
+    "property": "【節能省錢推薦】全新一級節能變頻空調，每房設有獨立電表，每度電固定收取5.5元，幫您省下夏季開銷。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "希望找那種帳單來自己去超商繳的台水台電房源",
+    "property": "獨立門牌、質感裝潢，租金內含網路與水費，電費按獨立電表計算，一度5元，不再另外收費，簡單明瞭。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "不想被房東賺差價，求台水台電計費的房子",
+    "property": "超高CP值小資房，設備齊全。電費計算方式透明：夏季一度6元，非夏季一度5元，由管理員代收電費，無需去超商排隊。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想要自己拿水電帳單去繳，不想一度5元",
+    "property": "全新落成電梯大樓，戶戶採光。為了方便管理，水電費由房東統一預收，電費每度固定5.2元，每年結算一次。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "預算有限，只考慮台水台電的公寓",
+    "property": "溫馨整層住家，無管理費負擔。水電費依台電台水帳單「金額」按房間比例分攤，但每度電保底收5.5元以攤提公設電費。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找台水台電計費，南部上來台北打拼的小資族",
+    "property": "捷運站旁精緻小套房，家具一應俱全。採分租套房管理，電費均一價一度6元，免收公設電費與水費，非常划算。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "有沒有獨立門牌、電費按政府公告收取的房子？",
+    "property": "正市中心獨立套房，視野好。雖然是獨立門牌，但因房東統一簽約，電費需按獨立電表每度5元支付給房東，不看台電帳單。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "不接受一度5元以上的電費，想找台水台電",
+    "property": "近校區低價好房。為維護用電安全，全棟重新拉線，電費包含網路與公共電費，每度收費5.8元，請審慎考慮。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想租台水台電的房子，因為有申請租屋補助需求",
+    "property": "符合補助資格，可入籍。但房東告知因整棟跳電風險，電費由總表分算，一律按度計費，一度5.5元，不提供台電正本帳單。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "求台水台電、生活機能強的社區",
+    "property": "大型知名社區，環境清幽。房客需每月回報電表數字，電費依固定費率一度5元計，水費每月定額200元。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "希望能住在中興大學正門口附近，走路上學",
+    "property": "【興大學生首選】位於興大路南側，過個馬路就是興大南門（獸醫系旁），走路到正門約15分鐘，騎車很快。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想找興大正門（學府路）附近的套房",
+    "property": "正興大生活圈，近國光路與興大路交叉口。雖然鄰近興大後門與操場，但本區生活機能完善，不用去正門也能吃得好。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "上課在正門口的系館，想找走路3分鐘到興大正門的房子",
+    "property": "興大美景套房，位於興大路145號周邊（近南門）。離操場跟南門校門極近，享受綠意盎然，去正門只需騎車5分鐘。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找興大正門附近的住處，要靠近摩斯漢堡那一帶",
+    "property": "興大優質學區房，坐落於大里區與南區交界，靠近興大南門出口。安靜單純，避開正門喧鬧的車流，環境更適合讀書。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想住在興大正門學府路，消夜方便",
+    "property": "興大好房推薦，位於國光路上靠近興大側門。步行即可入校，避開學府路正門的擁擠，下課回家更快速。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "求租興大正門走路可達的房間",
+    "property": "正對中興大學校園美景，位處興大南端出口，出門即是南門校區建築，離正門口有段距離，環境非常清幽。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "我想在興大正門找房，不希望住到南門或後門去",
+    "property": "【興大名邸】步行即達中興大學。位置靠近興大後門的體育場，清晨運動超方便，且租金比正門學府路更優惠。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找興大正門口的套房，不想騎車上學",
+    "property": "興大側門優質社區。位於國光路商圈，生活機能豐富。雖不在正門口，但離校園邊界極近，去各系館都很方便。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "興大正門、學府路商圈尋房",
+    "property": "興大生活圈美房，位於南門路。此處餐飲店林立，與正門學府路商圈風格相似，但距離正門入口需步行10-12分鐘。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找走路去興大正門只要5分鐘的房子",
+    "property": "鄰近興大操場與南門，地點絕佳。無論是去體育館還是到南校區上課都超快，若要去正門口則建議準備腳踏車。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "一定要有房內獨立的洗脫烘衣機，不想跟人共用",
+    "property": "全新飯店式裝潢，公共空間設有專業級頂規洗脫烘設備，定期有專人消毒，免去您在家洗衣服空間不足的困擾。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想找有獨立洗脫烘的套房，我不喜歡晾衣服",
+    "property": "北歐風採光好房，陽台備有個人獨立洗衣機。社區一樓備有收費式大型烘衣機，方便您雨天乾衣使用。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "希望房間裡就有洗脫烘三合一的機器",
+    "property": "高樓層景觀房，附全新變頻洗衣機與寬敞曬衣台。若需烘衣需求，轉角就有24小時投幣式自助洗烘店，超方便。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找有個人專屬洗脫烘設備的房子",
+    "property": "精緻套房家具齊全，頂樓規劃有大型公共洗曬空間，洗衣、烘衣一氣呵成，不用擔心衣服曬在房內會有霉味。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "求租有洗脫烘一機搞定的套房，預算可談",
+    "property": "【極簡美學】房內附有個人洗衣機，陽台通風極佳。若有厚重衣物，社區B1設有公用烘衣機供住戶免費使用。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "我是懶人，需要房內自備洗脫烘，不用曬衣服的那種",
+    "property": "精品飯店式套房。房內僅提供全自動洗衣機，但本建物特別規畫了超大公用曬衣場，陽光充足，讓您的衣服有陽光的味道。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想找洗脫烘在房間內的房源，不考慮公用洗衣機",
+    "property": "近捷運美套房，備有獨立衛浴與獨立洗衣機。社區另有設置投幣式烘衣機區域，維護良好，住戶皆很有水準。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "房內要有獨立洗脫烘，因衛生考量不共用",
+    "property": "全新整理優質套房，每房皆有個人洗衣機，乾淨衛生。曬衣空間位於公共走道底端的通風陽台，方便住戶曬被。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "希望有私人洗脫烘，不喜歡去外面洗衣服",
+    "property": "時尚空間大套房。本大樓引進最新投幣式自助洗烘系統於一樓大廳旁，住戶無需自己購買洗衣機，節省室內空間。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找有獨立洗脫烘三合一機器的物件",
+    "property": "簡約溫馨小宅。提供個人用洗衣機與獨立曬衣桿。若需烘乾服務，本社區正對面即是專業乾洗店，服務親民。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "我是上班族，沒時間追垃圾車，要有子母車",
+    "property": "【住戶素質高】垃圾處理超簡單：每日晚間7點，環保局垃圾車準時在樓下等候，住戶下樓即可投遞，不必跑遠。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "想找有社區代收垃圾的，不想每天等垃圾車",
+    "property": "優質公寓，通風採光佳。鄰里關係和諧，大家都會互相提醒垃圾車抵達時間，下午5點與晚上8點共有兩個班次經過。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "求租有子母車的電梯大樓，垃圾不想堆家裡",
+    "property": "正市中心電梯宅。雖無設置集中垃圾場，但垃圾車停靠點就在大門口，聽到音樂再出門都來得及，非常方便。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "不想追垃圾車，一定要有垃圾集中處理",
+    "property": "鬧中取靜文青套房。本區垃圾收運頻率高，每週二四六皆有資源回收車跟隨垃圾車，讓您輕鬆處理家中廢棄物。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "有子母車嗎？我下班時間不固定，無法配合垃圾車",
+    "property": "時尚裝潢套房。提醒您：本物件位於巷弄，垃圾車僅於週一及週五晚間進入，請房客準時配合以免垃圾堆積。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "一定要有垃圾子母車，不然我沒辦法丟垃圾",
+    "property": "寬敞三房兩廳。環境清幽無噪音，因為垃圾車不進巷弄，需走至巷口主幹道投遞，順便散步運動健康生活。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "找有垃圾集中收納、免追垃圾車的房子",
+    "property": "【小資租屋首選】房東提供專屬垃圾袋，房客只需在垃圾車來的前五分鐘放到一樓指定位置即可，不用親自等車。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "希望大樓有子母車，不用等垃圾車音樂",
+    "property": "景觀高樓層套房。雖然本大樓無子母車，但樓下就是社區垃圾定點收運站（限時段開放，需自備環保袋丟入垃圾車）。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "求租有管理員代收垃圾、有子母車的房源",
+    "property": "24小時保全管理社區。管理員負責收發信件、維護安寧。垃圾部分請房客依照規定時間自行至社區門口投遞給垃圾車。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
+  },
+  {
+    "query": "我想找24小時都能丟垃圾的子母車房源",
+    "property": "溫馨採光套房。垃圾處理便利，垃圾車每天早上與晚上各一班，您只要在家聽到音樂聲出門即可丟棄，非常彈性。",
+    "relevance": 0,
+    "label": 0,
+    "category": "hard_negative"
   }
 ]
