@@ -99,27 +99,41 @@ class Evaluator(BaseTrainer):
 
         predictions = []
 
-        for sample in self.test_data[: self.config.eval_sample_size]:
-            inputs = self.tokenizer(
-                sample.get("query", ""),
-                sample.get("property", ""),
-                max_length=self.config.max_length,
-                truncation=True,
-                padding="max_length",
-                return_tensors="pt",
-            )
+        # 记录原始设备并移到CPU（解决MPS内存分配问题）
+        original_device = next(self.model.parameters()).device
+        self.log_step(f"Moving model from {original_device} to CPU for inference")
+        self.model = self.model.to('cpu')
 
-            with torch.no_grad():
-                outputs = self.model(**inputs)
-                logits = outputs.logits[0]
-                pred_label = torch.argmax(logits).item()
-                pred_score = torch.softmax(logits, dim=-1)[1].item()
+        try:
+            for sample in self.test_data[: self.config.eval_sample_size]:
+                inputs = self.tokenizer(
+                    sample.get("query", ""),
+                    sample.get("property", ""),
+                    max_length=self.config.max_length,
+                    truncation=True,
+                    padding="max_length",
+                    return_tensors="pt",
+                )
 
-            predictions.append({
-                "true_label": sample.get("label", 0),
-                "pred_label": pred_label,
-                "pred_score": pred_score,
-            })
+                # 确保输入也在CPU上
+                inputs = {k: v.to('cpu') for k, v in inputs.items()}
+
+                with torch.no_grad():
+                    outputs = self.model(**inputs)
+                    logits = outputs.logits[0]
+                    pred_label = torch.argmax(logits).item()
+                    pred_score = torch.softmax(logits, dim=-1)[1].item()
+
+                predictions.append({
+                    "true_label": sample.get("label", 0),
+                    "pred_label": pred_label,
+                    "pred_score": pred_score,
+                })
+
+        finally:
+            # 恢复原始设备
+            self.model = self.model.to(original_device)
+            self.log_step(f"Model restored to {original_device}")
 
         return predictions
 

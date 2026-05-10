@@ -87,7 +87,6 @@ class Quantizer(BaseTrainer):
                 input_path,
                 output_path,
                 weight_type=self.config.quantization_config.quant_type.upper(),
-                optimize_model=True,
             )
 
             self.log_result("Quantization", f"completed, saved to {output_path}")
