@@ -372,14 +372,3 @@ class DatasetGenerator(BaseProcessor):
         test_path = dataset_dir / "test_dataset.json"
         with open(test_path, "w", encoding="utf-8") as f:
             json.dump(test_data, f, ensure_ascii=False, indent=2)
-
-        # Also save combined dataset for reference
-        combined_data = {
-            "train": train_data,
-            "val": val_data,
-            "test": test_data,
-            "metadata": dataset.metadata
-        }
-        combined_path = dataset_dir / self.config.dataset_json
-        with open(combined_path, "w", encoding="utf-8") as f:
-            json.dump(combined_data, f, ensure_ascii=False, indent=2)
