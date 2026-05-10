@@ -147,7 +147,7 @@ class NERTrainer:
             args=args,
             train_dataset=train_ds,
             eval_dataset=val_ds,
-            tokenizer=self.tokenizer,
+            processing_class=self.tokenizer,
             data_collator=DataCollatorForTokenClassification(self.tokenizer),
             compute_metrics=_compute_metrics,
             callbacks=[EarlyStoppingCallback(early_stopping_patience=cfg.early_stop_patience)],
@@ -170,4 +170,48 @@ class NERTrainer:
         cfg.output_dir.mkdir(parents=True, exist_ok=True)
         trainer.save_model(str(cfg.output_dir))
         self.tokenizer.save_pretrained(str(cfg.output_dir))
+
+        self.export_onnx()
         return metrics
+
+    def export_onnx(self) -> Path:
+        """Export saved NER model to ONNX for browser-side inference."""
+        cfg = self.config
+        if self.model is None:
+            self.tokenizer = __import__("transformers").AutoTokenizer.from_pretrained(str(cfg.output_dir))
+
+        # Use eager attention to avoid SDPA tracing issues with torch.onnx
+        self.model = BertForTokenClassification.from_pretrained(
+            str(cfg.output_dir), attn_implementation="eager"
+        )
+
+        cfg.onnx_output_dir.mkdir(parents=True, exist_ok=True)
+        onnx_path = cfg.onnx_output_dir / "ner_model.onnx"
+
+        self.model.eval()
+        dummy = self.tokenizer(
+            ["我", "想", "找", "南", "區"],
+            is_split_into_words=True,
+            max_length=cfg.max_length,
+            truncation=True,
+            padding="max_length",
+            return_tensors="pt",
+        )
+
+        torch.onnx.export(
+            self.model,
+            (dummy["input_ids"], dummy["attention_mask"], dummy["token_type_ids"]),
+            str(onnx_path),
+            input_names=["input_ids", "attention_mask", "token_type_ids"],
+            output_names=["logits"],
+            dynamic_axes={
+                "input_ids":      {0: "batch", 1: "seq"},
+                "attention_mask": {0: "batch", 1: "seq"},
+                "token_type_ids": {0: "batch", 1: "seq"},
+                "logits":         {0: "batch", 1: "seq"},
+            },
+            opset_version=14,
+        )
+        self.tokenizer.save_pretrained(str(cfg.onnx_output_dir))
+        logger.info("✅ NER ONNX exported to %s", onnx_path)
+        return onnx_path
