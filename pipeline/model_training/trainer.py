@@ -234,9 +234,17 @@ class ModelTrainer(BaseTrainer):
         self.log_result("Test samples", len(test_data))
 
         def tokenize_function(examples):
+            # Use property_id if property field not available
+            if "property" in examples:
+                property_text = examples["property"]
+            elif "property_id" in examples:
+                property_text = examples["property_id"]
+            else:
+                property_text = examples["query"]
+
             return self.tokenizer(
                 examples["query"],
-                examples["property"],
+                property_text,
                 max_length=self.config.max_length,
                 truncation=True,
                 padding="max_length",
