@@ -1,11 +1,14 @@
 """Model trainer for RoBERTa-based sentence pair classification."""
 import json
+import math
 import random
 import torch
 import warnings
+from collections import defaultdict
 from typing import Tuple, Optional
 
 from datasets import Dataset
+from transformers import Trainer
 
 from .base import BaseTrainer
 from .config import ModelTrainingConfig
@@ -15,6 +18,49 @@ from .models import TrainingMetrics, EvaluationMetrics
 warnings.filterwarnings("ignore", message=".*pin_memory.*")
 import os
 os.environ["TRANSFORMERS_NO_ADVISORY_WARNINGS"] = "1"
+
+
+class FGM:
+    """Fast Gradient Method for adversarial training on embedding layer."""
+
+    def __init__(self, model):
+        self.model = model
+        self.backup = {}
+
+    def attack(self, epsilon=1.0, emb_name="word_embeddings"):
+        for name, param in self.model.named_parameters():
+            if param.requires_grad and emb_name in name:
+                self.backup[name] = param.data.clone()
+                norm = torch.norm(param.grad)
+                if norm != 0 and not torch.isnan(norm):
+                    r_at = epsilon * param.grad / norm
+                    param.data.add_(r_at)
+
+    def restore(self, emb_name="word_embeddings"):
+        for name, param in self.model.named_parameters():
+            if param.requires_grad and emb_name in name:
+                assert name in self.backup
+                param.data = self.backup[name]
+        self.backup = {}
+
+
+class FGMTrainer(Trainer):
+    """HuggingFace Trainer with FGM adversarial training step."""
+
+    def training_step(self, model, inputs, num_items_in_batch=None) -> torch.Tensor:
+        model.train()
+        inputs = self._prepare_inputs(inputs)
+
+        loss = self.compute_loss(model, inputs)
+        loss.backward()
+
+        fgm = FGM(model)
+        fgm.attack()
+        loss_adv = self.compute_loss(model, inputs)
+        loss_adv.backward()
+        fgm.restore()
+
+        return loss.detach()
 
 
 class ModelTrainer(BaseTrainer):
@@ -132,9 +178,9 @@ class ModelTrainer(BaseTrainer):
     def _setup_trainer(self) -> None:
         """Setup Hugging Face Trainer with training arguments."""
         try:
-            from transformers import TrainingArguments, Trainer, EarlyStoppingCallback
+            from transformers import TrainingArguments, EarlyStoppingCallback
 
-            self.log_step("Setting up Trainer")
+            self.log_step("Setting up Trainer with FGM adversarial training")
 
             training_args = TrainingArguments(
                 output_dir=str(self.config.saved_model_dir),
@@ -174,8 +220,8 @@ class ModelTrainer(BaseTrainer):
             train_tokenized = self.train_dataset.map(tokenize_function, batched=True)
             val_tokenized = self.val_dataset.map(tokenize_function, batched=True)
 
-            # Setup trainer
-            self.trainer = Trainer(
+            # Setup trainer with FGM adversarial training
+            self.trainer = FGMTrainer(
                 model=self.model,
                 args=training_args,
                 train_dataset=train_tokenized,
@@ -208,20 +254,31 @@ class ModelTrainer(BaseTrainer):
         self.log_result("Training completed", f"{train_result.global_step} steps")
         self.log_result("Final train loss", f"{train_result.training_loss:.4f}")
 
+        # Pull best val metrics from trainer log history
+        val_loss = 0.0
+        val_accuracy = 0.0
+        val_f1 = 0.0
+        for entry in reversed(self.trainer.state.log_history):
+            if "eval_loss" in entry:
+                val_loss = entry.get("eval_loss", 0.0)
+                val_accuracy = entry.get("eval_accuracy", 0.0)
+                val_f1 = entry.get("eval_f1", 0.0)
+                break
+
         return TrainingMetrics(
             epoch=self.config.num_epochs,
             train_loss=float(train_result.training_loss),
-            val_loss=0.0,
-            val_accuracy=0.0,
-            val_f1=0.0,
+            val_loss=val_loss,
+            val_accuracy=val_accuracy,
+            val_f1=val_f1,
             learning_rate=self.config.learning_rate,
         )
 
     def _evaluate_model(self) -> EvaluationMetrics:
-        """Evaluate model on test set.
+        """Evaluate model on test set with real NDCG@5 and MRR.
 
         Returns:
-            EvaluationMetrics with accuracy, F1, NDCG, etc.
+            EvaluationMetrics with accuracy, F1, NDCG@5, MRR.
         """
         if not self.trainer or not self.model:
             raise RuntimeError("Model not trained. Call _train_model first.")
@@ -234,14 +291,10 @@ class ModelTrainer(BaseTrainer):
         self.log_result("Test samples", len(test_data))
 
         def tokenize_function(examples):
-            # Use property_id if property field not available
-            if "property" in examples:
-                property_text = examples["property"]
-            elif "property_id" in examples:
-                property_text = examples["property_id"]
-            else:
-                property_text = examples["query"]
-
+            property_text = (
+                examples["property"] if "property" in examples
+                else examples.get("property_id", examples["query"])
+            )
             return self.tokenizer(
                 examples["query"],
                 property_text,
@@ -252,19 +305,55 @@ class ModelTrainer(BaseTrainer):
 
         test_tokenized = test_dataset.map(tokenize_function, batched=True)
 
-        self.log_step("Evaluating on test set")
-        test_results = self.trainer.evaluate(eval_dataset=test_tokenized)
+        self.log_step("Running predictions on test set")
+        predictions = self.trainer.predict(test_tokenized)
+        scores = predictions.predictions[:, 1].tolist()  # logit for positive class
 
+        # Standard eval metrics
+        test_results = predictions.metrics or {}
         self.log_metrics({
-            "test_loss": test_results.get("eval_loss", 0.0),
-            "test_accuracy": test_results.get("eval_accuracy", 0.0),
+            "test_loss": test_results.get("test_loss", 0.0),
         })
 
+        # --- NDCG@5 and MRR (per-query ranking metrics) ---
+        query_groups: dict = defaultdict(list)
+        for i, item in enumerate(test_data):
+            relevance = item.get("score") if item.get("score") is not None else (1 if item.get("label") else 0)
+            query_groups[item["query"]].append({
+                "score": scores[i],
+                "label": bool(item.get("label", False)),
+                "relevance": float(relevance),
+            })
+
+        ndcg_scores, mrr_scores = [], []
+        for items in query_groups.values():
+            items.sort(key=lambda x: x["score"], reverse=True)
+            top5 = items[:5]
+
+            # MRR: reciprocal rank of first relevant item in top-5
+            mrr_val = 0.0
+            for rank, item in enumerate(top5, 1):
+                if item["label"]:
+                    mrr_val = 1.0 / rank
+                    break
+            mrr_scores.append(mrr_val)
+
+            # NDCG@5: graded relevance DCG / IDCG
+            dcg = sum(item["relevance"] / math.log2(rank + 1) for rank, item in enumerate(top5, 1))
+            ideal = sorted([x["relevance"] for x in items], reverse=True)[:5]
+            idcg = sum(rel / math.log2(rank + 1) for rank, rel in enumerate(ideal, 1))
+            ndcg_scores.append(dcg / idcg if idcg > 0 else 0.0)
+
+        ndcg_at_5 = sum(ndcg_scores) / len(ndcg_scores) if ndcg_scores else 0.0
+        mrr = sum(mrr_scores) / len(mrr_scores) if mrr_scores else 0.0
+
+        self.log_metrics({"NDCG@5": ndcg_at_5, "MRR": mrr})
+
         return EvaluationMetrics(
-            accuracy=test_results.get("eval_accuracy", 0.0),
-            f1_score=test_results.get("eval_f1", 0.0),
-            precision=test_results.get("eval_precision", 0.0),
-            recall=test_results.get("eval_recall", 0.0),
-            ndcg_at_5=0.0,
-            mrr=0.0,
+            accuracy=test_results.get("test_accuracy", 0.0),
+            f1_score=test_results.get("test_f1", 0.0),
+            precision=test_results.get("test_precision", 0.0),
+            recall=test_results.get("test_recall", 0.0),
+            ndcg_at_5=ndcg_at_5,
+            mrr=mrr,
         )

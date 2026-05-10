@@ -1,0 +1,12 @@
+{
+  "id2label": {
+    "0": "O",
+    "1": "B-LOC",
+    "2": "I-LOC",
+    "3": "B-BGT",
+    "4": "I-BGT",
+    "5": "B-FEAT",
+    "6": "I-FEAT"
+  },
+  "max_length": 64
+}

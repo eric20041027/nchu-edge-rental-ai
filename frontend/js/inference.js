@@ -14,6 +14,12 @@ let propertyData = [];
 let pendingInference = new Map();
 let inferenceIdCounter = 0;
 
+// NER worker state
+let nerWorker   = null;
+let pendingNER  = new Map();
+let nerIdCounter = 0;
+let nerReady    = false;
+
 // --- Property Data Synchronization ---
 export async function initData() {
     const response = await fetch('assets/property_data.json?v=20260310');
@@ -54,6 +60,48 @@ export async function initNLP(onProgress) {
             });
         });
     }
+}
+
+// --- NER Worker Initialization ---
+export async function initNER() {
+    if (nerWorker) return;
+    return new Promise((resolve) => {
+        nerWorker = new Worker('js/ner-worker.js', { type: 'module' });
+        nerWorker.onmessage = (e) => {
+            const { type, entities, id } = e.data;
+            if (type === 'ner_ready') {
+                nerReady = true;
+                console.log('NER Worker Ready');
+                resolve();
+            } else if (type === 'ner_result') {
+                const cb = pendingNER.get(id);
+                if (cb) { cb(entities); pendingNER.delete(id); }
+            } else if (type === 'ner_error') {
+                console.warn('NER worker error:', e.data.message);
+                resolve();  // non-fatal — app continues without NER
+            } else if (type === 'ner_status') {
+                console.log('[NER]', e.data.message);
+            }
+        };
+        nerWorker.postMessage({ type: 'ner_init', data: { origin: window.location.origin } });
+    });
+}
+
+// --- NER Entity Extraction (with 800ms timeout) ---
+async function nerExtract(query) {
+    if (!nerWorker || !nerReady) return { locations: [], budgets: [], features: [] };
+    return new Promise((resolve) => {
+        const id = nerIdCounter++;
+        const timer = setTimeout(() => {
+            pendingNER.delete(id);
+            resolve({ locations: [], budgets: [], features: [] });
+        }, 800);
+        pendingNER.set(id, (entities) => {
+            clearTimeout(timer);
+            resolve(entities);
+        });
+        nerWorker.postMessage({ type: 'ner_extract', data: { query, id } });
+    });
 }
 
 // --- Proxy to Worker for Scoring ---
@@ -617,10 +665,22 @@ export async function recommend(text, top_k = 20, onPartialResult = null) {
 
         // 1. Data Parsing & Filtering
         const constraints = parseConstraintsFromText(text);
+
+        // 1.5 NER entity extraction — runs in parallel with hard filtering
+        const nerEntities = await nerExtract(text);
+        if (nerEntities.locations.length > 0) {
+            constraints.nerLocations = nerEntities.locations;
+        }
+
         const candidates = filterHardExclusions(propertyData, constraints);
-        
+
         // 2. Keyword & Rule-based Pre-scoring
         const queryKeywords = extractKeywords(text);
+
+        // Augment keywords with NER-detected features and locations
+        [...nerEntities.features, ...nerEntities.locations].forEach(k => {
+            if (k && k.length > 1 && !queryKeywords.includes(k)) queryKeywords.push(k);
+        });
         const topCandidates = calculateRuleBasedScore(candidates, queryKeywords, text, constraints);
 
         // 2.5 Progressive: Immediately yield rule-based top results so UI feels instant

@@ -177,8 +177,28 @@ class NERTrainer:
     def export_onnx(self) -> Path:
         """Export saved NER model to ONNX for browser-side inference."""
         cfg = self.config
-        if self.model is None:
-            self.tokenizer = __import__("transformers").AutoTokenizer.from_pretrained(str(cfg.output_dir))
+        if self.tokenizer is None:
+            self.tokenizer = AutoTokenizer.from_pretrained(str(cfg.output_dir))
+
+        # Monkey-patch create_bidirectional_mask before loading model so TorchScript
+        # tracing never reaches the broken sdpa_mask implementation in transformers 4.48+.
+        import transformers.masking_utils as _mu
+        import transformers.models.bert.modeling_bert as _bert
+
+        def _simple_bidi_mask(*args, **kwargs):
+            attention_mask = args[0] if args else kwargs.get("attention_mask")
+            if attention_mask is not None and attention_mask.dim() == 2:
+                bsz, seq = attention_mask.shape
+                mask_4d = (
+                    attention_mask[:, None, None, :]
+                    .expand(bsz, 1, seq, seq)
+                    .float()
+                )
+                return (1.0 - mask_4d) * torch.finfo(torch.float32).min
+            return None
+
+        _mu.create_bidirectional_mask = _simple_bidi_mask
+        _bert.create_bidirectional_mask = _simple_bidi_mask
 
         # Use eager attention to avoid SDPA tracing issues with torch.onnx
         self.model = BertForTokenClassification.from_pretrained(
