@@ -340,21 +340,46 @@ class DatasetGenerator(BaseProcessor):
         return 0
 
     def _save_dataset(self, dataset: TrainingDataset) -> None:
-        """Save dataset to JSON."""
-        data = {
-            "train": [
-                {"query": p.query, "property_id": p.property_id, "is_match": p.is_match, "score": p.score}
-                for p in dataset.train_pairs
-            ],
-            "val": [
-                {"query": p.query, "property_id": p.property_id, "is_match": p.is_match, "score": p.score}
-                for p in dataset.val_pairs
-            ],
-            "test": [
-                {"query": p.query, "property_id": p.property_id, "is_match": p.is_match, "score": p.score}
-                for p in dataset.test_pairs
-            ],
+        """Save dataset to JSON files (train, val, test separately)."""
+        from pathlib import Path
+
+        dataset_dir = Path(self.config.dataset_json).parent
+        dataset_dir.mkdir(parents=True, exist_ok=True)
+
+        # Save training dataset
+        train_data = [
+            {"query": p.query, "property_id": p.property_id, "label": p.is_match, "score": p.score}
+            for p in dataset.train_pairs
+        ]
+        train_path = dataset_dir / "training_dataset.json"
+        with open(train_path, "w", encoding="utf-8") as f:
+            json.dump(train_data, f, ensure_ascii=False, indent=2)
+
+        # Save validation dataset
+        val_data = [
+            {"query": p.query, "property_id": p.property_id, "label": p.is_match, "score": p.score}
+            for p in dataset.val_pairs
+        ]
+        val_path = dataset_dir / "validation_dataset.json"
+        with open(val_path, "w", encoding="utf-8") as f:
+            json.dump(val_data, f, ensure_ascii=False, indent=2)
+
+        # Save test dataset
+        test_data = [
+            {"query": p.query, "property_id": p.property_id, "label": p.is_match, "score": p.score}
+            for p in dataset.test_pairs
+        ]
+        test_path = dataset_dir / "test_dataset.json"
+        with open(test_path, "w", encoding="utf-8") as f:
+            json.dump(test_data, f, ensure_ascii=False, indent=2)
+
+        # Also save combined dataset for reference
+        combined_data = {
+            "train": train_data,
+            "val": val_data,
+            "test": test_data,
             "metadata": dataset.metadata
         }
-        with open(self.config.dataset_json, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
+        combined_path = dataset_dir / self.config.dataset_json
+        with open(combined_path, "w", encoding="utf-8") as f:
+            json.dump(combined_data, f, ensure_ascii=False, indent=2)
