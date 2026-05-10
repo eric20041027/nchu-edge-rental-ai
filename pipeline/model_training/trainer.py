@@ -145,7 +145,7 @@ class ModelTrainer(BaseTrainer):
                 warmup_steps=self.config.warmup_steps,
                 weight_decay=0.01,
                 logging_steps=100,
-                evaluation_strategy="epoch",
+                eval_strategy="epoch",
                 save_strategy="epoch",
                 load_best_model_at_end=True,
                 metric_for_best_model="eval_loss",
@@ -154,9 +154,17 @@ class ModelTrainer(BaseTrainer):
             )
 
             def tokenize_function(examples):
+                # Use property_id if property field not available
+                if "property" in examples:
+                    property_text = examples["property"]
+                elif "property_id" in examples:
+                    property_text = examples["property_id"]
+                else:
+                    property_text = examples["query"]
+
                 return self.tokenizer(
                     examples["query"],
-                    examples["property"],
+                    property_text,
                     max_length=self.config.max_length,
                     truncation=True,
                     padding="max_length",
