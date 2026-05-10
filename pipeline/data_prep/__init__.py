@@ -36,6 +36,9 @@ from .merger import DataMerger
 from .generator import DatasetGenerator
 from .augmenter import SemanticAugmenter
 from .miner import HardNegativeMiner
+from .labeler import SilverLabeler
+from .commute_updater import CommuteDataUpdater
+from .budget_generator import BudgetTrapGenerator
 from .embedder import EmbeddingPrecomputer
 from .pipeline import DataPipeline
 
@@ -53,6 +56,9 @@ __all__ = [
     "DatasetGenerator",
     "SemanticAugmenter",
     "HardNegativeMiner",
+    "SilverLabeler",
+    "CommuteDataUpdater",
+    "BudgetTrapGenerator",
     "EmbeddingPrecomputer",
     "DataPipeline",
 ]
