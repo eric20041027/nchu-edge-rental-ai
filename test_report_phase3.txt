@@ -1,0 +1,51 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.7, pytest-7.4.4, pluggy-1.0.0 -- /opt/anaconda3/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/smallfire/Desktop/Renting_model_ONNX
+plugins: anyio-4.13.0
+collecting ... collected 42 items
+
+tests/test_integration.py::test_crawler_module_complete PASSED           [  2%]
+tests/test_integration.py::test_data_prep_module_complete PASSED         [  4%]
+tests/test_integration.py::test_data_pipeline_orchestration PASSED       [  7%]
+tests/test_integration.py::test_pydantic_models PASSED                   [  9%]
+tests/test_integration.py::test_configuration_hierarchy PASSED           [ 11%]
+tests/test_integration.py::test_base_classes PASSED                      [ 14%]
+tests/test_integration.py::test_end_to_end_imports PASSED                [ 16%]
+tests/test_phase1_crawlers.py::test_crawler_config_init PASSED           [ 19%]
+tests/test_phase1_crawlers.py::test_rental_property_model PASSED         [ 21%]
+tests/test_phase1_crawlers.py::test_rental_property_validation PASSED    [ 23%]
+tests/test_phase1_crawlers.py::test_rental_property_to_csv_row PASSED    [ 26%]
+tests/test_phase1_crawlers.py::test_csv_columns_completeness PASSED      [ 28%]
+tests/test_phase1_crawlers.py::test_crawler_config_output_paths PASSED   [ 30%]
+tests/test_phase1_crawlers.py::test_crawler_config_crawler_params PASSED [ 33%]
+tests/test_phase2_dataprep.py::test_dataprep_config_init PASSED          [ 35%]
+tests/test_phase2_dataprep.py::test_dataprep_config_parameters PASSED    [ 38%]
+tests/test_phase2_dataprep.py::test_base_processor PASSED                [ 40%]
+tests/test_phase2_dataprep.py::test_all_processors_import PASSED         [ 42%]
+tests/test_phase2_dataprep.py::test_pipeline_init PASSED                 [ 45%]
+tests/test_phase3_training.py::TestModelTrainingConfig::test_config_initialization PASSED [ 47%]
+tests/test_phase3_training.py::TestModelTrainingConfig::test_config_paths_exist PASSED [ 50%]
+tests/test_phase3_training.py::TestModelTrainingConfig::test_config_hyperparameters PASSED [ 52%]
+tests/test_phase3_training.py::TestModelTrainingConfig::test_config_quantization_config PASSED [ 54%]
+tests/test_phase3_training.py::TestTrainingMetrics::test_training_metrics_creation PASSED [ 57%]
+tests/test_phase3_training.py::TestTrainingMetrics::test_training_metrics_validation PASSED [ 59%]
+tests/test_phase3_training.py::TestEvaluationMetrics::test_evaluation_metrics_creation PASSED [ 61%]
+tests/test_phase3_training.py::TestEvaluationMetrics::test_evaluation_metrics_bounds PASSED [ 64%]
+tests/test_phase3_training.py::TestExportedModel::test_exported_model_creation PASSED [ 66%]
+tests/test_phase3_training.py::TestExportedModel::test_exported_model_quantized PASSED [ 69%]
+tests/test_phase3_training.py::TestQuantizationConfig::test_quantization_config_creation PASSED [ 71%]
+tests/test_phase3_training.py::TestQuantizationConfig::test_quantization_config_defaults PASSED [ 73%]
+tests/test_phase3_training.py::TestTrainingResult::test_training_result_creation PASSED [ 76%]
+tests/test_phase3_training.py::TestTrainingResult::test_training_result_with_exports PASSED [ 78%]
+tests/test_phase3_training.py::TestBaseTrainer::test_base_trainer_initialization PASSED [ 80%]
+tests/test_phase3_training.py::TestBaseTrainer::test_base_trainer_checkpoint_methods PASSED [ 83%]
+tests/test_phase3_training.py::TestBaseTrainer::test_base_trainer_checkpoint_not_found PASSED [ 85%]
+tests/test_phase3_training.py::TestPhase3ModuleImports::test_all_classes_importable PASSED [ 88%]
+tests/test_phase3_training.py::TestPhase3ModuleImports::test_model_pipeline_initialization PASSED [ 90%]
+tests/test_phase3_training.py::TestPhase3ModuleImports::test_model_trainer_initialization PASSED [ 92%]
+tests/test_phase3_training.py::TestPhase3Integration::test_config_hierarchy PASSED [ 95%]
+tests/test_phase3_training.py::TestPhase3Integration::test_all_processors_have_run_method PASSED [ 97%]
+tests/test_phase3_training.py::TestPhase3Integration::test_pipeline_orchestrator_creation PASSED [100%]
+
+============================== 42 passed in 2.40s ==============================
