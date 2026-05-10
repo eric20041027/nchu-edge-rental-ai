@@ -1,4 +1,4 @@
-import { initData, initNLP, recommend } from './inference.js';
+import { initData, initNLP, initNER, recommend } from './inference.js';
 
 // --- Constants & State ---
 const PAGE_SIZE = 5;
@@ -60,6 +60,9 @@ async function setupApplication() {
         ]);
         loadStatus.innerHTML = '<i class="fa-solid fa-check"></i> 系統準備就緒！';
         setTimeout(() => loadStatus.style.display = 'none', 2000);
+
+        // Load NER model in background (non-blocking — query still works without it)
+        initNER().catch(e => console.warn('NER init failed (non-fatal):', e));
         
         userRequirement.disabled = false;
         userRequirement.placeholder = "輸入租屋需求，例如：預算 6000 以內、有冷氣...";
