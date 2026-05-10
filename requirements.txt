@@ -1,0 +1,23 @@
+# Core data processing
+pydantic>=2.0,<3.0
+pandas>=2.0
+
+# Web scraping
+requests>=2.31
+beautifulsoup4>=4.12
+
+# Browser automation
+playwright>=1.40
+
+# LLM augmentation
+anthropic>=0.25
+
+# ML / ONNX
+torch>=2.0
+transformers>=4.35
+onnx>=1.14
+onnxruntime>=1.17
+
+# Utilities
+python-dotenv>=1.0
+tqdm>=4.66
