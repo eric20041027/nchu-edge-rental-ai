@@ -32,6 +32,12 @@ from .models import (
     BudgetTrap,
 )
 from .base import BaseProcessor
+from .merger import DataMerger
+from .generator import DatasetGenerator
+from .augmenter import SemanticAugmenter
+from .miner import HardNegativeMiner
+from .embedder import EmbeddingPrecomputer
+from .pipeline import DataPipeline
 
 __all__ = [
     "DataPrepConfig",
@@ -43,4 +49,10 @@ __all__ = [
     "HardNegativeExample",
     "BudgetTrap",
     "BaseProcessor",
+    "DataMerger",
+    "DatasetGenerator",
+    "SemanticAugmenter",
+    "HardNegativeMiner",
+    "EmbeddingPrecomputer",
+    "DataPipeline",
 ]
