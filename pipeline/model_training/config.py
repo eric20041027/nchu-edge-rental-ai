@@ -1,0 +1,105 @@
+"""Configuration management for model training pipeline."""
+import os
+from pathlib import Path
+from typing import Optional
+
+from .models import QuantizationConfig
+
+
+class ModelTrainingConfig:
+    """Centralized configuration for all model training steps."""
+
+    def __init__(self):
+        # Project root
+        self.project_root = Path(__file__).parent.parent.parent
+        self.data_root = self.project_root / "data"
+        self.processed_data_dir = self.data_root / "processed"
+        self.checkpoint_dir = self.project_root / ".checkpoints" / "model_training"
+        self.saved_models_dir = self.project_root / "saved_models"
+        self.frontend_models_dir = self.project_root / "frontend" / "models" / "custom_onnx_model_dir"
+
+        # Ensure directories exist
+        self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
+        self.saved_models_dir.mkdir(parents=True, exist_ok=True)
+        self.frontend_models_dir.mkdir(parents=True, exist_ok=True)
+
+        # Model checkpoint paths
+        self.model_checkpoint = self._env_string("MODEL_CHECKPOINT", "hfl/rbt6")
+        self.saved_model_dir = self._env_path("SAVED_MODEL_DIR", self.saved_models_dir / "rbt6_finetuned")
+        self.onnx_output_path = self._env_path("ONNX_OUTPUT_PATH", self.frontend_models_dir / "my_custom_model.onnx")
+        self.quantized_model_path = self._env_path("QUANTIZED_MODEL_PATH", self.frontend_models_dir / "my_custom_model_quant.onnx")
+
+        # Input data paths
+        self.train_data_path = self._env_path("TRAIN_DATA_PATH", self.processed_data_dir / "training_dataset.json")
+        self.val_data_path = self._env_path("VAL_DATA_PATH", self.processed_data_dir / "validation_dataset.json")
+        self.test_data_path = self._env_path("TEST_DATA_PATH", self.processed_data_dir / "test_dataset.json")
+
+        # Training hyperparameters
+        self.max_length = self._env_int("MAX_LENGTH", 64)
+        self.batch_size = self._env_int("BATCH_SIZE", 32)
+        self.num_epochs = self._env_int("NUM_EPOCHS", 5)
+        self.learning_rate = self._env_float("LEARNING_RATE", 2e-5)
+        self.warmup_steps = self._env_int("WARMUP_STEPS", 500)
+        self.early_stopping_patience = self._env_int("EARLY_STOPPING_PATIENCE", 3)
+        self.random_seed = self._env_int("RANDOM_SEED", 42)
+
+        # Training features
+        self.enable_adversarial_training = self._env_bool("ENABLE_ADVERSARIAL_TRAINING", True)
+        self.adversarial_epsilon = self._env_float("ADVERSARIAL_EPSILON", 1.0)
+        self.enable_hard_example_mining = self._env_bool("ENABLE_HARD_MINING", True)
+
+        # Evaluation parameters
+        self.eval_batch_size = self._env_int("EVAL_BATCH_SIZE", 64)
+        self.eval_sample_size = self._env_int("EVAL_SAMPLE_SIZE", 1000)
+
+        # ONNX export parameters
+        self.onnx_opset_version = self._env_int("ONNX_OPSET_VERSION", 15)
+        self.enable_quantization = self._env_bool("ENABLE_QUANTIZATION", True)
+
+        # Quantization config
+        self.quantization_config = QuantizationConfig(
+            enable_quantization=self.enable_quantization,
+            quant_type=self._env_string("QUANT_TYPE", "uint8"),
+            dynamic=self._env_bool("QUANT_DYNAMIC", False),
+            opset_version=self.onnx_opset_version,
+        )
+
+    @staticmethod
+    def _env_path(key: str, default: Path) -> Path:
+        """Read Path from environment or use default."""
+        return Path(os.getenv(key, str(default)))
+
+    @staticmethod
+    def _env_string(key: str, default: str) -> str:
+        """Read string from environment or use default."""
+        return os.getenv(key, default)
+
+    @staticmethod
+    def _env_int(key: str, default: int) -> int:
+        """Read int from environment or use default."""
+        try:
+            return int(os.getenv(key, str(default)))
+        except ValueError:
+            return default
+
+    @staticmethod
+    def _env_float(key: str, default: float) -> float:
+        """Read float from environment or use default."""
+        try:
+            return float(os.getenv(key, str(default)))
+        except ValueError:
+            return default
+
+    @staticmethod
+    def _env_bool(key: str, default: bool) -> bool:
+        """Read bool from environment or use default."""
+        val = os.getenv(key, str(default)).lower()
+        return val in ("true", "1", "yes", "on")
+
+    def validate_input_files(self) -> bool:
+        """Check that required input files exist."""
+        required_files = [self.train_data_path, self.val_data_path, self.test_data_path]
+        for file_path in required_files:
+            if not file_path.exists():
+                raise FileNotFoundError(f"Required file not found: {file_path}")
+        return True
