@@ -390,6 +390,14 @@ def export_to_onnx(model: PreTrainedModel, tokenizer: PreTrainedTokenizer):
 
     model.to("cpu")
     model.eval()
+    # Newer transformers default to SDPA which breaks torch.onnx tracing
+    model.config.attn_implementation = "eager"
+    from transformers import AutoModelForSequenceClassification
+    model = AutoModelForSequenceClassification.from_pretrained(
+        SAVED_MODEL_DIR, attn_implementation="eager"
+    )
+    model.to("cpu")
+    model.eval()
 
     # Suppress redundant torch.onnx internal logs
     import logging
