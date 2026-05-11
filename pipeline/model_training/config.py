@@ -15,7 +15,11 @@ class ModelTrainingConfig:
         self.data_root = self.project_root / "data"
         self.processed_data_dir = self.data_root / "processed"
         self.checkpoint_dir = self.project_root / ".checkpoints" / "model_training"
-        self.saved_models_dir = self.project_root / "saved_models"
+
+        # Use D drive if available (has more space), otherwise fall back to project root
+        d_renting_models = Path("D:/renting_models")
+        self.saved_models_dir = d_renting_models if d_renting_models.exists() else self.project_root / "saved_models"
+
         self.frontend_models_dir = self.project_root / "frontend" / "models" / "custom_onnx_model_dir"
 
         # Ensure directories exist
@@ -29,18 +33,34 @@ class ModelTrainingConfig:
         self.onnx_output_path = self._env_path("ONNX_OUTPUT_PATH", self.frontend_models_dir / "my_custom_model.onnx")
         self.quantized_model_path = self._env_path("QUANTIZED_MODEL_PATH", self.frontend_models_dir / "my_custom_model_quant.onnx")
 
-        # Input data paths
-        self.train_data_path = self._env_path("TRAIN_DATA_PATH", self.processed_data_dir / "training_dataset.json")
-        self.val_data_path = self._env_path("VAL_DATA_PATH", self.processed_data_dir / "validation_dataset.json")
-        self.test_data_path = self._env_path("TEST_DATA_PATH", self.processed_data_dir / "test_dataset.json")
+        # Input data paths — prefer recommendation_*.json (has property text) over generated datasets
+        _default_train = (
+            self.processed_data_dir / "recommendation_train.json"
+            if (self.processed_data_dir / "recommendation_train.json").exists()
+            else self.processed_data_dir / "training_dataset.json"
+        )
+        _default_val = (
+            self.processed_data_dir / "recommendation_dev.json"
+            if (self.processed_data_dir / "recommendation_dev.json").exists()
+            else self.processed_data_dir / "validation_dataset.json"
+        )
+        _default_test = (
+            self.processed_data_dir / "recommendation_test.json"
+            if (self.processed_data_dir / "recommendation_test.json").exists()
+            else self.processed_data_dir / "test_dataset.json"
+        )
+        self.train_data_path = self._env_path("TRAIN_DATA_PATH", _default_train)
+        self.val_data_path = self._env_path("VAL_DATA_PATH", _default_val)
+        self.test_data_path = self._env_path("TEST_DATA_PATH", _default_test)
 
         # Training hyperparameters
         self.max_length = self._env_int("MAX_LENGTH", 64)
         self.batch_size = self._env_int("BATCH_SIZE", 32)
-        self.num_epochs = self._env_int("NUM_EPOCHS", 5)
+        self.num_epochs = self._env_int("NUM_EPOCHS", 10)
         self.learning_rate = self._env_float("LEARNING_RATE", 2e-5)
         self.warmup_steps = self._env_int("WARMUP_STEPS", 500)
         self.early_stopping_patience = self._env_int("EARLY_STOPPING_PATIENCE", 3)
+        self.fp16 = self._env_bool("FP16", False)  # Disabled: FGMTrainer incompatible with fp16 scaler
         self.random_seed = self._env_int("RANDOM_SEED", 42)
 
         # Training features
@@ -50,7 +70,7 @@ class ModelTrainingConfig:
 
         # Evaluation parameters
         self.eval_batch_size = self._env_int("EVAL_BATCH_SIZE", 64)
-        self.eval_sample_size = self._env_int("EVAL_SAMPLE_SIZE", 1000)
+        self.eval_sample_size = self._env_int("EVAL_SAMPLE_SIZE", 10000)  # cover full test set
 
         # ONNX export parameters
         self.onnx_opset_version = self._env_int("ONNX_OPSET_VERSION", 15)

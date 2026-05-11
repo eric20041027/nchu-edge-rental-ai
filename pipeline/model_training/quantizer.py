@@ -79,14 +79,22 @@ class Quantizer(BaseTrainer):
             output_path: Path to save quantized model
         """
         try:
-            from onnxruntime.quantization import quantize_dynamic
+            from onnxruntime.quantization import quantize_dynamic, QuantType
 
             self.log_step("Loading ONNX model for quantization")
+
+            quant_type_map = {
+                "uint8": QuantType.QUInt8,
+                "int8": QuantType.QInt8,
+            }
+            quant_type = quant_type_map.get(
+                self.config.quantization_config.quant_type.lower(), QuantType.QUInt8
+            )
 
             quantize_dynamic(
                 input_path,
                 output_path,
-                weight_type=self.config.quantization_config.quant_type.upper(),
+                weight_type=quant_type,
             )
 
             self.log_result("Quantization", f"completed, saved to {output_path}")

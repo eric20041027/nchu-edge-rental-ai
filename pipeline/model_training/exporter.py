@@ -23,6 +23,34 @@ class Exporter(BaseTrainer):
         self.model = None
         self.tokenizer = None
 
+    @staticmethod
+    def _apply_onnx_monkey_patch() -> None:
+        """Monkey-patch create_bidirectional_mask to fix SDPA/ONNX incompatibility.
+
+        transformers 5.x uses SDPA inside create_bidirectional_mask which breaks
+        torch.onnx.export JIT tracing. Replace with a simple static implementation.
+        """
+        try:
+            import transformers.masking_utils as _mu
+            import transformers.models.bert.modeling_bert as _bert
+
+            def _simple_bidi_mask(*args, **kwargs):
+                attention_mask = args[0] if args else kwargs.get("attention_mask")
+                if attention_mask is not None and attention_mask.dim() == 2:
+                    bsz, seq = attention_mask.shape
+                    mask_4d = (
+                        attention_mask[:, None, None, :]
+                        .expand(bsz, 1, seq, seq)
+                        .float()
+                    )
+                    return (1.0 - mask_4d) * torch.finfo(torch.float32).min
+                return None
+
+            _mu.create_bidirectional_mask = _simple_bidi_mask
+            _bert.create_bidirectional_mask = _simple_bidi_mask
+        except (ImportError, AttributeError):
+            pass
+
     def run(self, model, tokenizer) -> ExportedModel:
         """Export trained model to ONNX format.
 
@@ -33,6 +61,22 @@ class Exporter(BaseTrainer):
         Returns:
             ExportedModel with export metadata
         """
+        # Apply ONNX monkey-patch before any model loading/tracing
+        self._apply_onnx_monkey_patch()
+
+        # Reload model from checkpoint with eager attention (avoids SDPA tracing issues)
+        self.log_step("Reloading model with eager attention for ONNX export")
+        try:
+            from transformers import AutoModelForSequenceClassification
+            model = AutoModelForSequenceClassification.from_pretrained(
+                str(self.config.saved_model_dir),
+                num_labels=2,
+                attn_implementation="eager",
+            )
+        except Exception as e:
+            self.logger.warning(f"Could not reload with eager attention: {e}. Using provided model.")
+            model = model
+
         self.model = model
         self.tokenizer = tokenizer
 
@@ -91,29 +135,36 @@ class Exporter(BaseTrainer):
             dummy_inputs: Dummy inputs for model tracing
         """
         try:
-            import onnx
-            from transformers.onnx import export
-
             self.log_step(f"Exporting with opset version {self.config.onnx_opset_version}")
 
             self.config.onnx_output_path.parent.mkdir(parents=True, exist_ok=True)
 
-            torch.onnx.export(
-                self.model,
-                tuple(dummy_inputs.values()),
-                str(self.config.onnx_output_path),
-                input_names=list(dummy_inputs.keys()),
-                output_names=["logits"],
-                dynamic_axes={
-                    "input_ids": {0: "batch_size"},
-                    "attention_mask": {0: "batch_size"},
-                    "token_type_ids": {0: "batch_size"},
-                    "logits": {0: "batch_size"},
-                },
-                opset_version=self.config.onnx_opset_version,
-                do_constant_folding=True,
-                export_params=True,
-            )
+            # Move model to CPU for export (avoids device mismatch)
+            self.model = self.model.to("cpu")
+            self.model.eval()
+            self.model.config.use_cache = False
+
+            # Move dummy inputs to CPU
+            dummy_inputs_cpu = {k: v.to("cpu") if isinstance(v, torch.Tensor) else v
+                               for k, v in dummy_inputs.items()}
+
+            with torch.no_grad():
+                torch.onnx.export(
+                    self.model,
+                    tuple(dummy_inputs_cpu.values()),
+                    str(self.config.onnx_output_path),
+                    input_names=list(dummy_inputs_cpu.keys()),
+                    output_names=["logits"],
+                    dynamic_axes={
+                        "input_ids": {0: "batch_size"},
+                        "attention_mask": {0: "batch_size"},
+                        "token_type_ids": {0: "batch_size"},
+                        "logits": {0: "batch_size"},
+                    },
+                    opset_version=self.config.onnx_opset_version,
+                    do_constant_folding=True,
+                    export_params=True,
+                )
 
             self.log_result("ONNX export", f"saved to {self.config.onnx_output_path}")
 

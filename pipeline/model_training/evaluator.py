@@ -90,32 +90,35 @@ class Evaluator(BaseTrainer):
         )
 
     def _get_predictions(self) -> List[Dict]:
-        """Get model predictions on test set.
+        """Get model predictions on test set with query/property text pairing.
 
         Returns:
-            List of predictions with scores
+            List of predictions with scores and query grouping info
         """
         import torch
 
         predictions = []
 
-        # 记录原始设备并移到CPU（解决MPS内存分配问题）
         original_device = next(self.model.parameters()).device
         self.log_step(f"Moving model from {original_device} to CPU for inference")
         self.model = self.model.to('cpu')
 
         try:
             for sample in self.test_data[: self.config.eval_sample_size]:
+                query = sample.get("query", "")
+                # Require actual property text — URLs are not useful for cross-encoder
+                property_text = sample.get("property", "")
+                if not property_text or property_text.startswith("http"):
+                    property_text = ""
+
                 inputs = self.tokenizer(
-                    sample.get("query", ""),
-                    sample.get("property", ""),
+                    query,
+                    property_text,
                     max_length=self.config.max_length,
                     truncation=True,
                     padding="max_length",
                     return_tensors="pt",
                 )
-
-                # 确保输入也在CPU上
                 inputs = {k: v.to('cpu') for k, v in inputs.items()}
 
                 with torch.no_grad():
@@ -124,14 +127,18 @@ class Evaluator(BaseTrainer):
                     pred_label = torch.argmax(logits).item()
                     pred_score = torch.softmax(logits, dim=-1)[1].item()
 
+                true_label = sample.get("label", 0)
+                if isinstance(true_label, bool):
+                    true_label = int(true_label)
+
                 predictions.append({
-                    "true_label": sample.get("label", 0),
+                    "query": query,
+                    "true_label": true_label,
                     "pred_label": pred_label,
                     "pred_score": pred_score,
                 })
 
         finally:
-            # 恢复原始设备
             self.model = self.model.to(original_device)
             self.log_step(f"Model restored to {original_device}")
 
@@ -174,36 +181,63 @@ class Evaluator(BaseTrainer):
         return tp / (tp + fn) if (tp + fn) > 0 else 0.0
 
     def _compute_ndcg_at_k(self, predictions: List[Dict], k: int = 5) -> float:
-        """Compute NDCG@k metric for ranking evaluation.
+        """Compute NDCG@k averaged over queries.
 
-        NDCG measures ranking quality considering relevance grades.
+        Groups predictions by query, sorts each group by model score (pred_score),
+        then evaluates ranking quality using true relevance labels.
         """
         if not predictions or k == 0:
             return 0.0
 
-        dcg = sum(
-            (2 ** p["pred_label"] - 1) / np.log2(i + 2)
-            for i, p in enumerate(predictions[:k])
-        )
+        # Group by query
+        from collections import defaultdict
+        query_groups: dict = defaultdict(list)
+        for p in predictions:
+            query_groups[p.get("query", "__all__")].append(p)
 
-        ideal_order = sorted(predictions, key=lambda p: p["true_label"], reverse=True)
-        idcg = sum(
-            (2 ** p["true_label"] - 1) / np.log2(i + 2)
-            for i, p in enumerate(ideal_order[:k])
-        )
+        ndcg_scores = []
+        for group in query_groups.values():
+            if not any(p["true_label"] == 1 for p in group):
+                continue  # Skip queries with no relevant docs
 
-        return dcg / idcg if idcg > 0 else 0.0
+            # Sort by model score (descending) — this is the ranking
+            ranked = sorted(group, key=lambda p: p["pred_score"], reverse=True)
+
+            dcg = sum(
+                (2 ** p["true_label"] - 1) / np.log2(i + 2)
+                for i, p in enumerate(ranked[:k])
+            )
+            ideal = sorted(group, key=lambda p: p["true_label"], reverse=True)
+            idcg = sum(
+                (2 ** p["true_label"] - 1) / np.log2(i + 2)
+                for i, p in enumerate(ideal[:k])
+            )
+            if idcg > 0:
+                ndcg_scores.append(dcg / idcg)
+
+        return float(np.mean(ndcg_scores)) if ndcg_scores else 0.0
 
     def _compute_mrr(self, predictions: List[Dict]) -> float:
-        """Compute Mean Reciprocal Rank for ranking evaluation.
+        """Compute Mean Reciprocal Rank averaged over queries.
 
-        MRR measures how quickly the first relevant result appears.
+        Groups by query, sorts by model score, finds rank of first relevant result.
         """
         if not predictions:
             return 0.0
 
-        for rank, pred in enumerate(predictions, start=1):
-            if pred["true_label"] == 1:
-                return 1.0 / rank
+        from collections import defaultdict
+        query_groups: dict = defaultdict(list)
+        for p in predictions:
+            query_groups[p.get("query", "__all__")].append(p)
 
-        return 0.0
+        rr_scores = []
+        for group in query_groups.values():
+            if not any(p["true_label"] == 1 for p in group):
+                continue
+            ranked = sorted(group, key=lambda p: p["pred_score"], reverse=True)
+            for rank, pred in enumerate(ranked, start=1):
+                if pred["true_label"] == 1:
+                    rr_scores.append(1.0 / rank)
+                    break
+
+        return float(np.mean(rr_scores)) if rr_scores else 0.0
