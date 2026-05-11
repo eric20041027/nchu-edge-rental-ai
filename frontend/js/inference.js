@@ -286,25 +286,98 @@ function explainMatch(query, prop, constraints) {
         }
     }
 
-    // 6. Keywords fallback (Dynamic)
-    const keywords = extractKeywords(query);
-    const semanticMap = {
-        '陽台': '☀️ 有私人陽台可晾衣',
-        '窗': '🪟 採光通風對外窗',
-        '車位': '🛵 附有機車停放空間',
-        '寵物': '🐱 友善毛小孩環境',
-        '補助': '📑 可申請政府租金補貼',
-        '飲水': '💧 配有公共飲水機'
-    };
+    // 6. Semantic rules — multi-trigger + explicit property check
+    // Each rule: triggers[] (any match in query activates), check(pText, prop) verifies house has it
+    const semanticRules = [
+        {
+            triggers: ['冰箱'],
+            check: p => p.includes('冰箱'),
+            label: '🧊 附有冰箱'
+        },
+        {
+            triggers: ['洗衣機', '獨洗', '洗衣', '獨立洗'],
+            check: p => p.includes('洗衣機') || p.includes('獨立洗'),
+            label: '🫧 附獨立洗衣機'
+        },
+        {
+            triggers: ['冷氣', '空調', '怕熱', '夏天熱'],
+            check: p => p.includes('冷氣') || p.includes('空調'),
+            label: '❄️ 房內附冷氣'
+        },
+        {
+            triggers: ['廚房', '開伙', '煮飯', '瓦斯', '自炊', '炒菜', '料理'],
+            check: p => p.includes('廚房') || p.includes('開伙') || p.includes('瓦斯') || p.includes('可自炊'),
+            label: '🍳 可開伙自炊'
+        },
+        {
+            triggers: ['電梯', '升降梯', '不爬樓', '不用爬'],
+            check: p => p.includes('電梯'),
+            label: '🛗 有電梯，行動便利'
+        },
+        {
+            triggers: ['貓', '狗', '養貓', '養狗', '帶貓', '帶狗', '毛小孩', '寵物', '貓咪', '狗狗', '可養'],
+            check: (p, prop) => !p.includes('禁養') && !p.includes('不可養') && (
+                p.includes('可養') || p.includes('寵物') || p.includes('友善') ||
+                p.includes('可貓') || p.includes('可狗') || prop.has_pet
+            ),
+            label: '🐱 友善毛小孩環境'
+        },
+        {
+            triggers: ['補助', '補貼', '租金補貼', '報稅', '入籍', '租屋補助'],
+            check: (p, prop) => !p.includes('不可補助') && !p.includes('不可報稅') && !p.includes('不可入籍') && (
+                prop.has_subsidy || p.includes('可補助') || p.includes('可報稅') || p.includes('可入籍') || p.includes('補助')
+            ),
+            label: '📑 可申請政府租金補貼'
+        },
+        {
+            triggers: ['陽台', '晾衣', '晾曬', '晾衫'],
+            check: p => p.includes('陽台') || p.includes('晾衣'),
+            label: '☀️ 有私人陽台可晾衣'
+        },
+        {
+            triggers: ['窗', '採光', '通風', '光線', '明亮'],
+            check: p => p.includes('窗') || p.includes('採光') || p.includes('通風'),
+            label: '🪟 採光通風對外窗'
+        },
+        {
+            triggers: ['停車', '車位', '機車位', '腳踏車', '單車', '自行車', '機車'],
+            check: p => p.includes('停車') || p.includes('車位') || p.includes('機車'),
+            label: '🛵 附有機車停放空間'
+        },
+        {
+            triggers: ['飲水機', '飲水', '開水'],
+            check: p => p.includes('飲水機') || p.includes('飲水'),
+            label: '💧 配有公共飲水機'
+        },
+        {
+            triggers: ['門禁', '保全', '安全', '管理員', '管理室'],
+            check: p => p.includes('門禁') || p.includes('保全') || p.includes('管理員'),
+            label: '🔒 有門禁管理，安全有保障'
+        },
+        {
+            triggers: ['網路', 'wifi', 'wi-fi', '無線', '寬頻', '含網路', '附網路'],
+            check: p => p.includes('網路') || p.includes('wifi') || p.includes('寬頻'),
+            label: '📶 含網路費用'
+        },
+        {
+            triggers: ['熱水', '熱水器', '獨立熱水', '不搶熱水'],
+            check: p => p.includes('熱水器') || p.includes('獨立熱水') || p.includes('瓦斯熱水'),
+            label: '🚿 獨立熱水，不搶澡'
+        },
+        {
+            triggers: ['全配', '家具', '家電', '附家電', '附家具'],
+            check: p => (p.includes('冰箱') || p.includes('冷氣')) && (p.includes('床') || p.includes('桌')),
+            label: '🛋️ 家具家電全配'
+        }
+    ];
 
-    keywords.forEach(kw => {
+    semanticRules.forEach(rule => {
         if (reasons.length >= 3) return;
-        for (const [key, label] of Object.entries(semanticMap)) {
-            if ((kw.includes(key) || key.includes(kw)) && !reasons.includes(label)) {
-                if (pText.includes(key) || prop[`has_${key}`]) {
-                    reasons.push(label);
-                }
-            }
+        if (reasons.includes(rule.label)) return;
+        const triggered = rule.triggers.some(t => q.includes(t));
+        if (!triggered) return;
+        if (rule.check(pText, prop)) {
+            reasons.push(rule.label);
         }
     });
 
