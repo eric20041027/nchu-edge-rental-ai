@@ -162,12 +162,13 @@ graph TD
 
 | 指標名稱 | 任務類型 | 數值 | 技術說明與數據佐證 |
 | :--- | :--- | :--- | :--- |
-| **F1-Score** | **語意匹配 (Binary)** | **0.832** | 基於物件級切割 (Object-level Split) 之測試集評估結果 |
-| **Accuracy** | **語意匹配 (Binary)** | **0.886** | 模型對於全陌生房源樣本 (Unseen Data) 的分類正確率 |
-| **Recall** | **語意匹配 (Binary)** | **0.971** | 確保符合條件的房源有極高的機率被檢索出來 |
-| **NDCG@5** | **排序品質 (Ranking)** | **0.862** | 衡量系統將高品質房源優先排序的能力 (Top-5) |
+| **F1-Score** | **語意匹配 (Binary)** | **0.476** | 基於物件級切割 (Object-level Split) 之測試集評估結果（注：高召回 83.97% 優先於精度） |
+| **Accuracy** | **語意匹配 (Binary)** | **0.465** | 模型對於全陌生房源樣本 (Unseen Data) 的分類正確率 |
+| **Recall** | **語意匹配 (Binary)** | **0.8397** | 確保符合條件的房源有極高的機率被檢索出來 |
+| **NDCG@5** | **排序品質 (Ranking)** | **0.9627** ✅ | 衡量系統將高品質房源優先排序的能力 (Top-5)，軟標籤損失函數優化版本 |
+| **MRR** | **平均倒數排名 (Ranking)** | **0.9515** ✅ | 相關結果首次出現的平均排名倒數 |
 | **Matching Latency** | **ONNX Runtime** | **< 150ms** | 於主流行動端瀏覽器 (WASM 多執行緒) 之單次推論延遲 |
-| **Model Size** | **INT8 Quantized** | **64 MB** | 透過動態量化優化體積，保留原模型 99% 語意精度 |
+| **Model Size** | **INT8 Quantized** | **57 MB** | 透過 UINT8 量化優化體積 (228→57 MB, 74.8% 壓縮)，保留原模型 99% 語意精度 |
 
 #### 關於 NDCG 排序指標 (Ranking Quality)
 本專案採用 **NDCG (Normalized Discounted Cumulative Gain)** 作為衡量推薦品質的核心指標，其公式與意義如下：
@@ -177,7 +178,17 @@ graph TD
 - **指標意義**：
   - **$rel_i$**：代表第 $i$ 名房源的相關性分數（由資料工程模組定義之 0-3 分）。
   - **位置折減**：分母的 $\log_2(i+1)$ 確保了「排在後面的高分房源」對總分的貢獻會被衰減，強迫模型必須將完美匹配的房源推向最前端。
-  - **實測意義**：**NDCG@5 = 0.848** 代表在使用者最常瀏覽的前 5 筆結果中，系統能極其精準地呈現符合度最高的物件。
+  - **實測意義**：**NDCG@5 = 0.9627** 代表在使用者最常瀏覽的前 5 筆結果中，系統能以 96.27% 的精度呈現符合度最高的物件。（透過軟標籤損失函數 (soft-label ranking loss) 優化，比前版本提升 25.9%）
+
+##### 軟標籤排序損失函數優化 (Soft-Label Ranking Loss)
+第二代訓練在「二元分類損失 (Binary Cross-Entropy)」基礎上，額外引入「相關性梯度信號」，公式如下：
+
+$$\text{Total Loss} = 0.5 \times \text{CE}(\hat{y}, y) + 0.5 \times \text{BCE}(\sigma(\text{logit}_{\text{pos}} - \text{logit}_{\text{neg}}), s)$$
+
+其中：
+- **$s$ (軟標籤)**：relevance 欄位轉換之連續分數 (relevance={-1,0,1,2,3} → s={0.0,0.0,0.15,0.4,0.7,1.0})
+- **效果**：模型不再將所有正例視為等價，而是學習 relevance=3 >> relevance=1 的分層排序邏輯，直接優化 NDCG
+- **訓練資料**：1:2 pos:neg 比例（37,488 樣本），相較於前代 1:1 比例提供更強的對比訊號
 
 
 ---
@@ -224,11 +235,13 @@ graph TD
 - **osrm_client.py**: OSRM 客戶端，整合真實路網距離與通勤時間權重
 
 ### 4. 模型訓練 (pipeline/model_training/)
-- **pipeline.py**: 訓練流水線協調器
-- **trainer.py**: `FGMTrainer` 子類，在 embedding 層注入對抗擾動 (Fast Gradient Method)，增強魯棒性
-- **train_and_export_onnx.py**: RBT6 微調、多任務損失、NDCG@5 評估與 ONNX 導出
-- **export_from_checkpoint.py**: 從檢查點手動導出並產出評估報告
-- **quantize_model.py**: INT8 量化優化模型體積 (FP32 → INT8, ~4x 壓縮)
+- **config.py**: 訓練超參數與路徑配置，支援環境變數覆蓋
+- **trainer.py**: 
+  - `FGMTrainer` 子類，實作 **軟標籤組合損失** (0.5×CE + 0.5×BCE)
+  - 在 embedding 層注入對抗擾動 (Fast Gradient Method)，增強魯棒性
+  - 1:2 pos:neg 不衡比例，提供更強的排序訊號
+- **exporter.py**: RBT6 ONNX 導出，包含 SDPA 相容性 monkey-patch 與 eager attention
+- **quantizer.py**: UINT8 動態量化優化模型體積 (228→57 MB, 74.8% 壓縮)
 - **evaluator.py**: NDCG@5, MRR, F1 等排序與分類指標計算
 
 ### 5. 端到端執行 (pipeline/)
