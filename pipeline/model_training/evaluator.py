@@ -241,3 +241,33 @@ class Evaluator(BaseTrainer):
                     break
 
         return float(np.mean(rr_scores)) if rr_scores else 0.0
+
+
+if __name__ == "__main__":
+    """Standalone evaluation script."""
+    from transformers import BertForSequenceClassification, BertTokenizerFast
+
+    config = ModelTrainingConfig()
+    print(f"Loading model from: {config.saved_model_dir}")
+
+    try:
+        tokenizer = BertTokenizerFast.from_pretrained(str(config.saved_model_dir))
+        model = BertForSequenceClassification.from_pretrained(str(config.saved_model_dir), num_labels=2)
+
+        evaluator = Evaluator(config)
+        metrics = evaluator.run(model, tokenizer)
+
+        print(f"\n{'='*50}")
+        print(f"EVALUATION RESULTS")
+        print(f"{'='*50}")
+        print(f"Accuracy:  {metrics.accuracy:.4f}")
+        print(f"Precision: {metrics.precision:.4f}")
+        print(f"Recall:    {metrics.recall:.4f}")
+        print(f"F1-Score:  {metrics.f1_score:.4f}")
+        print(f"NDCG@5:    {metrics.ndcg_at_5:.4f}")
+        print(f"MRR:       {metrics.mrr:.4f}")
+        print(f"{'='*50}")
+    except Exception as e:
+        print(f"ERROR: {e}")
+        import traceback
+        traceback.print_exc()
