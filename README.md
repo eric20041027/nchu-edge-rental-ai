@@ -331,7 +331,7 @@ python -m pipeline.model_training.evaluator
 若需單獨訓練 NER 模型：
 
 ```bash
-python pipeline/ner_model/ner_trainer.py
+python -m pipeline.ner_model.ner_trainer
 ```
 
 ---

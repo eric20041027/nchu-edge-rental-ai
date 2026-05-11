@@ -235,3 +235,37 @@ class NERTrainer:
         self.tokenizer.save_pretrained(str(cfg.onnx_output_dir))
         logger.info("✅ NER ONNX exported to %s", onnx_path)
         return onnx_path
+
+
+if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(message)s",
+    )
+
+    from pipeline.ner_model.config import NERConfig  # absolute import for __main__
+
+    config = NERConfig()
+    print(f"Base model : {config.base_model}")
+    print(f"Train data : {config.train_data_path}")
+    print(f"Val data   : {config.val_data_path}")
+    print(f"Output dir : {config.output_dir}")
+
+    trainer = NERTrainer(config)
+
+    try:
+        metrics = trainer.train()
+
+        f1  = metrics.get("eval_f1", 0)
+        acc = metrics.get("eval_accuracy", 0)
+
+        print(f"\n{'='*50}")
+        print(f"NER TRAINING RESULTS")
+        print(f"{'='*50}")
+        print(f"F1 Score : {f1:.4f}  (target ≥ {config.target_f1})")
+        print(f"Accuracy : {acc:.4f}  (target ≥ {config.target_accuracy})")
+        print(f"{'='*50}")
+    except Exception as e:
+        print(f"ERROR: {e}")
+        import traceback
+        traceback.print_exc()
