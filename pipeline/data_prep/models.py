@@ -37,6 +37,7 @@ class QueryPropertyPair(BaseModel):
     """Single query-property training example."""
     query: str = Field(..., min_length=1)
     property_id: str = Field(..., min_length=1)
+    property_text: str = Field(default="")  # Human-readable property description for cross-encoder
     is_match: bool
     score: Optional[int] = None  # 0-3 graded relevance
 

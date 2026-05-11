@@ -216,6 +216,7 @@ class DatasetGenerator(BaseProcessor):
         for prop in properties:
             # Generate queries for this property
             queries = self._generate_queries_for_property(prop)
+            prop_text = self._build_property_text(prop)
 
             for query in queries:
                 relevance = self._compute_relevance_score(query, prop)
@@ -224,6 +225,7 @@ class DatasetGenerator(BaseProcessor):
                 pair = QueryPropertyPair(
                     query=query,
                     property_id=prop.get("url", ""),
+                    property_text=prop_text,
                     is_match=True,
                     score=relevance
                 )
@@ -232,9 +234,11 @@ class DatasetGenerator(BaseProcessor):
                 # Negative pairs (hard negatives from other properties)
                 for neg_prop in random.sample(properties, min(2, len(properties) - 1)):
                     if neg_prop.get("url") != prop.get("url"):
+                        neg_text = self._build_property_text(neg_prop)
                         pair = QueryPropertyPair(
                             query=query,
                             property_id=neg_prop.get("url", ""),
+                            property_text=neg_text,
                             is_match=False,
                             score=0
                         )
@@ -273,6 +277,32 @@ class DatasetGenerator(BaseProcessor):
         queries = list(set(queries))
         random.shuffle(queries)
         return queries[:count]
+
+    def _build_property_text(self, prop: Dict[str, Any]) -> str:
+        """Build human-readable property description for cross-encoder input.
+
+        Format matches recommendation_train.json: "{type} {building} {road} {rent}元 {furniture...}"
+        """
+        parts = []
+        if prop.get("room_type"):
+            parts.append(prop["room_type"])
+        if prop.get("building_type"):
+            parts.append(prop["building_type"])
+        if prop.get("region"):
+            parts.append(prop["region"])
+        if prop.get("road"):
+            parts.append(prop["road"])
+        if prop.get("rent_str"):
+            parts.append(prop["rent_str"])
+        elif prop.get("rent"):
+            parts.append(f"{int(prop['rent'])}元")
+        if prop.get("distance"):
+            parts.append(f"距離{prop['distance']:.2f}km")
+        for item in prop.get("furniture", [])[:6]:
+            parts.append(item)
+        for item in prop.get("notes", [])[:3]:
+            parts.append(item)
+        return " ".join(p for p in parts if p)
 
     def _compute_relevance_score(self, query: str, prop: Dict[str, Any]) -> int:
         """Compute graded relevance score (0-3).
@@ -348,7 +378,7 @@ class DatasetGenerator(BaseProcessor):
 
         # Save training dataset
         train_data = [
-            {"query": p.query, "property_id": p.property_id, "label": p.is_match, "score": p.score}
+            {"query": p.query, "property_id": p.property_id, "property": p.property_text, "label": p.is_match, "score": p.score}
             for p in dataset.train_pairs
         ]
         train_path = dataset_dir / "training_dataset.json"
@@ -357,7 +387,7 @@ class DatasetGenerator(BaseProcessor):
 
         # Save validation dataset
         val_data = [
-            {"query": p.query, "property_id": p.property_id, "label": p.is_match, "score": p.score}
+            {"query": p.query, "property_id": p.property_id, "property": p.property_text, "label": p.is_match, "score": p.score}
             for p in dataset.val_pairs
         ]
         val_path = dataset_dir / "validation_dataset.json"
@@ -366,7 +396,7 @@ class DatasetGenerator(BaseProcessor):
 
         # Save test dataset
         test_data = [
-            {"query": p.query, "property_id": p.property_id, "label": p.is_match, "score": p.score}
+            {"query": p.query, "property_id": p.property_id, "property": p.property_text, "label": p.is_match, "score": p.score}
             for p in dataset.test_pairs
         ]
         test_path = dataset_dir / "test_dataset.json"

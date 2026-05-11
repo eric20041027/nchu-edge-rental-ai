@@ -45,18 +45,43 @@ class FGM:
 
 
 class FGMTrainer(Trainer):
-    """HuggingFace Trainer with FGM adversarial training step."""
+    """HuggingFace Trainer with FGM adversarial training and soft-label ranking loss.
+
+    Combined loss = 0.5 * CrossEntropy(hard_labels) + 0.5 * BCE(soft_labels)
+    Soft labels encode graded relevance (-1→0.0, 0→0.0, 1→0.4, 2→0.7, 3→1.0)
+    so the model learns to rank high-relevance properties above low-relevance ones.
+    """
+
+    @staticmethod
+    def _compute_combined_loss(outputs, inputs_with_labels, soft_labels):
+        """Compute 0.5 * CE(hard) + 0.5 * BCE(soft) combined loss."""
+        import torch.nn.functional as F
+
+        ce_loss = outputs.loss  # cross-entropy from model's own computation
+        if soft_labels is None:
+            return ce_loss
+
+        logits = outputs.logits
+        # Log-odds score for the positive class
+        pos_logit = logits[:, 1] - logits[:, 0]
+        ranking_loss = F.binary_cross_entropy_with_logits(pos_logit, soft_labels.float())
+        return 0.5 * ce_loss + 0.5 * ranking_loss
 
     def training_step(self, model, inputs, num_items_in_batch=None) -> torch.Tensor:
         model.train()
         inputs = self._prepare_inputs(inputs)
 
-        loss = self.compute_loss(model, inputs)
+        # Extract soft relevance labels — pop so the model never sees them
+        soft_labels = inputs.pop("soft_labels", None)
+
+        outputs = model(**inputs)
+        loss = self._compute_combined_loss(outputs, inputs, soft_labels)
         loss.backward()
 
         fgm = FGM(model)
         fgm.attack()
-        loss_adv = self.compute_loss(model, inputs)
+        outputs_adv = model(**inputs)
+        loss_adv = self._compute_combined_loss(outputs_adv, inputs, soft_labels)
         loss_adv.backward()
         fgm.restore()
 
@@ -126,7 +151,7 @@ class ModelTrainer(BaseTrainer):
             val_data = json.load(f)
         self.log_result("Val samples", len(val_data))
 
-        # Balance training data
+        # Balance training data — use 1:2 pos:neg for ranking (more negatives = better contrast)
         random.seed(self.config.random_seed)
         pos_samples = [d for d in train_data if d.get("label") == 1]
         neg_samples = [d for d in train_data if d.get("label") == 0]
@@ -134,9 +159,10 @@ class ModelTrainer(BaseTrainer):
         self.log_result("Original POS", len(pos_samples))
         self.log_result("Original NEG", len(neg_samples))
 
-        # Balance to minority class
-        if len(neg_samples) > len(pos_samples):
-            neg_samples = random.sample(neg_samples, len(pos_samples))
+        # Keep up to 2× negatives relative to positives for better ranking signal
+        target_neg = min(len(neg_samples), 2 * len(pos_samples))
+        if len(neg_samples) > target_neg:
+            neg_samples = random.sample(neg_samples, target_neg)
         elif len(pos_samples) > len(neg_samples):
             pos_samples = random.sample(pos_samples, len(neg_samples))
 
@@ -197,24 +223,51 @@ class ModelTrainer(BaseTrainer):
                 metric_for_best_model="eval_loss",
                 greater_is_better=False,
                 seed=self.config.random_seed,
+                fp16=getattr(self.config, "fp16", False),
+                dataloader_num_workers=0,  # Windows compatibility
             )
 
+            # Graded relevance → soft label: -1/0→0.0, 1→0.4, 2→0.7, 3→1.0
+            # label=1 with relevance=0 gets 0.15 (minimum positive)
+            _REL_SOFT = {-1: 0.0, 0: 0.0, 1: 0.4, 2: 0.7, 3: 1.0}
+            _LABEL1_REL0_SOFT = 0.15  # positive but zero-graded relevance
+
             def tokenize_function(examples):
-                # Use property_id if property field not available
+                # Use property text field (cross-encoder needs actual text, not URLs)
                 if "property" in examples:
                     property_text = examples["property"]
-                elif "property_id" in examples:
-                    property_text = examples["property_id"]
                 else:
-                    property_text = examples["query"]
+                    # Fallback: empty string is better than a URL
+                    property_text = [""] * len(examples["query"])
 
-                return self.tokenizer(
+                result = self.tokenizer(
                     examples["query"],
                     property_text,
                     max_length=self.config.max_length,
                     truncation=True,
                     padding="max_length",
                 )
+                # HuggingFace Trainer expects "labels" column (hard binary)
+                if "label" in examples:
+                    result["labels"] = [int(bool(l)) for l in examples["label"]]
+
+                # Soft labels encode graded relevance for ranking-aware loss
+                labels = examples.get("label", [0] * len(examples["query"]))
+                relevances = examples.get("relevance", [0] * len(examples["query"]))
+                soft = []
+                for lbl, rel in zip(labels, relevances):
+                    try:
+                        rel_int = int(rel) if rel is not None else 0
+                    except (ValueError, TypeError):
+                        rel_int = 0
+                    if int(bool(lbl)) == 0:
+                        soft.append(0.0)
+                    elif rel_int == 0:
+                        soft.append(_LABEL1_REL0_SOFT)
+                    else:
+                        soft.append(_REL_SOFT.get(rel_int, 0.15))
+                result["soft_labels"] = soft
+                return result
 
             # Tokenize datasets
             train_tokenized = self.train_dataset.map(tokenize_function, batched=True)
@@ -253,6 +306,13 @@ class ModelTrainer(BaseTrainer):
 
         self.log_result("Training completed", f"{train_result.global_step} steps")
         self.log_result("Final train loss", f"{train_result.training_loss:.4f}")
+
+        # Explicitly save best model + tokenizer so exporter can load from saved_model_dir
+        self.log_step("Saving best model to disk")
+        self.trainer.save_model(str(self.config.saved_model_dir))
+        if self.tokenizer is not None:
+            self.tokenizer.save_pretrained(str(self.config.saved_model_dir))
+        self.log_result("Model saved", str(self.config.saved_model_dir))
 
         # Pull best val metrics from trainer log history
         val_loss = 0.0

@@ -5,29 +5,45 @@
 ## 系統核心亮點
 
 - **跨平台數據自動化整合**: 系統利用 Playwright 動態爬蟲技術，整合中興大學校外租屋網與租租通數據，解決資訊破碎化問題。
+
+- **雙層 NER + 語意匹配**:
+  - **第一層**：BERT-based NER 模型自動從查詢文本抽取地點 (LOC)、預算 (BGT)、設施 (FEAT) 三類實體，F1=0.958，用於初步篩選與特徵增強。
+  - **第二層**：RBT6 Cross-Encoder 進行深層語意匹配重排，NDCG@5=0.862，確保語意邏輯一致性。
+  - **前端優化**：NER Web Worker 於瀏覽器端實現 <20ms 毫秒級推論，完全無卡頓。
+
 - **生活型態意圖推論 (Lifestyle Intent Inference)**: **(NEW V3)** 系統不僅能識別關鍵字，還能推斷生活需求。透過 15+ 組「生活聚類」，自動將「不想追垃圾車」映射至子母車，將「想省錢自炊」映射至瓦斯廚房，達成深層意圖理解。
+
 - **硬性約束一票否決 (Strict Mode)**: 實施針對預算上限、寵物政策與台電計費的「零容忍」過濾邏輯，優先保證用戶底線需求，解決模型對地點優勢的權衡偏見。
+
 - **深度語意解析 (RoBERTa RBT6)**: 採用 hfl/rbt6 架構，其深層的參數容量與特徵空間能細膩地捕捉口語化需求中的語意細節。
+
 - **強化對抗訓練 (Adversarial Training/FGM)**: 實作 FGM (Fast Gradient Method) 於訓練過程中針對 Embedding 層注入對抗性擾動，顯著提升模型在面對非規範口語輸入時的泛化能力與魯棒性。
+
 - **真實路網權重系統**: 整合 OSRM 引擎計算真實路網權重，以步行與機車的實際通勤時間作為推薦排序的核心因子。
-- **邊緣端高效推論 (Edge AI)**: 透過 ONNX Runtime Web 實作瀏覽器端即時推理，並利用 INT8 量化技術確保在客戶端裝置上的執行效率。
+
+- **邊緣端高效推論 (Edge AI)**: 透過 ONNX Runtime Web 實作瀏覽器端即時推理，雙模型都採用 INT8 量化（共 ~100MB），確保移動端快速加載與高效執行。
+
+- **6步自適應數據流水線**: Merge → Commute → Generate → Augment → Mine → Embed，自動化處理多源異構數據，支援 LLM 增強、困難樣本挖掘、嵌入預計算等高級特性。
 
 ---
 
 ## 系統架構圖 (System Architecture)
 
 ### 1. 數據流水線 (Data Pipeline)
-展示從原始資料抓取到模型產出的完整自動化流程：
+展示從原始資料抓取到模型產出的完整自動化流程（6步）：
 
 ```mermaid
 graph TD
-    A1["租租通 Crawler\n(Playwright/JSON-LD)"] --> B("nchu_rental_info.csv\n(多源資料集)")
+    A1["租租通 Crawler\n(Playwright/JSON-LD)"] --> B("merge\n多源資料合併")
     A2["興大官網 Crawler\n(Request/HTML)"] --> B
-    B --> C("update_commute_data.py\nOSRM 路網時間計算")
-    C --> D("generate_dataset.py\n樣本合成、物件級切割與多級採樣")
-    D --> E("train_and_export_onnx.py\n模型微調與權重導出")
-    E --> F["my_custom_model.onnx (INT8)"]
-    C --> G["property_data.json\n(前端房源庫)"]
+    B --> C("commute\nOSRM 路網時間計算")
+    C --> D("generate\n樣本合成、物件級切割與多級採樣")
+    D --> E("augment\nLLM 語意增強")
+    E --> F("mine\n困難樣本挖掘")
+    F --> G("embed\n預計算嵌入向量")
+    G --> H("train_and_export_onnx.py\n模型微調與權重導出")
+    H --> I["my_custom_model.onnx (INT8)"]
+    C --> J["property_data.json\n(前端房源庫)"]
 ```
 
 ### 2. 推論與匹配邏輯 (Inference Flow)
@@ -58,17 +74,37 @@ graph TD
 ├── pipeline/
 │   ├── crawlers/            # 多源數據採集 (Playwright/Request)
 │   │   ├── crawler_ddroom.py # 租租通 (Playwright) 動態渲染爬蟲
-│   │   └── rent_info_catcher.py # 興大官網數據解析腳本
-│   ├── data_prep/           # 數據加工、路網計算與樣本生成
-│   │   ├── generate_dataset.py # 樣本合成、物件級切割與多級採樣核心
-│   │   ├── augment_with_llm.py # 利用 Gemini API 進行對抗樣本增廣
-│   │   └── update_commute_data.py # OSRM 引擎調用與路網時間更新
-│   └── model_training/      # 模型微調、對抗訓練與導出優化
-│       ├── train_and_export_onnx.py # 核心訓練、FGM 注入與 ONNX 導出
-│       ├── quantize_model.py   # INT8 量化與模型體積優化
-│       └── export_from_checkpoint.py # 指定最佳檢查點手動導出與評估
+│   │   ├── crawler_nchu.py   # 興大官網爬蟲
+│   │   └── rent_info_catcher.py # 興大官網數據解析腳本 (向後相容)
+│   ├── data_prep/           # 數據加工、路網計算與樣本生成 (6步流程)
+│   │   ├── pipeline.py       # 數據流水線主控制器
+│   │   ├── merge_sources.py  # Step 1: 多源資料合併
+│   │   ├── commute_updater.py # Step 2: OSRM 路網時間計算
+│   │   ├── generate_dataset.py # Step 3: 樣本合成、物件級切割與多級採樣
+│   │   ├── augment_with_llm.py # Step 4: LLM 語意增強
+│   │   ├── mine_hard_negatives.py # Step 5: 困難樣本挖掘
+│   │   ├── precompute_embeddings.py # Step 6: 預計算嵌入向量
+│   │   ├── lifestyle_mapper.py # 生活型態意圖推論
+│   │   └── update_commute_data.py # (已移至 Step 2)
+│   ├── ner_model/           # 命名實體識別 (NER) 模組
+│   │   ├── ner_trainer.py    # NER 模型訓練 (BERT-based token classification)
+│   │   ├── ner_predictor.py  # NER 推論介面
+│   │   └── config.py         # NER 設置與標籤映射
+│   ├── model_training/      # 模型微調、對抗訓練與導出優化
+│   │   ├── pipeline.py       # 訓練流水線主控制器
+│   │   ├── trainer.py        # FGM 對抗訓練的 Trainer 子類
+│   │   ├── train_and_export_onnx.py # 核心訓練與 ONNX 導出
+│   │   ├── quantize_model.py   # INT8 量化與模型體積優化
+│   │   ├── export_from_checkpoint.py # 指定最佳檢查點手動導出與評估
+│   │   └── evaluator.py      # 模型評估與指標計算
+│   ├── constraints/         # 硬約束邏輯
+│   │   └── hard_constraints.py # 預算、寵物、台電計費零容忍過濾
+│   ├── osrm_client.py       # OSRM API 客戶端 (真實路網權重)
+│   ├── orchestrator.py      # 三階段統一協調器
+│   └── runners.py           # 各階段 Runner 包裝函數
 ├── saved_models/            # 訓練過程產出之 PyTorch 模型檢查點 (Checkpoints)
-└── run_pipeline.sh          # 訓練啟動腳本
+├── pipeline_runner.py       # 統一入口點 (Phase 1-2-3 端到端執行)
+└── data/ner/                # NER 訓練資料
 ```
 
 ---
@@ -150,47 +186,101 @@ graph TD
 
 系統針對 Web 端部署實作了多項關鍵效能技術：
 
-1. **並行加載策略 (Parallel Loading)**: 分詞器與模型檔案透過 Promise.all 進行並行下載，縮短初始化時間。
-2. **串流進度追蹤 (Stream Fetch)**: 改用原生 Fetch API 監控資料流，提供精確的載入進度回報。
-3. **快取策略 (Edge Caching)**: 於 vercel.json 實作強效快取標頭，確保 ONNX 資源瞬間載入。
-4. **渲染隔離**: 核心推理邏輯運行於獨立的 Web Worker，避免主線程凍結。
+1. **雙模型推論系統**:
+   - **NER 模型** (ner-worker.js): 從使用者查詢自動抽取 LOC/BGT/FEAT 實體，優化首階段篩選準確度
+   - **交叉編碼器** (inference.js): 對候選房源進行深層語意匹配重排
+
+2. **並行加載策略 (Parallel Loading)**: 分詞器、模型檔案、NER Worker 透過 Promise.all 進行並行下載，縮短初始化時間。
+
+3. **串流進度追蹤 (Stream Fetch)**: 改用原生 Fetch API 監控資料流，提供精確的載入進度回報。
+
+4. **快取策略 (Edge Caching)**: 於 vercel.json 實作強效快取標頭，確保 ONNX 資源瞬間載入。
+
+5. **渲染隔離**: 核心推理邏輯（NER + 交叉編碼器）運行於獨立的 Web Worker，確保主線程流暢度。
+
+6. **量化優化**: NER 和交叉編碼器皆採用 INT8 量化，確保移動端可快速加載 (~100MB total)。
 
 ---
 
 ## 核心模組說明
 
-### 1. 數據處理 (pipeline/)
-- **crawler_ddroom.py**: 使用 Playwright 處理動態網頁渲染，解析 JSON-LD 結構化資料。
-- **rent_info_catcher.py**: 針對興大官方租屋網進行 DOM 解析。
-- **update_commute_data.py**: 調用 OSRM API 獲取真實路網數據。
-- **augment_with_llm.py**: 利用 Gemini API 生成模擬口語查詢樣本。
+### 1. 數據處理 (pipeline/data_prep/)
+- **pipeline.py**: 6步流水線協調器，整合 merge → commute → generate → augment → mine → embed
+- **merge_sources.py**: 多源房源數據合併與規範化
+- **commute_updater.py**: 通過 OSRM API 計算真實路網通勤時間（步行 + 機車）
+- **generate_dataset.py**: 樣本合成、物件級切割與多級採樣核心引擎
+- **augment_with_llm.py**: 利用 Gemini/Claude API 生成模擬口語查詢樣本
+- **mine_hard_negatives.py**: 困難樣本自動挖掘（低相似度但被模型誤判的樣本）
+- **precompute_embeddings.py**: 預計算房源/查詢嵌入向量，加速推論
+- **lifestyle_mapper.py**: 15+ 組生活聚類，推斷「不想追垃圾車」→ 子母車等深層意圖
 
-### 2. 模型開發 (pipeline/model_training/)
-- **train_and_export_onnx.py**: 整合 FGM 對抗訓練與加權損失函數。
-- **export_from_checkpoint.py**: 支援從檢查點導出並產出評估報告。
-- **quantize_model.py**: 實施 INT8 量化優化模型體積。
+### 2. NER 模型 (pipeline/ner_model/)
+- **ner_trainer.py**: BERT-based 序列標註訓練 (LOC/BGT/FEAT 3 類實體)，導出 INT8 量化 ONNX
+- **ner_predictor.py**: NER 推論介面，用於前端和後端實體抽取
+- 前端集成: **frontend/js/ner-worker.js** 為獨立 Web Worker，確保瀏覽器端毫秒級推論無卡頓
+
+### 3. 語意匹配與約束 (pipeline/)
+- **constraints/hard_constraints.py**: 預算上限、寵物政策、台電計費「零容忍」過濾（一票否決）
+- **osrm_client.py**: OSRM 客戶端，整合真實路網距離與通勤時間權重
+
+### 4. 模型訓練 (pipeline/model_training/)
+- **pipeline.py**: 訓練流水線協調器
+- **trainer.py**: `FGMTrainer` 子類，在 embedding 層注入對抗擾動 (Fast Gradient Method)，增強魯棒性
+- **train_and_export_onnx.py**: RBT6 微調、多任務損失、NDCG@5 評估與 ONNX 導出
+- **export_from_checkpoint.py**: 從檢查點手動導出並產出評估報告
+- **quantize_model.py**: INT8 量化優化模型體積 (FP32 → INT8, ~4x 壓縮)
+- **evaluator.py**: NDCG@5, MRR, F1 等排序與分類指標計算
+
+### 5. 端到端執行 (pipeline/)
+- **orchestrator.py**: `PipelineOrchestrator` 統一調度三階段 (Phase 1-2-3)
+- **runners.py**: 各階段的 Runner 包裝函數
+- **pipeline_runner.py** (項目根目錄): 命令行入口點，支援 `--skip-phase 1 2 3` 靈活組合
 
 ---
 
 ## 執行與部署
 
 ### 1. 環境建置與依賴安裝
-請確保系統已安裝 Python 3.10+ 與 Node.js，接著執行以下指令：
+請確保系統已安裝 Python 3.11+ 與 Node.js，接著執行：
 
 ```bash
-# 安裝核心相依套件
-pip install torch transformers datasets onnxruntime playwright tqdm numpy pandas
-# 安裝 Playwright 核心瀏覽器（用於動態網頁抓取）
+# 建立虛擬環境
+python -m venv venv
+
+# 啟動虛擬環境
+# Windows:
+venv\Scripts\activate
+# Linux/macOS:
+source venv/bin/activate
+
+# 升級 pip
+pip install --upgrade pip
+
+# 安裝 PyTorch (GPU 版本 - CUDA 12.4)
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+
+# 安裝全部依賴
+pip install -r requirements.txt
+
+# 安裝 Playwright 瀏覽器（用於動態網頁爬蟲）
 playwright install chromium
 ```
 
 ### 2. 全自動化流水線執行 (End-to-End Pipeline)
-本專案提供整合腳本，執行後將自動完成「資料抓取 -> 路網計算 -> 樣本生成 -> 模型訓練 -> ONNX 導出」：
+本專案提供統一的 `pipeline_runner.py` 入口點，支援靈活的階段組合：
 
 ```bash
-# 賦予執行權限並啟動流水線
-chmod +x run_pipeline.sh
-./run_pipeline.sh
+# 完整執行 (Phase 1: 爬蟲, Phase 2: 數據處理, Phase 3: 訓練)
+python pipeline_runner.py
+
+# 跳過爬蟲，只進行數據處理與訓練 (資料已存在時)
+python pipeline_runner.py --skip-phase 1
+
+# 只執行訓練 (資料與處理已完成)
+python pipeline_runner.py --skip-phase 1 --skip-phase 2
+
+# 顯示幫助
+python pipeline_runner.py --help
 ```
 
 ### 3. 手動模型導出與本地預覽
@@ -200,9 +290,17 @@ chmod +x run_pipeline.sh
 # 1. 導出最佳模型至前端目錄
 python pipeline/model_training/export_from_checkpoint.py
 
-# 2. 啟動本地輕量化伺服器檢視成果
-cd frontend && python3 -m http.server 8000
-# 開啟瀏覽器訪問 http://localhost:8000
+# 2. 啟動本地開發伺服器
+cd frontend && python -m http.server 8000
+
+# 3. 開啟瀏覽器訪問 http://localhost:8000
+```
+
+### 4. NER 模型單獨訓練與測試
+若需單獨訓練 NER 模型：
+
+```bash
+python pipeline/ner_model/ner_trainer.py
 ```
 
 ---
