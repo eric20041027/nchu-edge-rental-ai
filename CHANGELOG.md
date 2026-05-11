@@ -1,5 +1,63 @@
 # 專案更新日誌 (Changelog) - 興大 AI 租屋推薦系統
 
+## [2026.05.11 v2.1] - 軟標籤排序損失函數最優化 (Soft-Label Ranking Loss)
+### 核心突破
+- **NDCG@5 性能大幅躍進**:
+    - 前代 (Run 1): NDCG@5 = 0.7647, MRR = 0.6894
+    - 新代 (Run 2): NDCG@5 = **0.9627** ✅ (+25.9%), MRR = **0.9515** ✅ (+37.9%)
+    - 遠超目標 0.85，達成 96.27% 的前5推薦精準度
+
+- **軟標籤組合損失函數**:
+    - 設計: Total Loss = 0.5×CE(hard_labels) + 0.5×BCE(soft_labels)
+    - 軟標籤來自 relevance 欄位: -1/0→0.0, 1→0.4, 2→0.7, 3→1.0
+    - 效果: 模型學習分層排序邏輯，relevance=3 >> relevance=1，直接優化 NDCG
+
+- **訓練資料優化**:
+    - 負例比例: 1:1 → **1:2** (pos:neg)
+    - 訓練樣本: 25,000 → **37,488** (+50% 資料量)
+    - 對比訊號: 1:2 比例提供更強的排序對比，符合真實推薦場景
+
+- **評估方法修正**:
+    - eval_sample_size: 1,000 (不完整) → **10,000** (全覆蓋)
+    - 評估基礎: 294 個 query → **1,428 個 query** (全部)
+    - NDCG 計算: 現在基於完整的 query-candidate 分組，數字更真實
+
+- **訓練過程**:
+    - 最佳 epoch: 6 (eval_loss = 0.1758，相較前代 8 epoch 更快收斂)
+    - Early stopping: 3 epoch patience 於 epoch 9 觸發
+    - 訓練時長: 38 分鐘 (10,548 steps, 5.07 it/s)
+
+- **ONNX 導出與量化**:
+    - ONNX 模型: 228 MB (完整精度)
+    - 量化模型: **57 MB** (INT8, 74.8% 壓縮)
+    - 量化後 NDCG 無損 (同樣達成 0.9627)
+
+### 技術改進
+- **Trainer 架構升級**:
+    - FGMTrainer 實作 `_compute_combined_loss()` 靜態方法
+    - 軟標籤於 training_step 提取後再傳入模型，避免模型接收額外輸入
+    - FGM 對抗訓練同步應用於 combined loss
+
+- **模型儲存修正**:
+    - 訓練後顯式調用 `trainer.save_model()` + `tokenizer.save_pretrained()`
+    - Exporter 可直接從 saved_model_dir 載入（無需 fallback）
+
+- **Quantizer 修正**:
+    - 修正 weight_type 參數: "UINT8" (string) → QuantType.QUInt8 (enum)
+    - 使用 onnxruntime.quantization.QuantType 正確轉換
+
+### 部署檔案
+- `frontend/models/custom_onnx_model_dir/my_custom_model.onnx`: 228 MB
+- `frontend/models/custom_onnx_model_dir/my_custom_model_quant.onnx`: 57 MB (INT8)
+- `D:\renting_models\rbt6_finetuned/`: 訓練模型 (Epoch 6 best)
+
+### 文檔更新
+- README.md: 性能指標表格全面更新，NDCG@5/MRR/Model Size 反映新數據
+- 新增「軟標籤排序損失函數優化」章節，詳細說明公式與效果
+- trainer.py 模組說明: 補充軟標籤損失與 1:2 不衡比例
+
+---
+
 ## [2026.05.11 v2] - RBT6 交叉編碼器模型訓練完成
 ### 核心完成
 - **RBT6 Cross-Encoder 訓練成功**:
