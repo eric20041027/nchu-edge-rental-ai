@@ -11,7 +11,7 @@ class NERConfig:
     def __init__(self):
         base = Path(os.environ.get("PROJECT_ROOT", Path(__file__).parent.parent.parent))
 
-        self.base_model      = os.environ.get("NER_BASE_MODEL", "bert-base-chinese")
+        self.base_model      = os.environ.get("NER_BASE_MODEL", "hfl/rbt3")
         self.num_labels      = len(LABEL2ID)
         self.label2id        = LABEL2ID
         self.id2label        = ID2LABEL
