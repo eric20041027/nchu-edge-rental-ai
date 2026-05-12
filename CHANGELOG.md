@@ -1,5 +1,52 @@
 # 專案更新日誌 (Changelog) - 興大 AI 租屋推薦系統
 
+## [2026.05.12 v2.2] - 多維度品質提升：NER 壓縮、評分修正與前端增強
+
+### 核心改進
+
+#### 🔧 `compute_relevance_score` 全面修正
+- **預算方向感知**：修正「以上」被誤判為上限的嚴重 Bug，改為正確語意（以上=下限，以下/以內=上限）
+- **is_strict 過度觸發修正**：移除「找/想要/需要」等幾乎所有查詢都包含的詞，嚴格模式僅在「一定要/絕對/急尋/【/＃」等真正強調語境觸發
+- **負分保護**：`satisfied -= 0.5` 改為 `satisfied += 0.0`，並在最終計算前加 `max(0.0, ...)` 防止 score_ratio < 0
+- **Geo-tier 溢位修正**：`satisfied += 1 + bonus` 改為 `satisfied += min(1.0, 1.0 + bonus)` 防止超出 total_specified
+
+#### 📝 查詢模板多樣性擴充
+- **Strategy 6 (情境/角色式查詢)**：新增大一新生、交換學生、預算緊張族、WFH、寵物主人、安全意識、租補申請等 7 類角色情境查詢
+- **Strategy 7 (負向需求查詢)**：加入「不要頂加」、「不要暗房」、「不要太吵」等真實用戶常見否定式查詢
+
+#### 🚶 通勤時間整合 (Task 5)
+- `load_properties()` 新增 `walk_mins` / `scooter_mins` 欄位讀取（969/972 筆有數據）
+- `property_to_text()` 輸出新增「步行X分鐘」、「騎車X分鐘」使模型學習通勤語意
+- `expr_distance()` 優先使用 CSV 實際通勤數據（OSRM 計算），無資料才退回估算（0.08km/min 步行，0.6km/min 騎車）
+- 通勤閾值放寬：步行 15 → 20 分鐘，騎車 10 → 15 分鐘，新增「走路約X分」/「騎車約X分」變體
+
+#### 💰 前端 NER BGT 實體預算過濾 (Task 6)
+- 新增 `parseBudgetFromNER(budgetSpans)` 函數，支援萬/千/k/中文數字解析
+- `recommend()` 中：當 regex 未能識別預算時，自動使用 NER 提取的 BGT 實體補充 `constraints.budget`
+- 支援方向感知：BGT span 包含「以上」→ `limit='above'`，其餘預設 `limit='below'`
+
+#### 🤖 NER 模型壓縮 (hfl/rbt3)
+- 底層模型從 `bert-base-chinese`（12 層，98 MB）換為 `hfl/rbt3`（3 層，37 MB）
+- F1-Score 維持 0.9972，總下載量 169 MB → 107 MB（-37%）
+- 修正訓練腳本：`save_only_model=True`、`save_total_limit=2`（防止 optimizer.pt 耗盡磁碟）
+- 修正 ONNX 導出：`dynamo=False` 解決 PyTorch 2.11 torch._dynamo 不相容問題
+
+#### 👍 前端推薦反饋按鈕 (Task 3)
+- 每張房源卡片底部新增「👍 有用 / 👎 不符」反饋列
+- `saveFeedback()` 記錄 `{ts, query, propertyId, vote}` 至 localStorage，上限 500 筆
+- 點擊後切換為「感謝回饋！」綠色提示，防止重複記錄
+
+#### 📊 雙進度條 UI (Task 4)
+- 模型載入介面分為兩條進度條：Cross-Encoder（綠色）+ NER 語意模型（紫色）
+- NER Worker 改用 Streaming Fetch，每 512KB 回報一次進度（`ner_progress` 訊息）
+- `initNER()` 新增 `onProgress` / `onReady` 回調參數
+
+### 訓練資料更新
+- 以修正後的 `generate_dataset.py` 重新生成：33,598 訓練 / 3,894 dev / 3,993 測試
+- 負例比例保持 1:2.5（Pos: 9,590 / Neg: 24,008）
+
+---
+
 ## [2026.05.11 v2.1] - 軟標籤排序損失函數最優化 (Soft-Label Ranking Loss)
 ### 核心突破
 - **NDCG@5 性能大幅躍進**:

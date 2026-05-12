@@ -115,6 +115,9 @@ def load_properties(csv_path: str = None) -> List[Dict[str, Any]]:
         room_type = "套房" if "套房" in type_str else ("雅房" if "雅房" in type_str else ("住宅" if "住宅" in type_str else ""))
         building_type = type_str.replace("套房", "").replace("雅房", "").replace("住宅", "").strip()
 
+        walk = int(row.get("walk_mins", "0") or "0")
+        scooter = int(row.get("scooter_mins", "0") or "0")
+
         properties.append({
             "address": addr, "region": region, "road": road,
             "room_type": room_type, "building_type": building_type,
@@ -122,6 +125,7 @@ def load_properties(csv_path: str = None) -> List[Dict[str, Any]]:
             "furniture": furniture, "included": included, "security": [],
             "notes": notes, "distance": dist, "url": row.get("網址", ""),
             "img": row.get("圖片網址", ""), "floor": row.get("樓層", ""),
+            "walk_mins": walk, "scooter_mins": scooter,
         })
 
     return properties
@@ -130,9 +134,16 @@ def load_properties(csv_path: str = None) -> List[Dict[str, Any]]:
 def property_to_text(prop: Dict[str, Any]) -> str:
     """Consolidates property keys into a canonical descriptive string."""
     parts = [p for p in (prop["room_type"], prop["building_type"], prop["region"], prop["road"]) if p]
-    
+
     if prop["rent"]: parts.append(f"{prop['rent']}元")
     if prop["distance"]: parts.append(f"距離{prop['distance']}km")
+
+    walk = prop.get("walk_mins", 0) or 0
+    scooter = prop.get("scooter_mins", 0) or 0
+    if walk > 0:
+        parts.append(f"步行{walk}分鐘")
+    if scooter > 0:
+        parts.append(f"騎車{scooter}分鐘")
 
     key_furniture = []
     for f in prop["furniture"]:
@@ -181,14 +192,16 @@ class QueryGenerator:
         return exprs
 
     @staticmethod
-    def expr_distance(dist_km: float) -> List[str]:
+    def expr_distance(dist_km: float, walk_mins: int = 0, scooter_mins: int = 0) -> List[str]:
         exprs = []
         if dist_km <= 1.0: exprs += ["學校附近", "中興大學旁", "近中興", "學校旁邊", "中興大學門口", "正門附近", "走路就到"]
         if dist_km <= 0.5: exprs += ["非常近", "校門口", "走路五分鐘"]
-        
-        walk, ride = round(dist_km / 0.08), round(dist_km / 0.6)
-        if walk <= 15: exprs.extend([f"走路{walk}分鐘", f"步行{walk}分鐘內"])
-        if ride <= 10: exprs.extend([f"騎車{ride}分鐘", f"機車{ride}分鐘"])
+
+        # Use actual commute times from CSV when available; fall back to estimated
+        walk = walk_mins if walk_mins > 0 else round(dist_km / 0.08)
+        ride = scooter_mins if scooter_mins > 0 else round(dist_km / 0.6)
+        if walk <= 20: exprs.extend([f"走路{walk}分鐘", f"步行{walk}分鐘內", f"走路約{walk}分"])
+        if ride <= 15: exprs.extend([f"騎車{ride}分鐘", f"機車{ride}分鐘", f"騎車約{ride}分"])
         return exprs
 
     @classmethod
@@ -199,7 +212,11 @@ class QueryGenerator:
             "building": Templates.BUILDING.get(prop["building_type"], []) if prop["building_type"] else [],
             "region": Templates.REGION.get(prop["region"], []) if prop["region"] else [],
             "road": [prop["road"]] if prop["road"] else [],
-            "distance": cls.expr_distance(prop["distance"]) if prop["distance"] else [],
+            "distance": cls.expr_distance(
+                prop["distance"],
+                prop.get("walk_mins", 0) or 0,
+                prop.get("scooter_mins", 0) or 0,
+            ) if prop["distance"] else [],
             "furniture": list({t for f in prop["furniture"] for t in Templates.FURNITURE.get(f, [])}),
             "included": list({t for inc in prop["included"] for t in Templates.INCLUDED.get(inc, [])}),
             "special": [],
@@ -248,40 +265,117 @@ class QueryGenerator:
 
         # Strategy 5: Colloquial Slang & Deep Lifestyle Inference
         colloquials = ["想在中興大學附近租房", "學校旁邊有沒有房子", "想找便宜的租屋", "有空房嗎"]
-        
+
         # Financial / Value Inference
-        if prop["rent"] and prop["rent"] <= 5000: 
+        if prop["rent"] and prop["rent"] <= 5000:
             colloquials.extend(["便宜的房子", "平價租屋", "想省錢", "預算有限", "追求CP值"])
-        
+
         # Proximity Inference
-        if prop["distance"] and prop["distance"] <= 0.8: 
-            colloquials.extend(["走路就能到學校", "學校附近租房", "不想騎車", "正門口附近", "睡晚一點"])
-        
+        walk_mins = prop.get("walk_mins", 0) or 0
+        proximity_thresh = (walk_mins <= 15 and walk_mins > 0) or (prop["distance"] and prop["distance"] <= 0.8)
+        if proximity_thresh:
+            walk_str = f"走路{walk_mins}分鐘" if walk_mins > 0 else "走路就到"
+            colloquials.extend([
+                "走路就能到學校", "學校附近租房", "不想騎車", "正門口附近", "睡晚一點",
+                f"{walk_str}能到學校 超方便",
+            ])
+
         # Lifestyle Features Inference
         full_text = " ".join(prop.get("notes", [])) + " ".join(prop.get("furniture", []))
-        
-        # 1. Homebody / Convenience (飲水機, 子母車, 電梯)
-        has_convenience = any(k in full_text for k in ["飲水機", "子母車", "垃圾", "電梯"])
-        if has_convenience:
+
+        if any(k in full_text for k in ["飲水機", "子母車", "垃圾", "電梯"]):
             colloquials.extend(["不想出門買水", "懶人首選", "不想追垃圾車", "沒時間倒垃圾", "生活機能要好"])
-            
-        # 2. Cooking / Healthy (開火, 瓦斯)
+
         if any(k in full_text for k in ["瓦斯爐", "開火", "廚房"]):
             colloquials.extend(["喜歡自己煮", "想省伙食費", "不想天天外食", "居家自炊", "可以煮泡麵"])
-            
-        # 3. Comfort / Rest (對外窗, 隔音, 採光)
+
         if any(k in full_text for k in ["陽台", "對外窗", "採光", "隔音"]):
             colloquials.extend(["怕悶熱", "房間要通風", "需要對外窗", "淺眠怕吵", "想要採光好", "衣服要乾"])
-            
-        # 4. Pets / Emotion (寵物)
+
         if any(k in full_text for k in ["寵物", "貓", "狗"]):
             colloquials.extend(["有主子", "帶毛小孩", "寵物友善", "不離不棄"])
-            
-        # 5. Cleanliness (全新, 獨洗, 禁菸)
+
         if any(k in full_text for k in ["全新", "獨洗", "禁菸"]):
             colloquials.extend(["愛乾淨", "稍微潔癖", "不想跟人共用", "怕菸味"])
-        
+
         queries.extend(random.sample(colloquials, min(3, len(colloquials))))
+
+        # Strategy 6: Situational / Persona-based queries
+        # These simulate real-world user phrasing with identity context + constraints
+        situational = []
+
+        # Student personas
+        if prop["distance"] and prop["distance"] <= 2.0:
+            situational += [
+                f"大一新生找宿舍 預算{prop['rent']+500}以下",
+                f"交換學生一年 想租學校附近",
+                f"研究所剛入學 不太熟台中 想住近一點",
+            ]
+        # Budget-tight personas
+        if prop["rent"] and prop["rent"] <= 6000:
+            situational += [
+                f"剛畢業薪水不高 想找{prop['rent']}左右的",
+                f"打工族 月租盡量壓在{prop['rent']+300}以下",
+                f"存錢中 希望房租不超過{prop['rent']+200}",
+            ]
+        # Comfort-seeking personas
+        if prop.get("building_type") in ("大樓", "華廈"):
+            situational += [
+                "不想爬樓梯 一定要有電梯",
+                "腿不好 想住有電梯的大樓",
+                "搬家方便 大樓優先",
+            ]
+        # Pet-owner personas
+        if any(k in full_text for k in ["可養", "寵物"]):
+            situational += [
+                "有一隻貓 請問可以養嗎",
+                "養了一隻小狗 找可以帶寵物的房",
+                "毛孩子跟我一起住 求寵物友善房東",
+            ]
+        # Work-from-home personas
+        if any(k in full_text for k in ["網路", "寬頻"]):
+            situational += [
+                "在家工作 網路速度很重要",
+                "接案族 需要穩定網路和書桌",
+                "遠距上班 白天在家 希望安靜且有網路",
+            ]
+        # Safety-conscious personas
+        if any(k in full_text for k in ["保全", "門禁", "監視器"]):
+            situational += [
+                "女生單獨住 安全最重要",
+                "一個人住怕不安全 有門禁比較好",
+                "希望有門禁或保全 住得安心",
+            ]
+        # Subsidy personas
+        if any(k in full_text for k in ["租補", "補助"]):
+            situational += [
+                "想申請租金補貼 房東可以配合嗎",
+                "第一次租屋想辦理租屋補助",
+                "希望可以報稅 有沒有可租補的",
+            ]
+
+        if situational:
+            queries.extend(random.sample(situational, min(4, len(situational))))
+
+        # Strategy 7: Negative requirement queries
+        # Real users often state what they DON'T want
+        negatives_pool = []
+        if prop["rent"] and prop["rent"] >= 8000:
+            negatives_pool.append("不要太貴 預算有限")
+        if prop.get("distance") and prop["distance"] <= 1.5:
+            negatives_pool.append("不想騎很遠 最好走路就到")
+        negatives_pool += [
+            "不要頂加",
+            "不要暗房 要有對外窗",
+            "不要太吵 附近不要夜市",
+        ]
+        if negatives_pool:
+            chosen_neg = random.choice(negatives_pool)
+            # Combine with a positive feature to make it realistic
+            if features.get("budget"):
+                queries.append(f"{random.choice(features['budget'])} {chosen_neg}")
+            else:
+                queries.append(chosen_neg)
 
         final_queries = list(set([cls.inject_noise(q) for q in queries]))
         random.shuffle(final_queries)
@@ -424,78 +518,101 @@ def is_compatible(query: str, prop: Dict[str, Any]) -> bool:
 
 
 def compute_relevance_score(query: str, prop: Dict[str, Any]) -> int:
-    """Computes a graded relevance score (0-3) based on 4 verifiable dimensions.
-    Allows for 'Soft Mismatches' to enable meaningful NDCG evaluation.
-    
+    """Computes a graded relevance score (0-3) based on verifiable dimensions.
+
     Grading Logic:
-      - 0: Hard Conflict (Gender mismatch, Room type mismatch, explicit exclusions)
-      - 1: Partial Match (Only location or 1 dimension matches)
-      - 2: Good Match (Matches most dimensions, minor mismatch like slightly over budget)
-      - 3: Perfect Match (All specified constraints satisfied)
+      - 0: Hard Conflict (gender/room-type mismatch, explicit exclusions, hard budget miss)
+      - 1: Partial Match  (≥15% dimensions satisfied)
+      - 2: Good Match     (≥65% dimensions satisfied)
+      - 3: Perfect Match  (≥85% dimensions satisfied)
+
+    Fixes vs. previous version:
+      - Budget direction: "以上" treated as floor (user can pay ≥ X), "以下/以內" as ceiling
+      - is_strict only triggers on truly strong keywords; removed "找/想要/需要" which
+        appeared in virtually every query, making the flag meaningless
+      - satisfied is clamped to ≥ 0 before final ratio (no negative scores)
+      - Geo-tier bonus capped so satisfied never exceeds total_specified
     """
-    
-    # --- Part A: Hard Conflicts (Must be 0) ---
-    
-    # 1. Gender Restriction
+
+    # --- Part A: Hard Conflicts (always return 0) ---
+
+    # 1. Gender restriction
     for note in prop.get("notes", []):
         if "限女" in note and "限男" in query: return 0
         if "限男" in note and "限女" in query: return 0
-        if "限男" in note and "限妹子" in query: return 0 # Colloquial
+        if "限男" in note and "限妹子" in query: return 0
 
-    # 2. Room Type Mismatch (Fundamental)
+    # 2. Room type mismatch
     room_types = ["套房", "雅房", "住宅"]
     query_room = next((rt for rt in room_types if rt in query), None)
     if query_room and query_room not in prop.get("room_type", ""):
         return 0
 
-    # 3. Explicit Exclusions (Enhanced)
+    # 3. Explicit feature exclusions
     if re.search(r"(謝絕|不要|拒絕|禁|❌|不接受|非)[^。！？\n]*(頂加|加蓋|頂樓|無窗|暗房|漏水|壁癌)", query):
         notes_all = " ".join(prop.get("notes", [])) + prop.get("building_type", "") + prop.get("floor", "")
         if re.search(r"(頂加|加蓋|頂樓|無窗|暗房|漏水|壁癌)", notes_all):
             return 0
-            
-    # --- Part B: Dimension Scoring (Strict Mode) ---
-    satisfied = 0
+
+    # --- Part B: Dimension Scoring ---
+    satisfied = 0.0
     total_specified = 0
-    # Tone Awareness: keywords like 'absolutely' or 'must have' triggers 0 tolerance
-    is_strict = any(kw in query for kw in ["一定要", "絕對", "必須", "絕對不要", "謝絕", "禁止", "急尋", "求租", "需要", "想要", "不想", "找", "【", "#", "＃", "需求"])
-    
-    # Pre-extract advanced features
+
+    # is_strict: only truly emphatic phrasing — NOT generic "找/想要" which appear everywhere
+    is_strict = any(kw in query for kw in [
+        "一定要", "絕對", "必須", "絕對不要", "謝絕", "禁止", "急尋", "求租", "【", "#", "＃"
+    ])
+
     adv = FeatureEngine.extract_all(prop)
 
-    # 1. Budget & CP Value
-    budget_range = re.findall(r"(\d{4,5})", query)
-    if budget_range:
+    # 1. Budget — direction-aware
+    #    "以上"       → floor: user willing to pay ≥ X  (rent must be ≥ X)
+    #    "以下/以內/內" → ceiling: user budget cap ≤ X   (rent must be ≤ X)
+    #    bare number   → treat as ceiling (most natural renter phrasing)
+    budget_match = re.search(r"(\d{4,5})\s*元?\s*(以上|以下|以內|內|左右|上下)?", query)
+    if budget_match:
         total_specified += 1
-        ceiling = int(budget_range[-1]) # Take the max value in range
-        if prop["rent"] <= ceiling:
-            satisfied += 1
-        else:
-            if is_strict or prop["rent"] > ceiling * 1.1: return 0
-            satisfied += 0.1 
+        budget_val = int(budget_match.group(1))
+        direction = budget_match.group(2) or ""
+        rent = prop["rent"]
 
-    # 2. Features / Furniture (Strict Check)
-    features_needed = [feat for feat, terms in Templates.FURNITURE.items() if any(t in query for t in terms)]
+        if direction == "以上":
+            # user wants a property priced at ≥ budget_val
+            if rent >= budget_val:
+                satisfied += 1
+            elif rent >= budget_val * 0.9:   # within 10% below floor → soft pass
+                satisfied += 0.5
+            else:
+                return 0   # too cheap — doesn't meet stated minimum
+        else:
+            # ceiling mode (以下 / 以內 / bare number)
+            if rent <= budget_val:
+                satisfied += 1
+            elif rent <= budget_val * 1.1:   # within 10% over budget → soft penalty
+                if is_strict: return 0
+                satisfied += 0.3
+            else:
+                return 0   # clearly over budget
+
+    # 2. Features / Furniture
+    features_needed = [feat for feat, terms in Templates.FURNITURE.items()
+                       if any(t in query for t in terms)]
     if features_needed:
         total_specified += 1
-        # Check if the property actually has these features
         has_furniture = prop.get("furniture", [])
-        found_count = sum(1 for feat in features_needed if any(feat in f for f in has_furniture))
-        
-        # In Strict Mode, missing even ONE required feature makes it a hard 0
+        found_count = sum(1 for feat in features_needed
+                          if any(feat in f for f in has_furniture))
         if is_strict and found_count < len(features_needed):
             return 0
-            
-        satisfied += (found_count / len(features_needed))
+        satisfied += found_count / len(features_needed)
 
-    # 2.5 Lifestyle Intent Scoring (Deep Inference)
-    # Mapping colloquial lifestyle needs to multiple required features
+    # 2.5 Lifestyle intents
     lifestyle_intents = {
-        "懶人": ["電梯", "子母車", "飲水機"],
-        "自炊": ["開火", "瓦斯爐", "廚房"],
-        "潔癖": ["全新", "禁菸", "獨洗"],
-        "外送": ["飲水機", "管理員", "包裹"],
-        "怕悶熱": ["陽台", "對外窗", "採光"]
+        "懶人":   ["電梯", "子母車", "飲水機"],
+        "自炊":   ["開火", "瓦斯爐", "廚房"],
+        "潔癖":   ["全新", "禁菸", "獨洗"],
+        "外送":   ["飲水機", "管理員", "包裹"],
+        "怕悶熱": ["陽台", "對外窗", "採光"],
     }
     for intent, reqs in lifestyle_intents.items():
         if intent in query:
@@ -503,36 +620,47 @@ def compute_relevance_score(query: str, prop: Dict[str, Any]) -> int:
             prop_text = " ".join(prop.get("furniture", [])) + " ".join(prop.get("notes", []))
             match_count = sum(1 for r in reqs if r in prop_text)
             if is_strict and match_count == 0: return 0
-            satisfied += (match_count / len(reqs))
+            satisfied += match_count / len(reqs)
 
-    # 3. Location / Region & Geo Tier
-    region_specified = next((reg for reg in ["南區", "大里", "東區", "西區", "北區", "烏日", "太平", "西屯", "北屯", "南屯", "中區"] if reg in query), None)
-    roads_in_query = re.findall(r"([^區市台]*(?:路|街|大道)(?:[一二三四五六七八九十]|[\d])?段?)", query)
-    
+    # 3. Location / Region
+    region_specified = next(
+        (reg for reg in ["南區", "大里", "東區", "西區", "北區", "烏日",
+                         "太平", "西屯", "北屯", "南屯", "中區"] if reg in query),
+        None,
+    )
+    roads_in_query = re.findall(
+        r"([^區市台]*(?:路|街|大道)(?:[一二三四五六七八九十]|[\d])?段?)", query
+    )
     if region_specified or roads_in_query:
         total_specified += 1
         loc_match = False
-        if region_specified and (region_specified in prop.get("address", "") or region_specified in prop.get("region", "")):
+        if region_specified and (
+            region_specified in prop.get("address", "") or
+            region_specified in prop.get("region", "")
+        ):
             loc_match = True
-            if adv["geo_tier"] == "core": satisfied += 0.1 # Distance bonus
         if roads_in_query and any(road in prop.get("address", "") for road in roads_in_query):
             loc_match = True
-        
-        if loc_match: satisfied += 1
+        if loc_match:
+            # geo_tier bonus: 0.0 (no extra) to 0.15 (core district), capped at 1.0
+            bonus = 0.15 if adv["geo_tier"] == "core" else 0.0
+            satisfied += min(1.0, 1.0 + bonus)
+        # loc mismatch: no penalty (just 0 added), already hurts score_ratio
 
-    # 4. Special Pet Constraint
+    # 4. Pet constraint
     if any(k in query for k in ["寵物", "貓", "狗", "毛孩", "主子"]):
         total_specified += 1
         note_str = " ".join(prop.get("notes", []))
         if "可寵" in note_str or "可養寵" in note_str:
             satisfied += 1
         elif "禁寵" in note_str or "不寵" in note_str:
-            return 0 # Absolute Exclusion
+            return 0
         else:
-            if is_strict: return 0 # If user asks specifically and it's not mentioned, reject in strict mode
+            # Not mentioned: penalise in strict mode, partial credit otherwise
+            if is_strict: return 0
             satisfied += 0.2
 
-    # 5. Trash collection & Service Level
+    # 5. Trash / service level
     if any(k in query for k in ["垃圾", "子母車", "下班晚", "追垃圾車", "管理員"]):
         total_specified += 1
         if adv["service_level"] == "five_star":
@@ -540,18 +668,21 @@ def compute_relevance_score(query: str, prop: Dict[str, Any]) -> int:
         elif adv["service_level"] == "basic":
             satisfied += 0.7
         else:
-            if is_strict: return 0 
-            satisfied += 0.1 
+            if is_strict: return 0
+            satisfied += 0.1
 
-    # 6. Billing & Electricity
-    if any(kw in query for kw in ["省錢", "怕熱", "台電", "台水", "帳單", "自繳"]):
+    # 6. Billing / electricity
+    if any(kw in query for kw in ["省錢", "台電", "台水", "帳單", "自繳"]):
         total_specified += 1
         note_str = " ".join(prop.get("notes", []))
-        if adv["billing_type"] == "taipower" or any(k in note_str for k in ["台電", "台水", "帳單", "自繳"]):
+        if adv["billing_type"] == "taipower" or any(
+            k in note_str for k in ["台電", "台水", "帳單", "自繳"]
+        ):
             satisfied += 1
         else:
-            if is_strict: return 0 # Critical fix for TC-07
-            satisfied -= 0.5 
+            if is_strict: return 0
+            # Non-taipower is a soft miss, not a negative
+            satisfied += 0.0
 
     # 7. Cooking
     if any(kw in query for kw in ["煮飯", "開火", "自炊", "下廚", "瓦斯", "廚房"]):
@@ -560,30 +691,31 @@ def compute_relevance_score(query: str, prop: Dict[str, Any]) -> int:
         if any(k in all_notes for k in ["開火", "瓦斯", "廚房", "自炊", "下廚"]):
             satisfied += 1
         else:
-            if is_strict: return 0 # Critical fix for TC-10
-            satisfied -= 0.5
+            if is_strict: return 0
+            satisfied += 0.0   # hard miss without penalising to negative
 
-    # 7. Safety & Aesthetics
+    # 8. Safety
     if any(kw in query for kw in ["安全", "女性", "監視器"]):
         total_specified += 1
         if adv["safety_level"] == "high": satisfied += 1
-        
+
+    # 9. Aesthetics / condition
     if any(kw in query for kw in ["漂亮", "質感", "新", "裝潢", "設計"]):
         total_specified += 1
         if adv["condition"] == "new": satisfied += 1
         elif adv["condition"] == "renovated": satisfied += 0.8
 
-    # --- Part C: Final Mapping ---
+    # --- Part C: Final mapping ---
     if total_specified == 0:
-        # 無具體指定條件的查詢（如「有沒有平件的房子」）視為「優良」而非「完美」
-        # 因為沒有格局/地點/預算等關鍵條件的驗證，不應等同於「所有條件全滿足」
-        return 2
-        
+        return 2   # no verifiable constraints → assume decent but not perfect
+
+    # Clamp to [0, total_specified] to prevent negative ratios
+    satisfied = max(0.0, min(satisfied, float(total_specified)))
     score_ratio = satisfied / total_specified
-    
-    if score_ratio >= 0.85: return 3  # 絕大多數條件滿足 → Perfect
-    if score_ratio >= 0.65: return 2  # 多數符合但有明顯偏差 → Good  (0.5 to 0.65 落入 Partial)
-    if score_ratio >= 0.15: return 1  # 部分符合：如「兩維度只符合一個」→ Partial
+
+    if score_ratio >= 0.85: return 3
+    if score_ratio >= 0.65: return 2
+    if score_ratio >= 0.15: return 1
     return 0
 
 

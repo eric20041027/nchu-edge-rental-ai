@@ -40,11 +40,29 @@ async function init(origin) {
         const tokenizerJson = await tokenizerRes.json();
         vocab = new Map(Object.entries(tokenizerJson.model.vocab));
 
-        // Fetch + load the quantized NER model
-        postMessage({ type: 'ner_status', message: '載入 NER 模型...' });
+        // Fetch + load the quantized NER model (with streaming progress)
+        postMessage({ type: 'ner_status', message: '載入 NER 模型...', loaded: 0, total: 0 });
         const modelRes = await fetch(origin + '/models/ner_model_dir/ner_model_quant.onnx');
         if (!modelRes.ok) throw new Error(`NER model fetch failed: ${modelRes.status}`);
-        const modelBuffer = await modelRes.arrayBuffer();
+
+        const contentLength = +modelRes.headers.get('Content-Length') || 38000000;
+        const reader = modelRes.body.getReader();
+        const chunks = [];
+        let received = 0, lastReport = 0;
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            chunks.push(value);
+            received += value.length;
+            if (received - lastReport > 512 * 1024) {
+                postMessage({ type: 'ner_progress', loaded: received, total: contentLength });
+                lastReport = received;
+            }
+        }
+        const modelArray = new Uint8Array(received);
+        let pos = 0;
+        for (const c of chunks) { modelArray.set(c, pos); pos += c.length; }
+        const modelBuffer = modelArray.buffer;
 
         session = await ort.InferenceSession.create(modelBuffer, {
             executionProviders: ['wasm'],

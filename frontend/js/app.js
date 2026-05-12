@@ -29,13 +29,40 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // --- Application Initialization Setup ---
 async function setupApplication() {
+    // ── Progress bar UI ──────────────────────────────────────────────────────
     const loadStatus = document.createElement('div');
-    loadStatus.style.padding = '10px';
-    loadStatus.style.color = 'var(--primary-color, #00FFD1)';
-    loadStatus.style.textAlign = 'center';
-    loadStatus.style.fontSize = '0.9rem';
-    loadStatus.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 正在背景加載房屋資料...';
+    loadStatus.id = 'load-status-panel';
+    loadStatus.style.cssText = 'padding:12px 16px;color:var(--primary-color,#00FFD1);font-size:0.85rem;';
+    loadStatus.innerHTML = `
+        <div id="ls-ce" style="margin-bottom:6px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+                <span><i class="fa-solid fa-brain"></i> 推薦模型</span>
+                <span id="ls-ce-pct">等待中…</span>
+            </div>
+            <div style="background:rgba(255,255,255,0.1);border-radius:4px;height:6px;overflow:hidden;">
+                <div id="ls-ce-bar" style="height:100%;width:0%;background:var(--primary-color,#00FFD1);transition:width 0.3s;border-radius:4px;"></div>
+            </div>
+        </div>
+        <div id="ls-ner">
+            <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+                <span><i class="fa-solid fa-tag"></i> 語意模型</span>
+                <span id="ls-ner-pct">等待中…</span>
+            </div>
+            <div style="background:rgba(255,255,255,0.1);border-radius:4px;height:6px;overflow:hidden;">
+                <div id="ls-ner-bar" style="height:100%;width:0%;background:#a78bfa;transition:width 0.3s;border-radius:4px;"></div>
+            </div>
+        </div>`;
     welcomeScreen.insertBefore(loadStatus, welcomeScreen.children[2]);
+
+    const ceBar  = document.getElementById('ls-ce-bar');
+    const cePct  = document.getElementById('ls-ce-pct');
+    const nerBar = document.getElementById('ls-ner-bar');
+    const nerPct = document.getElementById('ls-ner-pct');
+
+    function setBar(bar, pct, label, pctEl) {
+        bar.style.width = pct + '%';
+        pctEl.textContent = label;
+    }
 
     userRequirement.disabled = true;
     userRequirement.placeholder = "請稍候，資料庫與 AI 模型準備中...";
@@ -44,32 +71,43 @@ async function setupApplication() {
         await Promise.all([
             initData(),
             initNLP((progress) => {
-                if (progress.status === 'progress') {
-                    let percentText = "";
-                    if (progress.total && progress.total > 0 && !isNaN(progress.loaded)) {
-                        let percent = Math.round((progress.loaded / progress.total) * 100);
-                        percentText = `${percent}%`;
-                    } else if (progress.loaded && !isNaN(progress.loaded)) {
-                        percentText = `${Math.round(progress.loaded / 1024)} KB`;
-                    } else {
-                        percentText = "計算中";
-                    }
-                    loadStatus.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 正在下載 AI 模組與資料 (${percentText})...`;
+                if (progress.status === 'progress' && progress.total > 0) {
+                    const pct = Math.round((progress.loaded / progress.total) * 100);
+                    setBar(ceBar, pct, pct + '%', cePct);
+                } else if (progress.status === 'progress') {
+                    cePct.textContent = Math.round((progress.loaded || 0) / 1024) + ' KB';
                 }
             })
         ]);
-        loadStatus.innerHTML = '<i class="fa-solid fa-check"></i> 系統準備就緒！';
-        setTimeout(() => loadStatus.style.display = 'none', 2000);
+        setBar(ceBar, 100, '完成 ✓', cePct);
+        ceBar.style.background = '#4ade80';
 
-        // Load NER model in background (non-blocking — query still works without it)
-        initNER().catch(e => console.warn('NER init failed (non-fatal):', e));
-        
         userRequirement.disabled = false;
         userRequirement.placeholder = "輸入租屋需求，例如：預算 6000 以內、有冷氣...";
+
+        // NER loads in background — update its bar via worker messages
+        initNER(
+            (nerProgress) => {
+                if (nerProgress.loaded && nerProgress.total > 0) {
+                    const pct = Math.round((nerProgress.loaded / nerProgress.total) * 100);
+                    setBar(nerBar, pct, pct + '%', nerPct);
+                }
+            },
+            () => {
+                setBar(nerBar, 100, '完成 ✓', nerPct);
+                nerBar.style.background = '#4ade80';
+                setTimeout(() => { loadStatus.style.display = 'none'; }, 1500);
+            }
+        ).catch(e => {
+            console.warn('NER init failed (non-fatal):', e);
+            nerPct.textContent = '略過';
+            nerBar.style.background = '#f87171';
+            setTimeout(() => { loadStatus.style.display = 'none'; }, 2000);
+        });
+
     } catch (e) {
         console.error("Initialization error:", e);
-        loadStatus.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="color: #ff6b6b"></i> 載入失敗，請刷新或確認網路。';
-        loadStatus.style.color = '#ff6b6b';
+        loadStatus.innerHTML = '<div style="color:#ff6b6b"><i class="fa-solid fa-triangle-exclamation"></i> 載入失敗，請刷新或確認網路。</div>';
     }
 }
 
@@ -375,6 +413,23 @@ function createPropertyCardHTML(house, badgeClass) {
                     <i class="fa-solid fa-link"></i> 前往查看物件
                 </a>
             </div>
+
+            <div class="feedback-bar" style="display:flex; align-items:center; gap:10px; margin-top:12px; padding-top:10px; border-top:1px solid var(--border-glass); font-size:0.8rem; color:#94A3B8;">
+                <span>這個推薦有幫助嗎？</span>
+                <button class="feedback-btn" data-id="${house.id || house.url}" data-v="1"
+                    style="background:none; border:1px solid rgba(255,255,255,0.15); border-radius:20px; padding:3px 10px; cursor:pointer; color:#94A3B8; transition:all 0.2s;"
+                    onmouseover="this.style.borderColor='#4ade80';this.style.color='#4ade80'"
+                    onmouseout="if(!this.dataset.active){this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='#94A3B8'}">
+                    <i class="fa-solid fa-thumbs-up"></i> 有用
+                </button>
+                <button class="feedback-btn" data-id="${house.id || house.url}" data-v="-1"
+                    style="background:none; border:1px solid rgba(255,255,255,0.15); border-radius:20px; padding:3px 10px; cursor:pointer; color:#94A3B8; transition:all 0.2s;"
+                    onmouseover="this.style.borderColor='#f87171';this.style.color='#f87171'"
+                    onmouseout="if(!this.dataset.active){this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='#94A3B8'}">
+                    <i class="fa-solid fa-thumbs-down"></i> 不符
+                </button>
+                <span class="feedback-thanks" style="display:none; color:#4ade80; font-size:0.78rem;">感謝回饋！</span>
+            </div>
         </div>
     `;
 }
@@ -392,3 +447,62 @@ function updateLoadMoreButton() {
         recommendationList.appendChild(loadMoreBtn);
     }
 }
+
+// ── Feedback system ────────────────────────────────────────────────────────────
+const FEEDBACK_KEY = 'renting_feedback_log';
+
+function loadFeedbackLog() {
+    try { return JSON.parse(localStorage.getItem(FEEDBACK_KEY) || '[]'); }
+    catch { return []; }
+}
+
+function saveFeedback(query, propertyId, vote) {
+    const log = loadFeedbackLog();
+    log.push({
+        ts:         new Date().toISOString(),
+        query:      query,
+        propertyId: propertyId,
+        vote:       vote,   // 1 = helpful, -1 = not relevant
+    });
+    // Keep latest 500 entries to avoid unbounded growth
+    if (log.length > 500) log.splice(0, log.length - 500);
+    localStorage.setItem(FEEDBACK_KEY, JSON.stringify(log));
+}
+
+// Event delegation — one listener on the list container handles all cards
+document.addEventListener('DOMContentLoaded', () => {
+    const list = document.getElementById('recommendation-list') ||
+                 document.querySelector('.recommendation-list');
+    if (!list) return;
+
+    list.addEventListener('click', e => {
+        const btn = e.target.closest('.feedback-btn');
+        if (!btn) return;
+
+        const bar    = btn.closest('.feedback-bar');
+        const propId = btn.dataset.id;
+        const vote   = parseInt(btn.dataset.v, 10);
+        const query  = document.getElementById('query-input')?.value ||
+                       document.getElementById('searchInput')?.value || '';
+
+        // Persist
+        saveFeedback(query, propId, vote);
+
+        // Visual feedback
+        bar.querySelectorAll('.feedback-btn').forEach(b => {
+            b.dataset.active = '';
+            b.style.borderColor = 'rgba(255,255,255,0.15)';
+            b.style.color = '#94A3B8';
+        });
+        btn.dataset.active = '1';
+        if (vote === 1) {
+            btn.style.borderColor = '#4ade80';
+            btn.style.color = '#4ade80';
+        } else {
+            btn.style.borderColor = '#f87171';
+            btn.style.color = '#f87171';
+        }
+        const thanks = bar.querySelector('.feedback-thanks');
+        if (thanks) thanks.style.display = 'inline';
+    });
+});

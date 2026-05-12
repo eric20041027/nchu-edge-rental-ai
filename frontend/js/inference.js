@@ -63,7 +63,7 @@ export async function initNLP(onProgress) {
 }
 
 // --- NER Worker Initialization ---
-export async function initNER() {
+export async function initNER(onProgress = null, onReady = null) {
     if (nerWorker) return;
     return new Promise((resolve) => {
         nerWorker = new Worker('js/ner-worker.js', { type: 'module' });
@@ -72,6 +72,7 @@ export async function initNER() {
             if (type === 'ner_ready') {
                 nerReady = true;
                 console.log('NER Worker Ready');
+                if (onReady) onReady();
                 resolve();
             } else if (type === 'ner_result') {
                 const cb = pendingNER.get(id);
@@ -81,6 +82,8 @@ export async function initNER() {
                 resolve();  // non-fatal — app continues without NER
             } else if (type === 'ner_status') {
                 console.log('[NER]', e.data.message);
+            } else if (type === 'ner_progress') {
+                if (onProgress) onProgress({ loaded: e.data.loaded, total: e.data.total });
             }
         };
         nerWorker.postMessage({ type: 'ner_init', data: { origin: window.location.origin } });
@@ -484,6 +487,40 @@ function filterHardExclusions(properties, constraints) {
 }
 
 
+// --- NER BGT Entity Budget Parsing ---
+function parseBudgetFromNER(budgetSpans) {
+    if (!budgetSpans || budgetSpans.length === 0) return null;
+    let budget = null;
+    let limit = null;
+
+    for (const span of budgetSpans) {
+        // Detect direction from original span
+        if (span.includes('以上')) limit = 'above';
+        else if (span.includes('以下') || span.includes('以內') || span.includes('內')) limit = limit || 'below';
+
+        let s = span
+            .replace(/[一１]/g, '1').replace(/[二２兩]/g, '2').replace(/[三３]/g, '3')
+            .replace(/[四４]/g, '4').replace(/[五５]/g, '5').replace(/[六６]/g, '6')
+            .replace(/[七７]/g, '7').replace(/[八８]/g, '8').replace(/[九９]/g, '9')
+            .replace(/十/g, '10');
+
+        // Handle 萬 notation first (e.g., 1萬2 → 12000)
+        const wanMatch = s.match(/(\d+(?:\.\d+)?)萬(\d*)/);
+        if (wanMatch) {
+            const candidate = parseFloat(wanMatch[1]) * 10000 + (wanMatch[2] ? parseInt(wanMatch[2]) * 1000 : 0);
+            if (candidate > 0) { budget = candidate; continue; }
+        }
+        // Handle 千 / k / K
+        s = s.replace(/千/g, '000').replace(/[kK]/g, '000');
+        const numMatch = s.match(/(\d{3,})/);
+        if (numMatch) {
+            const candidate = parseInt(numMatch[1]);
+            if (candidate >= 1000) budget = candidate;
+        }
+    }
+    return budget ? { budget, limit: limit || 'below' } : null;
+}
+
 // --- Semantic Query Expansion ---
 function expandQueryIntent(query) {
     let expanded = query;
@@ -743,6 +780,17 @@ export async function recommend(text, top_k = 20, onPartialResult = null) {
         const nerEntities = await nerExtract(text);
         if (nerEntities.locations.length > 0) {
             constraints.nerLocations = nerEntities.locations;
+        }
+
+        // Augment budget constraints with NER-detected BGT entities when regex missed them
+        if (nerEntities.budgets && nerEntities.budgets.length > 0 && !constraints.hasBudgetMention) {
+            const nerBudget = parseBudgetFromNER(nerEntities.budgets);
+            if (nerBudget) {
+                constraints.budget = nerBudget.budget;
+                constraints.limit  = nerBudget.limit;
+                constraints.hasBudgetMention = true;
+                console.log('[NER] Budget extracted from BGT entity:', nerBudget);
+            }
         }
 
         const candidates = filterHardExclusions(propertyData, constraints);
