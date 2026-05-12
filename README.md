@@ -21,7 +21,7 @@
 
 - **真實路網權重系統**: 整合 OSRM 引擎計算真實路網權重，以步行與機車的實際通勤時間作為推薦排序的核心因子。
 
-- **邊緣端高效推論 (Edge AI)**: 透過 ONNX Runtime Web 實作瀏覽器端即時推理，雙模型都採用 INT8 量化（NER 98 MB + Cross-Encoder 57 MB，共 ~155 MB），確保移動端快速加載與高效執行。
+- **邊緣端高效推論 (Edge AI)**: 透過 ONNX Runtime Web 實作瀏覽器端即時推理，雙模型都採用 INT8 量化（NER **37 MB** + Cross-Encoder 57 MB，共 **~107 MB**，較前版減少 37%），確保移動端快速加載與高效執行。
 
 - **6步自適應數據流水線**: Merge → Commute → Generate → Augment → Mine → Embed，自動化處理多源異構數據，支援 LLM 增強、困難樣本挖掘、嵌入預計算等高級特性。
 
@@ -210,7 +210,13 @@ $$\text{Total Loss} = 0.5 \times \text{CE}(\hat{y}, y) + 0.5 \times \text{BCE}(\
 
 5. **渲染隔離**: 核心推理邏輯（NER + 交叉編碼器）運行於獨立的 Web Worker，確保主線程流暢度。
 
-6. **量化優化**: NER 和交叉編碼器皆採用 INT8 量化，確保移動端可快速加載 (~100MB total)。
+6. **量化優化**: NER 和交叉編碼器皆採用 INT8 量化，確保移動端可快速加載 (~107MB total)。NER 由 bert-base-chinese（98MB）換為 hfl/rbt3（37MB），F1 維持 0.997。
+
+7. **雙進度條載入 UI**: Cross-Encoder 與 NER 各自顯示載入進度（百分比 + 完成動畫），改善首次使用體驗。
+
+8. **NER BGT 預算過濾**: `inference.js` 整合 NER 抽取的預算實體（BGT span），在 regex 未能識別預算時自動補充過濾約束，支援萬/千/k/中文數字解析。
+
+9. **使用者反饋記錄**: 每張房源卡片附「👍 有用 / 👎 不符」反饋按鈕，記錄至 localStorage（上限 500 筆），供未來模型迭代參考。
 
 ---
 
@@ -227,9 +233,9 @@ $$\text{Total Loss} = 0.5 \times \text{CE}(\hat{y}, y) + 0.5 \times \text{BCE}(\
 - **lifestyle_mapper.py**: 15+ 組生活聚類，推斷「不想追垃圾車」→ 子母車等深層意圖
 
 ### 2. NER 模型 (pipeline/ner_model/)
-- **ner_trainer.py**: BERT-based 序列標註訓練 (LOC/BGT/FEAT 3 類實體)，導出 INT8 量化 ONNX
+- **ner_trainer.py**: 序列標註訓練 (LOC/BGT/FEAT 3 類實體)，底層模型 **hfl/rbt3**（3 層輕量 RoBERTa），導出 INT8 量化 ONNX（98MB → **37MB**，F1=0.997）
 - **ner_predictor.py**: NER 推論介面，用於前端和後端實體抽取
-- 前端集成: **frontend/js/ner-worker.js** 為獨立 Web Worker，確保瀏覽器端毫秒級推論無卡頓
+- 前端集成: **frontend/js/ner-worker.js** 為獨立 Web Worker，Streaming Fetch 進度回報，確保瀏覽器端毫秒級推論無卡頓
 
 ### 3. 語意匹配與約束 (pipeline/)
 - **constraints/hard_constraints.py**: 預算上限、寵物政策、台電計費「零容忍」過濾（一票否決）
