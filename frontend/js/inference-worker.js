@@ -14,6 +14,61 @@ let tokenizer = null;
 let session = null;
 const MAX_LENGTH = 64;
 
+// Cache API key — bump version string when model weights change
+const MODEL_CACHE_NAME = 'rental-models-v20260513';
+const MODEL_CACHE_KEY  = 'cross-encoder-quant-v20260513';
+
+/**
+ * Loads the ONNX model via Cache API (instant on repeat visits) or
+ * streams it from network on first load while reporting progress.
+ */
+async function loadModelBuffer(modelUrl) {
+    // 1. Try Cache API (instant – no network round-trip)
+    try {
+        const cache = await caches.open(MODEL_CACHE_NAME);
+        const cached = await cache.match(MODEL_CACHE_KEY);
+        if (cached) {
+            postMessage({ type: 'status', message: '⚡ 快取模型載入中...', loaded: 1, total: 1 });
+            const buf = await cached.arrayBuffer();
+            return new Uint8Array(buf);
+        }
+    } catch (_) { /* caches API unavailable (e.g. non-HTTPS) — fall through */ }
+
+    // 2. First-time download with streaming progress
+    const response = await fetch(modelUrl);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+    const contentLength = +response.headers.get('Content-Length') || 60000000;
+    const reader = response.body.getReader();
+    const chunks = [];
+    let receivedLength = 0, lastUpdate = 0;
+
+    while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+        receivedLength += value.length;
+        if (receivedLength - lastUpdate > 512 * 1024) {
+            postMessage({ type: 'status', message: '正在下載 AI 模型...', loaded: receivedLength, total: contentLength });
+            lastUpdate = receivedLength;
+        }
+    }
+
+    const modelBuffer = new Uint8Array(receivedLength);
+    let position = 0;
+    for (const chunk of chunks) { modelBuffer.set(chunk, position); position += chunk.length; }
+
+    // 3. Store in Cache API for future visits
+    try {
+        const cache = await caches.open(MODEL_CACHE_NAME);
+        await cache.put(MODEL_CACHE_KEY, new Response(modelBuffer.buffer, {
+            headers: { 'Content-Type': 'application/octet-stream' }
+        }));
+    } catch (_) { /* storage quota exceeded or unavailable — non-fatal */ }
+
+    return modelBuffer;
+}
+
 async function init(localOrigin) {
     try {
         // Dynamically load ORT inside the worker context
@@ -26,7 +81,7 @@ async function init(localOrigin) {
         env.useBrowserCache = true;
         env.localModelPath = localOrigin + '/';
 
-        // 2. Start Tokenizer and Model download in parallel
+        // 2. Start Tokenizer and Model load in parallel
         const tokenizerPromise = AutoTokenizer.from_pretrained('models/custom_onnx_model_dir', {
             progress_callback: (p) => {
                 if (p.status === 'progress') {
@@ -35,44 +90,8 @@ async function init(localOrigin) {
             }
         });
 
-        const modelUrl = localOrigin + '/models/custom_onnx_model_dir/my_custom_model_quant.onnx?v=' + Date.now();
-        const modelFetchPromise = (async () => {
-            const response = await fetch(modelUrl, { cache: 'force-cache' });
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            
-            const reader = response.body.getReader();
-            const contentLength = +response.headers.get('Content-Length');
-            
-            let receivedLength = 0;
-            let chunks = [];
-            let lastUpdate = 0;
-
-            while(true) {
-                const {done, value} = await reader.read();
-                if (done) break;
-                chunks.push(value);
-                receivedLength += value.length;
-                
-                // Throttled UI update (every 512KB) to save CPU
-                if (receivedLength - lastUpdate > 512 * 1024) {
-                    postMessage({ 
-                        type: 'status', 
-                        message: '正在下載 AI 模型...', 
-                        loaded: receivedLength, 
-                        total: contentLength || 88000000 
-                    });
-                    lastUpdate = receivedLength;
-                }
-            }
-            
-            const modelBuffer = new Uint8Array(receivedLength);
-            let position = 0;
-            for(let chunk of chunks) {
-                modelBuffer.set(chunk, position);
-                position += chunk.length;
-            }
-            return modelBuffer;
-        })();
+        const modelUrl = localOrigin + '/models/custom_onnx_model_dir/my_custom_model_quant.onnx';
+        const modelFetchPromise = loadModelBuffer(modelUrl);
 
         // Wait for both to complete
         const [loadedTokenizer, loadedModelBuffer] = await Promise.all([
@@ -82,11 +101,11 @@ async function init(localOrigin) {
 
         tokenizer = loadedTokenizer;
 
-        // 2. Create Session
+        // 3. Create ONNX Session
         session = await ort.InferenceSession.create(loadedModelBuffer, {
             executionProviders: ['wasm'],
             graphOptimizationLevel: 'all',
-            sessionOptions: { numThreads: 4 }
+            numThreads: navigator.hardwareConcurrency ? Math.min(navigator.hardwareConcurrency, 4) : 4,
         });
 
         postMessage({ type: 'ready' });

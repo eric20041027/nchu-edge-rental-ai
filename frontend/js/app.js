@@ -71,11 +71,16 @@ async function setupApplication() {
         await Promise.all([
             initData(),
             initNLP((progress) => {
-                if (progress.status === 'progress' && progress.total > 0) {
-                    const pct = Math.round((progress.loaded / progress.total) * 100);
-                    setBar(ceBar, pct, pct + '%', cePct);
-                } else if (progress.status === 'progress') {
-                    cePct.textContent = Math.round((progress.loaded || 0) / 1024) + ' KB';
+                if (progress.status === 'progress') {
+                    // Detect cached load (loaded === total === 1 means instant from cache)
+                    if (progress.message && progress.message.includes('快取')) {
+                        setBar(ceBar, 100, '⚡ 快取', cePct);
+                    } else if (progress.total > 0) {
+                        const pct = Math.round((progress.loaded / progress.total) * 100);
+                        setBar(ceBar, pct, pct + '%', cePct);
+                    } else {
+                        cePct.textContent = Math.round((progress.loaded || 0) / 1024) + ' KB';
+                    }
                 }
             })
         ]);
@@ -89,8 +94,13 @@ async function setupApplication() {
         initNER(
             (nerProgress) => {
                 if (nerProgress.loaded && nerProgress.total > 0) {
-                    const pct = Math.round((nerProgress.loaded / nerProgress.total) * 100);
-                    setBar(nerBar, pct, pct + '%', nerPct);
+                    // loaded=1,total=1 → instant cache hit
+                    if (nerProgress.loaded === nerProgress.total && nerProgress.total === 1) {
+                        setBar(nerBar, 100, '⚡ 快取', nerPct);
+                    } else {
+                        const pct = Math.round((nerProgress.loaded / nerProgress.total) * 100);
+                        setBar(nerBar, pct, pct + '%', nerPct);
+                    }
                 }
             },
             () => {
