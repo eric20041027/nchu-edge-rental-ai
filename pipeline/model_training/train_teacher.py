@@ -56,10 +56,10 @@ BASE_DIR         = os.path.dirname(__file__)
 TEACHER_SAVE_DIR = os.path.join(BASE_DIR, "../../saved_models/rbt6_teacher")
 DATA_DIR         = os.path.join(BASE_DIR, "../../data/processed")
 
-# Training hyperparams (rbt6 is larger → smaller LR than rbt3's 3e-5)
-LEARNING_RATE   = 2e-5
-NUM_EPOCHS      = 8
-PATIENCE        = 4          # Early stopping patience (fewer epochs than student)
+# Training hyperparams — LR lowered to 1e-5 to prevent post-peak oscillation
+LEARNING_RATE   = 1e-5
+NUM_EPOCHS      = 12
+PATIENCE        = 5          # Extra patience at lower LR (convergence is slower)
 BATCH_SIZE      = 32
 WEIGHT_DECAY    = 0.01
 WARMUP_RATIO    = 0.06
