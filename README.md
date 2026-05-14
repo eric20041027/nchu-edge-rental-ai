@@ -58,7 +58,7 @@ graph TD
     F --> G["最終推薦清單"]
 ```
 
-> **v2.4 rbt3 Cross-Encoder 已完成**：R-Drop + FGM + 多任務損失（KD 因 teacher 品質問題停用，見 CHANGELOG FAIL-04）
+> **v2.5 rbt3 Cross-Encoder 已完成**：R-Drop + FGM + 多任務損失 + KD（rbt6 teacher F1=0.787），Holdout F1=76.6%
 
 ---
 
@@ -114,17 +114,17 @@ $$DCG_k = \sum_{i=1}^{k} \frac{2^{rel_i} - 1}{\log_2(i+2)}, \quad NDCG_k = \frac
 
 ### 3. 模型版本對比
 
-| 指標 | rbt6 FT (v2.1) | rbt3 蒸餾 (v2.3) | rbt3 + R-Drop (v2.4) |
-|:---|:---|:---|:---|
-| 量化後大小 | 57 MB | **37 MB** | **37 MB** |
-| Val F1 (best epoch) | 84.8% | 85.1% | 76.9% |
-| Test F1 (holdout) | 83.6% | 83.1% | 76.7% |
-| Graded NDCG@5 | — | **0.818** | 0.727 ± 0.017 |
-| MRR | — | **0.692** | 0.611 |
-| Precision@1 | — | — | 0.774 |
-| Precision@5 | — | — | 0.760 |
-| Hit@1 (rel≥3) | — | — | 0.462 |
-| 推論速度 (mobile) | ~150ms | ~150ms | ~150ms |
+| 指標 | rbt6 FT (v2.1) | rbt3 蒸餾 (v2.3) | rbt3 + R-Drop (v2.4) | rbt3 + KD v2 (v2.5) |
+|:---|:---|:---|:---|:---|
+| 量化後大小 | 57 MB | **37 MB** | **37 MB** | **37 MB** |
+| Val F1 (best epoch) | 84.8% | 85.1% | 76.9% | 76.4% |
+| Test F1 (holdout) | 83.6% | 83.1% | 76.7% | **76.6%** |
+| Graded NDCG@5 | — | **0.818** | 0.727 ± 0.017 | 待評估 |
+| MRR | — | **0.692** | 0.611 | 待評估 |
+| Precision@1 | — | — | 0.774 | 待評估 |
+| Precision@5 | — | — | 0.760 | 待評估 |
+| Hit@1 (rel≥3) | — | — | 0.462 | 待評估 |
+| 推論速度 (mobile) | ~150ms | ~150ms | ~150ms | ~150ms |
 
 ---
 
