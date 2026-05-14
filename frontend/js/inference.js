@@ -221,20 +221,21 @@ function parseConstraintsFromText(text) {
         }
     }
 
-    if (text.includes('套房') || text.includes('雅房') || text.includes('工作室')) {
-        hasRoomTypeMention = true;
-    }
+    let wantsRoomType = null;
+    if (text.includes('套房')) { hasRoomTypeMention = true; wantsRoomType = '套房'; }
+    else if (text.includes('雅房')) { hasRoomTypeMention = true; wantsRoomType = '雅房'; }
+    else if (text.includes('工作室')) { hasRoomTypeMention = true; wantsRoomType = '工作室'; }
 
-    return { 
-        budget, minBudget, maxBudget, limit, genderUnrestricted, hasGenderMention, hasBudgetMention, hasRoomTypeMention, 
-        wantsUtilityBilling, maxElectricityPrice, requireBalcony, requireWindow, requireParking, requireWaste, 
+    return {
+        budget, minBudget, maxBudget, limit, genderUnrestricted, hasGenderMention, hasBudgetMention, hasRoomTypeMention, wantsRoomType,
+        wantsUtilityBilling, maxElectricityPrice, requireBalcony, requireWindow, requireParking, requireWaste,
         requireSubsidy, isSocialHousing,
         excludeRooftop, excludeWooden, excludeHaunted, maxWalkMins, maxScooterMins,
         wantsPet: (text.includes('養貓') || text.includes('養狗') || text.includes('寵物')),
         requireWaterDispenser: (text.includes('飲水機')),
         requirePrivateWasher: (text.includes('獨洗') || text.includes('個人洗衣機')),
         requireGuard: (text.includes('代收') || text.includes('包裹') || text.includes('管理員') || text.includes('警衛')),
-        originalText: text // Added to fix property access in checkConflicts
+        originalText: text
     };
 }
 
@@ -395,27 +396,32 @@ function explainMatch(query, prop, constraints) {
 }
 
 function checkConflicts(prop, constraints) {
-    const { wantsPet } = constraints;
+    const { wantsPet, wantsRoomType } = constraints;
     const pText = prop.text + (prop.notes ? prop.notes.join(" ") : "");
-    
-    // 1. Pet Conflict
+
+    // 1. Room Type Mismatch
+    if (wantsRoomType && prop.room_type && prop.room_type !== wantsRoomType) {
+        return `此房源為${prop.room_type}，您指定的是${wantsRoomType}`;
+    }
+
+    // 2. Pet Conflict
     if (wantsPet && (pText.includes('禁養') || pText.includes('不可養'))) {
         return "此房源禁養寵物";
     }
 
-    // 2. Gender Conflict (Simplified detection)
+    // 3. Gender Conflict
     if (constraints.hasGenderMention && constraints.originalText) {
         if (constraints.genderUnrestricted === false) {
-             if (pText.includes('限女性') && constraints.originalText.includes('男')) return "此房源僅限女性";
-             if (pText.includes('限男性') && constraints.originalText.includes('女')) return "此房源僅限男性";
+            if (pText.includes('限女性') && constraints.originalText.includes('男')) return "此房源僅限女性";
+            if (pText.includes('限男性') && constraints.originalText.includes('女')) return "此房源僅限男性";
         }
     }
 
-    // 3. Smoking
+    // 4. Smoking
     if (constraints.originalText?.includes('抽菸') && (pText.includes('禁菸') || pText.includes('禁止吸菸'))) {
         return "此房源禁止吸菸";
     }
-    
+
     return null;
 }
 
