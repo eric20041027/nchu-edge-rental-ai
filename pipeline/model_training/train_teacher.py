@@ -1,19 +1,28 @@
 """
-train_teacher.py - Dedicated rbt6 Teacher Training (for v2.6 Knowledge Distillation)
+train_teacher.py - Dedicated rbt6 Teacher Training (for v2.7 Knowledge Distillation)
 
 Trains hfl/rbt6 (6-layer Chinese RoBERTa) on the rental dataset, then saves to
 saved_models/rbt6_teacher/.
 
-v2.6 change: RankNet + ListNet REMOVED from teacher loss.
-Rationale: ranking losses push all positive scores higher, inflating Recall but
-crushing Precision (v2.5 teacher: Rec=0.985, Prec=0.652). The teacher's role is
-to provide well-calibrated soft labels, not to be a ranking model. Pure CE + R-Drop
-+ FGM gives cleaner probability distributions for distillation.
+v2.7 change: Restore RankNet + ListNet to teacher loss; switch metric_for_best_model
+from "f1" to "loss".
 
-Loss = CE(label_smoothing=0.05) + 0.05 × SymKL(pass1 ‖ pass2) + FGM
-     (RankNet and ListNet intentionally excluded)
+Rationale (learned from v2.3 analysis):
+  - v2.3 teacher: F1=84.8%, Prec=75.5% — trained with multi-task loss + "loss" metric
+  - v2.5 teacher: F1=78.7%, Prec=65.2% — trained with multi-task loss + "f1" metric
+  - v2.6 teacher: F1=77.2%, Prec=64.1% — CE-only + "f1" metric (worse, not better)
 
-Expected: F1 ≈ 83-88% with higher Precision ceiling.
+Root cause: With multi-task loss (CE + RankNet + ListNet), the loss-minimising
+checkpoint has better ranking calibration than the F1-maximising checkpoint, because
+RankNet/ListNet continue improving after binary F1 peaks. The v2.3 teacher was saved
+at the loss-optimal point (epoch 5, all epochs monotonically improving) and produced
+a student with Precision=75.9% and NDCG@5=0.818.
+
+Loss = CE(label_smoothing=0.05) + RankNet(T=2.0)×1.5 + ListNet(T=2.0)
+     + 0.05 × SymKL(pass1 ‖ pass2) + FGM
+     metric_for_best_model="loss"  ← key change from v2.6
+
+Expected: F1 ≈ 83-86% with Precision ≥ 72% (approaching v2.3 quality).
 """
 
 import math
@@ -57,23 +66,24 @@ BASE_DIR         = os.path.dirname(__file__)
 TEACHER_SAVE_DIR = os.path.join(BASE_DIR, "../../saved_models/rbt6_teacher")
 DATA_DIR         = os.path.join(BASE_DIR, "../../data/processed")
 
-# Training hyperparams — v2.6: LR=5e-6 for stable convergence, longer training
-LEARNING_RATE   = 5e-6
-NUM_EPOCHS      = 15
-PATIENCE        = 7
+# Training hyperparams — v2.7b: LR=2e-5 (mirrors v2.3 teacher) + loss metric
+LEARNING_RATE   = 2e-5
+NUM_EPOCHS      = 12
+PATIENCE        = 5
 BATCH_SIZE      = 32
 WEIGHT_DECAY    = 0.01
-WARMUP_RATIO    = 0.08       # Slightly longer warmup at very low LR
+WARMUP_RATIO    = 0.06
 MAX_LENGTH      = 64
 
-# Loss config — RankNet/ListNet removed; teacher only needs calibrated CE + R-Drop
+# Loss config — multi-task: CE + RankNet + ListNet + R-Drop + FGM
 RDROP_ALPHA     = 0.05
-FOCAL_GAMMA     = 0.0        # Disabled
+FOCAL_GAMMA     = 0.0        # Disabled (v2.4α experiment showed -10% Precision)
 LABEL_SMOOTHING = 0.05
-T_TASK          = 2.0        # Kept for compatibility (unused without ranking losses)
+T_TASK          = 2.0        # Temperature for RankNet/ListNet gradient stability
 
-# Sample weights (same as student)
-REL_MAP = {3: 12.0, 2: 4.0, 1: 0.8, 0: 5.0, -1: 0.3}
+# Sample weights — v2.3 original: rel=3 gets 15.0 (vs 12.0 in v2.4+)
+# Higher rel=3 weight gives more emphasis on perfect matches
+REL_MAP = {3: 15.0, 2: 4.0, 1: 0.8, 0: 6.0, -1: 0.5}
 
 
 # ── Data Loading ───────────────────────────────────────────────────────────────
@@ -98,20 +108,12 @@ def load_and_balance_data() -> Tuple[Dataset, Dataset]:
     random.seed(42)
     pos_samples = [d for d in train_data if d["label"] == 1]
     neg_all  = [d for d in train_data if d["label"] == 0]
-    neg_hard = [d for d in neg_all if d.get("relevance", -1) == 0]
-    neg_easy = [d for d in neg_all if d.get("relevance", -1) == -1]
 
-    # Stratified negative sampling: fill quota with hard-conflict first
+    # v2.8: random sampling from ALL negatives (mirrors v2.3 approach).
+    # Stratified hard-only sampling (v2.5-v2.7) excluded rel=-1 entirely because
+    # neg_hard alone exceeded target_neg, causing the model to overfit on hard conflicts.
     target_neg = len(pos_samples)
-    if len(neg_hard) >= target_neg:
-        neg_samples = random.sample(neg_hard, target_neg)
-    else:
-        n_easy = min(target_neg - len(neg_hard), len(neg_easy))
-        neg_samples = neg_hard + random.sample(neg_easy, n_easy)
-        if len(neg_samples) < target_neg:
-            remaining = [d for d in neg_all if d not in set(neg_samples)]
-            neg_samples += random.sample(remaining,
-                                         min(target_neg - len(neg_samples), len(remaining)))
+    neg_samples = random.sample(neg_all, min(target_neg, len(neg_all)))
 
     train_balanced = pos_samples + neg_samples + hard_examples
     random.shuffle(train_balanced)
@@ -229,7 +231,10 @@ class TeacherTrainer(Trainer):
             logits     = logits1
             rdrop_loss = torch.tensor(0.0, device=logits1.device)
 
-        # ── CE loss only (no RankNet/ListNet — teacher needs clean calibration) ──
+        # ── Temperature scaling (RankNet/ListNet gradient stability) ─────────
+        rel_logits = logits[:, 1] / T_TASK  # [B]
+
+        # ── 1. Cross-Entropy ──────────────────────────────────────────────────
         ce_loss = F.cross_entropy(logits, labels, reduction="none",
                                   label_smoothing=LABEL_SMOOTHING)
         pp = torch.where(labels == 0,
@@ -237,6 +242,21 @@ class TeacherTrainer(Trainer):
                          torch.ones(labels.shape, device=labels.device))
         task_loss = (ce_loss * weights * pp).mean() if weights is not None \
                     else (ce_loss * pp).mean()
+
+        # ── 2. RankNet (pairwise) ─────────────────────────────────────────────
+        s_i = rel_logits.unsqueeze(1)
+        s_j = rel_logits.unsqueeze(0)
+        r_i = relevance.unsqueeze(1)
+        r_j = relevance.unsqueeze(0)
+        mask = (r_i > r_j).float()
+        if mask.sum() > 0:
+            ranknet = torch.log(1 + torch.exp(-(s_i - s_j))) * mask
+            task_loss = task_loss + (ranknet.sum() / mask.sum()) * 1.5
+
+        # ── 3. ListNet (listwise) ──────────────────────────────────────────────
+        target_dist = torch.softmax(relevance, dim=0)
+        pred_dist   = torch.log_softmax(rel_logits, dim=0)
+        task_loss   = task_loss + (-torch.sum(target_dist * pred_dist)) * 1.0
 
         # ── Combine ───────────────────────────────────────────────────────────
         loss = task_loss + RDROP_ALPHA * rdrop_loss
@@ -354,8 +374,8 @@ def train_teacher():
         logging_steps=50,
         save_strategy="epoch",
         load_best_model_at_end=True,
-        metric_for_best_model="f1",
-        greater_is_better=True,
+        metric_for_best_model="loss",
+        greater_is_better=False,
         report_to="none",
         save_total_limit=2,
         disable_tqdm=False,
@@ -380,9 +400,11 @@ def train_teacher():
     )
 
     print(f"\n{'='*60}")
-    print(f"  rbt6 Teacher Training")
+    print(f"  rbt6 Teacher Training  (v2.8)")
     print(f"  LR={LEARNING_RATE}, Epochs={NUM_EPOCHS}, Patience={PATIENCE}")
-    print(f"  Loss: CE(ls=0.05) + RankNet(T={T_TASK})×1.5 + ListNet + R-Drop + FGM")
+    print(f"  Loss: CE(ls={LABEL_SMOOTHING}) + RankNet(T={T_TASK})x1.5 + ListNet + R-Drop + FGM")
+    print(f"  Weights: rel3={REL_MAP[3]}, rel0={REL_MAP[0]}  (v2.3 original)")
+    print(f"  Checkpoint: metric_for_best_model=loss  (mirrors v2.3 training)")
     print(f"{'='*60}")
 
     trainer.train()

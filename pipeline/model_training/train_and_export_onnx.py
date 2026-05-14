@@ -28,6 +28,7 @@ Design decisions (Focal Loss still disabled):
     Precision −10%, NDCG −0.044.  Chinese rental task has diverse positives
     — no systematic "easy positive" class that Focal Loss is designed for.
 """
+import sys
 import math
 import os
 os.environ["TRANSFORMERS_NO_ADVISORY_WARNINGS"] = "1"
