@@ -361,6 +361,12 @@ function createPropertyCardHTML(house, badgeClass) {
             <div class="card-details" style="display: flex; gap: 10px; font-size: 0.85rem; color: #ccc; margin-bottom: 5px;">
                 <span><i class="fa-solid fa-vector-square"></i> ${house.size}</span>
                 <span><i class="fa-solid fa-building"></i> ${house.floor}</span>
+                ${house.deposit === 0
+                    ? `<span style="color: #4ade80; font-weight: 600;"><i class="fa-solid fa-circle-check"></i> 免押金</span>`
+                    : (house.deposit > 0
+                        ? `<span style="color: #94A3B8;"><i class="fa-solid fa-hand-holding-dollar"></i> 押金 ${house.deposit_str}</span>`
+                        : '')
+                }
             </div>
             
             <details style="font-size: 0.8rem; color: #ccc; margin-bottom: 10px; cursor: pointer; background: rgba(255,255,255,0.03); padding: 5px 8px; border-radius: 6px;">

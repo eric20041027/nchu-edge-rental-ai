@@ -755,6 +755,8 @@ function formatResponse(scoredResults, top_k) {
         contact: item.property.contact || "不具名",
         phone: item.property.phone || "無資料",
         features: item.property.features || "",
+        deposit: item.property.deposit ?? null,
+        deposit_str: item.property.deposit_str || "",
     }));
 }
 
