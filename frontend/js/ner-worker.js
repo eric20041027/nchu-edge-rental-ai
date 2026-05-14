@@ -26,9 +26,9 @@ let vocab = null;  // Map<token_str, id>
 let session = null;
 
 // Cache API key — bump version string when NER model weights change
-const NER_CACHE_NAME  = 'rental-models-v20260513';
-const NER_MODEL_KEY   = 'ner-quant-v20260513';
-const NER_VOCAB_KEY   = 'ner-tokenizer-v20260513';
+const NER_CACHE_NAME  = 'rental-models-v20260514';
+const NER_MODEL_KEY   = 'ner-quant-v20260514';
+const NER_VOCAB_KEY   = 'ner-tokenizer-v20260514';
 
 /**
  * Loads a resource from Cache API, or fetches + streams it from network.

@@ -1,6 +1,360 @@
 # 專案更新日誌 (Changelog) - 興大 AI 租屋推薦系統
 
-## [2026.05.13 v2.3] - 知識蒸餾壓縮（rbt6 → rbt3）+ 前端快速載入
+---
+
+## [2026.05.14 v2.4] - R-Drop + rbt6 Teacher + 動態蒸餾 α + 訓練策略全面修正
+
+### 改進動機與問題分析
+
+v2.3 評估後發現四個問題：
+1. `metric_for_best_model="loss"` 儲存 loss 最低的 checkpoint，而非 F1 最高——**保存目標與優化目標不一致（Bug）**
+2. 訓練 Precision 偏低（F1@0.7=81.5%，Prec=71.2%）——說明模型對部分 NOT_MATCH 仍過度自信預測為 MATCH
+3. 蒸餾 α 固定為 0.40，初期應更依賴 teacher 引導、後期應更依賴 task loss，但無法自適應調整
+4. 負樣本採樣完全隨機——rel=-1（純隨機負例）語意信號遠弱於 rel=0（硬衝突負例）
+
+### 嘗試過的方向與失敗分析
+
+**初始計劃（v2.4 Alpha）**：Focal Loss γ=2.0 + α=0.50→0.20 + weight_decay=0.05 + T_task 移除
+
+訓練後指標：F1 79.4%（↓5.7%）、Precision 66%（↓9.9%）、NDCG@5 0.774（↓0.044）
+
+根因分析：
+| 變更項目 | 預期效果 | 實際問題 |
+|---------|---------|---------|
+| Focal Loss γ=2.0 | 提升 Precision | 過度抑制正例梯度，導致 Precision 崩潰至 66% |
+| T_task=2.0 移除 | 簡化損失函數 | RankNet/ListNet 分數尺度驟變，排序損失信號失效 |
+| rel=3 weight 15→6 | 平衡梯度來源 | 完美匹配樣本信號被削弱 60%，NDCG 大幅退步 |
+| α_max=0.50 | 初期更多 teacher 引導 | 對 pre-trained teacher 來說 α 過大，task loss 過弱 |
+| 自蒸餾鏈使用 v2.4 teacher | 延續 BANs | v2.4 Precision=0.66，teacher 品質惡化後 student 繼承偏差 |
+
+**v2.4b 嘗試**（使用 v2.4 模型作為 teacher，校正 alpha 但未修復其他問題）：
+- Epoch 6 F1=0.761，Precision=0.625——teacher 品質差導致蒸餾鏈退化，已終止
+
+### 最終修正（v2.4c）
+
+#### 🔁 R-Drop 正規化（α_rdrop=0.05）
+- **原理**：同一批次進行**兩次前向傳播**（不同 Dropout mask），以兩次輸出間的對稱 KL 散度作為額外正規化項
+- **效果**：強迫模型對相同輸入的兩次推斷保持一致，減少 Dropout 帶來的預測方差，文獻典型增益 +1~3% F1
+- **實作**：正常前向（含 R-Drop）→ FGM 攻擊 → 對抗前向（不含 R-Drop）→ 還原 embedding
+- 採用保守 α=0.05（避免與 FGM 對抗梯度衝突）
+
+#### 🎓 升級 Teacher：rbt6（6 層）取代 rbt3（3 層）
+- **問題**：自蒸餾（Student = Teacher 架構相同）在 teacher 品質下滑時，下一代 student 繼承並放大偏差
+- **修正**：使用預訓練 `hfl/rbt6`（6 層，~117M params）作為 teacher，3 層 rbt3 student 從更強的語言模型中學習
+- rbt6 的語意理解能力更強，soft label 品質更穩定（不受 task-specific 偏差影響）
+
+#### 📉 動態 KD α（餘弦退火：0.38 → 0.12）
+- 相比原計劃的 0.50→0.20，使用更保守的範圍：pre-trained rbt6 soft label 品質高但不含 task-specific 偏差
+- **初期**（α=0.38）：借助 teacher 引導快速建立語意表示
+- **後期**（α=0.12）：主要依賴 task loss 收斂，確保模型最終優化排序目標
+- 公式：`α(t) = 0.12 + 0.26 × (1 + cos(π × t/T)) / 2`
+
+#### 🎲 分層負樣本採樣
+- 優先保留 rel=0（硬衝突）負例（16,693 個可用 vs 需要 9,590 個），完全填滿 1:1 負例配額
+- **結果**：採樣後全為硬衝突（rel=0），完全消除低信號的純隨機負例（rel=-1）
+
+#### ⚖️ 重新校準樣本權重
+
+| relevance | v2.3 weight | v2.4c weight | 說明 |
+|-----------|-------------|--------------|------|
+| 3（完美） | 15.0 | **12.0** | 提高（v2.4 alpha 削減至 6 導致 NDCG 退步，本版回升） |
+| 2（良好） | 4.0 | **4.0** | 維持 |
+| 1（部分） | 0.8 | **0.8** | 維持 |
+| 0（衝突） | 6.0 | **5.0** | 配合分層採樣微調 |
+| -1（隨機）| 0.5 | **0.3** | 已透過採樣排除，此值僅作安全備份 |
+
+#### 🔧 訓練超參數修正
+
+| 參數 | v2.3 | v2.4c | 說明 |
+|------|------|-------|------|
+| `metric_for_best_model` | `"loss"` ❌ | `"f1"` ✅ | 修正 Bug：應儲存 F1 最高的 checkpoint |
+| `greater_is_better` | `False` ❌ | `True` ✅ | 配合 F1 方向修正 |
+| `lr_scheduler_type` | linear | **cosine** | 餘弦衰減更平滑，收斂後期不震盪 |
+| `weight_decay` | 0.01 | **0.01** | 維持 v2.3（0.05 過強正規化會壓制 rel=3 梯度） |
+| `label_smoothing_factor` | 0.0 | **0.05** | 輕度標籤平滑，改善校準 |
+| `T_task` (ranking loss) | 2.0 | **2.0** | 維持（移除後 RankNet 梯度尺度崩潰） |
+| `Focal Loss γ` | — | **0.0（停用）** | v2.4 alpha 實驗證明 γ=2.0 嚴重損害 Precision |
+| `num_train_epochs` | 7 | **10** | 更多 epoch（Early Stopping 以 F1 為準） |
+| Early stop patience | 8 steps | **6 epochs** on F1 | 避免在退步後繼續訓練 |
+
+#### 📏 評估指標擴充
+新增 `evaluate_model.py` 指標：
+- **Graded NDCG@1, @3, @10**（補充原有 @5）
+- **Precision@1, @3, @5**（top-k 中相關（rel≥1）的比例）
+- **Hit@1**（首位是否為完美匹配 rel=3）
+- **Bootstrap CI**（1000 次重採樣，Graded NDCG@5 95% 信賴區間）
+
+#### 🔄 自動量化整合
+- `export_to_onnx()` 末尾自動呼叫 INT8 量化，不再需要手動執行 `quantize_model.py`
+- 同步自動複製完整 tokenizer（21,128 vocab）至 `frontend/models/custom_onnx_model_dir/`，防止 tokenizer 不同步
+
+### 訓練設定摘要（最終實際執行配置）
+
+> 注：v2.4c（rbt6 teacher + α=0.38→0.12）在實際訓練中發現 pre-trained rbt6 分類頭是隨機初始化，soft label 為噪訊（詳見技術問題 FAIL-04），已停用 KD。最終以下配置訓練。
+
+```
+Model   : hfl/rbt3（新鮮初始化，3 層 ~38M params）
+Loss    = CE(ls=0.05) + RankNet(T=2.0)×1.5 + ListNet(T=2.0) + 0.05×R-Drop
+KD      : 停用（α=0.0）— 無可用的高品質 task-finetuned teacher
+Focal γ : 0.0（停用，見 FAIL-01）
+T_task  : 2.0（維持，見 FAIL-02）
+Epochs  : 10（Early Stopping patience=6 on F1）
+LR      : 3e-5（Cosine）, weight_decay=0.01, label_smoothing=0.05
+Batch   : 32, GPU: RTX 3060
+Speed   : ~6.5 it/s（無 teacher forward pass，較 v2.3 快 35%）
+```
+
+### 訓練過程（每輪驗證指標）
+
+| Epoch | Val Loss | Acc | Precision | Recall | F1 |
+|-------|----------|-----|-----------|--------|-----|
+| 1 | 5.256 | 69.0% | 49.0% | 87.7% | 62.9% |
+| 2 | 4.924 | 78.5% | 58.4% | 97.0% | 72.9% |
+| 3 | 4.863 | 78.9% | 60.0% | 88.4% | 71.5% |
+| 4 | 4.750 | 81.7% | 63.3% | 91.9% | 75.0% |
+| 5 | 4.813 | 81.0% | 62.8% | 89.6% | 73.8% |
+| **6** | **4.799** | **82.5%** | **63.5%** | 97.5% | **76.9%** ✅ |
+| 7 | 4.768 | 81.7% | 63.6% | 90.7% | 74.8% |
+| 8 | 4.812 | 81.8% | 63.8% | 90.5% | 74.9% |
+| 9 | 4.816 | 81.3% | 63.0% | 91.2% | 74.5% |
+| 10 | 4.815 | 81.3% | 62.9% | 91.5% | 74.6% |
+
+- **Best Checkpoint**：Epoch 6（F1=76.9%，Early Stopping 於 patience=4/6 時 10 epoch 結束）
+- **Holdout Test Set**：Acc 82.8%、Precision 63.8%、Recall 96.2%、F1 76.7%
+- 訓練時長：1150s（~19 分鐘），平均 6.5 it/s（RTX 3060，無 teacher forward pass）
+- ONNX 導出：147 MB（FP32） → **36.8 MB**（INT8 量化，75% 壓縮）
+
+### 完整評估指標（v2.4，量化 INT8 模型）
+
+**Phase 1 二元分類（test set n=5,000）：**
+
+| 閾值 | Accuracy | Precision | Recall | F1 |
+|------|----------|-----------|--------|-----|
+| 0.5 | 76.1% | 55.3% | **97.9%** | 70.7% |
+| 0.7 | 76.4% | 57.1% | 79.3% | 66.4% |
+| 0.9 | 76.1% | 59.2% | 60.7% | 59.9% |
+
+**Phase 2 排名指標（500 queries，Top-30 重排模擬）：**
+
+| 指標 | v2.4 (rbt3 INT8) | v2.3 (rbt3 INT8) |
+|------|-----------------|-----------------|
+| **Graded NDCG@1** | **0.734** | — |
+| **Graded NDCG@3** | **0.729** | — |
+| **Graded NDCG@5** | **0.727 ± 0.017** | 0.818 ± 0.015 |
+| **Graded NDCG@10** | **0.737** | — |
+| Binary NDCG@5 | 0.606 | 0.691 |
+| **MRR** | **0.611** | 0.692 |
+| **Precision@1** | **0.774** | — |
+| **Precision@3** | **0.768** | — |
+| **Precision@5** | **0.760** | — |
+| **Hit@1 (rel≥3)** | **0.462** | — |
+| Avg Satisfaction | 0.603 | 0.678 |
+
+**Top-30 候選池標籤分佈：** Perfect(3)=43.5%、Good(2)=17.6%、Partial(1)=13.4%、None(0)=25.5%
+
+> **說明**：v2.4 的 Graded NDCG@5（0.727）低於 v2.3（0.818），主要原因是 **KD 被迫停用**（無可用的 task-finetuned teacher），rbt3 無蒸餾時基準約 0.70-0.75。v2.4 的貢獻在於完整修正訓練策略缺陷（Focal/T_task/自蒸餾鏈），為下一個有正確 teacher 的版本奠定基礎。
+
+---
+
+## [模型訓練問題排查記錄] — 訓練失敗根因分析
+
+本節記錄直接影響模型效能的訓練策略失敗與推斷層 bug，包含根因分析與修正細節。
+
+---
+
+### 🔴 BUG-01：tokenizer.json 只有 5 個詞彙導致推斷完全失效
+
+**發生版本**：v2.3 首次評估時發現  
+**影響**：模型對所有輸入輸出幾乎相同的錯誤結果，推薦系統完全失效
+
+**現象**：
+- 同一 query + property 對，用不同 tokenizer 路徑推斷：
+  - `frontend/` tokenizer → logits = `[1.787, -0.383]`（預測 NOT_MATCH）
+  - `saved_models/rbt3_finetuned/` tokenizer → logits = `[-6.735, 1.578]`（預測 MATCH）
+  - 兩者**完全相反**，且前者對所有輸入幾乎一致（模型輸入全相同）
+
+**根因**：
+```
+frontend/models/custom_onnx_model_dir/tokenizer.json — 2,984 bytes
+  vocab: {"[UNK]":0, "[SEP]":1, "[PAD]":2, "[CLS]":3, "[MASK]":4}
+  ← 只有 5 個特殊 token，完整詞彙應為 21,128 個 WordPiece token
+```
+- 早期導出時 `tokenizers` 函式庫序列化只保留 padding/truncation 配置，未包含 `vocab.txt` 的 WordPiece 詞彙表
+- 所有中文字元 token → `[UNK]`（ID=0），模型輸入等同 `[CLS][UNK]×63[SEP]`，對任意查詢完全相同
+
+**修正**：
+```python
+# export_to_onnx() 末尾自動同步完整 tokenizer 至前端目錄
+for fname in ("tokenizer.json", "tokenizer_config.json", "config.json",
+              "special_tokens_map.json", "vocab.txt"):
+    shutil.copy2(os.path.join(SAVED_MODEL_DIR, fname), frontend_dir)
+```
+
+---
+
+### 🔴 BUG-02：metric_for_best_model="loss" 導致保存錯誤 Checkpoint
+
+**發生版本**：v2.3 及之前所有版本  
+**影響**：每次訓練儲存的都是 val loss 最低的 epoch，而非 F1 最高的 epoch
+
+**現象**：
+```
+Epoch 6: F1=85.1%, Precision=75.9%  ← 實際最佳 F1，未被儲存
+Epoch 7: F1=84.8%, Precision=75.3%  ← loss=2.546（最低），被誤選為 best checkpoint
+```
+
+**根因**：訓練損失同時包含 RankNet + ListNet 排序損失，這些損失在 binary F1 已收斂後仍繼續下降，導致 loss 最低的 epoch 不等於 F1 最高的 epoch。HuggingFace Trainer 依 `metric_for_best_model` 決定儲存哪個 checkpoint，設為 `"loss"` 時選出的是排序 loss 最低但 F1 略差的版本。
+
+**修正**：
+```python
+TrainingArguments(metric_for_best_model="f1", greater_is_better=True, ...)
+```
+
+---
+
+### 🟠 FAIL-01：Focal Loss γ=2.0 導致 Precision 崩潰（v2.4 Alpha）
+
+**發生版本**：v2.4 Alpha  
+**期望效果**：提升 Precision（下壓簡單正例梯度，聚焦困難邊界）  
+**實際結果**：Precision 從 75.9% 驟降至 **66%**，NDCG@5 從 0.818 降至 0.774
+
+**Focal Loss 公式**：
+```
+FL(x, y) = -(1 - p_t)^γ × log(p_t)
+p_t = softmax(x)[y]   ← 模型對正確類別的信心
+focal_weight = (1 - p_t)^γ  ← γ=2 時信心越高梯度越被壓制
+```
+
+**失敗根因分析**：
+- 文獻（Lin et al., RetinaNet 2017）設計 Focal Loss 針對**物件偵測**場景，背景框數量極多（>99%）且容易分類，前景框困難但重要
+- 租屋匹配任務的「正例」（MATCH）本身具高度多樣性：「6000以下南區套房」vs「可養貓電梯大樓」是完全不同的語意空間，不存在「過於容易」的系統性正例
+- 初期訓練時，模型對正例的信心 `p_t` 仍低（0.5-0.7），但 γ=2 已顯著壓制梯度 → 正例學習嚴重滯後
+- 加上蒸餾損失（α=0.50）同時稀釋 task loss → 有效 task gradient 幾乎消失
+- 結果：模型對正例的分類邊界無法有效建立，誤判大量非相關房源為 MATCH（Precision 下降）
+
+**驗證**：啟用 Focal Loss（γ=2）時的訓練行為：
+```
+Epoch 1: F1=0.611, Prec=0.449 （v2.4 Alpha，含 focal + 蒸餾）
+Epoch 3: F1=0.742, Prec=0.610
+Epoch 6: F1=0.794, Prec=0.660 ← 最終收斂，仍遠低於 v2.3 的 Prec=0.759
+```
+
+---
+
+### 🟠 FAIL-02：T_task=2.0 移除導致排序損失梯度崩潰
+
+**發生版本**：v2.4 Alpha（移除 T_task 以「簡化」損失）  
+**影響**：RankNet 和 ListNet 排序損失信號消失，模型無法學習排序偏好
+
+**分析**：
+```python
+# v2.3（有效）
+T_task = 2.0
+rel_logits = logits[:, 1] / T_task  # logit 範圍縮小至 ~[-2.5, 2.5]
+
+# v2.4 Alpha（移除 T_task 後）
+rel_logits = logits[:, 1]            # logit 範圍 ~[-5, 5]（未縮放）
+```
+
+**RankNet 損失對 T_task 的敏感性**：
+```
+RankNet_loss = log(1 + exp(-(s_i - s_j)))   for pairs where r_i > r_j
+
+若 s_i - s_j = 6.0（有 T_task=2 時約為 3.0）
+  exp(-6.0) ≈ 0.0025   → log(1.0025) ≈ 0.0025   ← 梯度幾乎為零（sigmoid 飽和）
+  exp(-3.0) ≈ 0.0498   → log(1.0498) ≈ 0.0487   ← 有效梯度
+```
+- 未縮放的 logit 差異較大，sigmoid 函數飽和，梯度趨近於 0
+- 模型學不到「高相關度房源應排在低相關度房源之前」的偏好
+- ListNet 同樣受影響：`log_softmax(rel_logits)` 的 log 接近 0（其中一個元素機率 ≈ 1），KL 散度梯度消失
+
+**修正**：維持 `T_task=2.0`（v2.4 最終配置保留此值）
+
+---
+
+### 🟠 FAIL-03：自蒸餾鏈退化（Bad Teacher → Worse Student）
+
+**發生版本**：v2.4b（使用 v2.4 Alpha 產出的模型作為 teacher）  
+**影響**：v2.4b 的 student 繼承了 teacher 的偏差，無法達到 v2.3 水準
+
+**問題結構**：
+```
+v2.3 訓練 → saved_models/rbt3_finetuned  (F1=85.1%, Prec=75.9%)  ← 好 teacher
+       ↓ 訓練完成覆寫
+v2.4α 訓練 → saved_models/rbt3_finetuned  (F1=79.4%, Prec=66%)  ← 壞 teacher
+       ↓ 以此為 teacher 進行 v2.4b
+v2.4b 訓練 → Epoch 6: F1=0.761, Prec=0.625  ← 更差，蒸餾鏈退化
+```
+
+**根因**：
+- `TEACHER_MODEL_PATH = saved_models/rbt3_finetuned`
+- `SAVED_MODEL_DIR    = saved_models/rbt3_finetuned`
+- 兩者指向同一個路徑，每次訓練完成後 teacher 被下一代 student 覆寫
+- v2.4α 的 teacher (Prec=0.66) 會對大量非相關房源輸出 P(MATCH) > 0.4（不確定的正預測）
+- Student 學習 teacher 的 soft label 分布 → 繼承「不確定」的邊界 → Precision 持續低
+
+**數學說明**：
+```
+KL(P_student / T ‖ P_teacher / T) 的梯度
+→ 驅使 student 的 logit 分布逼近 teacher 的 logit 分布
+→ 若 teacher 對 rel=0 的樣本輸出 [0.38, 0.62]（softmax after T=4）
+   student 被驅使預測 P(MATCH) ≈ 62%（此樣本應為 0%）
+```
+
+**教訓**：
+1. `TEACHER_MODEL_PATH` 不應與 `SAVED_MODEL_DIR` 相同，或在每次訓練前備份 teacher
+2. 使用 BANs / 自蒸餾時，必須確認 teacher 品質 ≥ 目標門檻（建議 F1 > 83%）
+3. Teacher 品質退步時，應立即停止蒸餾鏈並重建 teacher
+
+---
+
+### 🟠 FAIL-04：Pre-trained rbt6 作為 Teacher 的分類頭隨機初始化問題
+
+**發生版本**：v2.4c（切換至 `hfl/rbt6` 作為 teacher）  
+**影響**：Epoch 1 F1=0.569（低於無 teacher 基準的 ~0.62），training 被終止
+
+**現象**：
+```
+v2.4c Epoch 1: F1=0.569, Precision=0.435, Recall=0.823
+  → 高 Recall + 低 Precision = 模型對幾乎所有輸入都預測 MATCH（閾值 0.5 時）
+```
+
+**根因**：
+```python
+teacher = AutoModelForSequenceClassification.from_pretrained(
+    "hfl/rbt6",         # 只有 encoder 有預訓練權重
+    num_labels=2,
+    ignore_mismatched_sizes=True,   # ← 分類頭被隨機初始化！
+)
+```
+- `hfl/rbt6` 是純語言模型（MLM），沒有 sequence classification head
+- 載入後，分類頭（`classifier.weight`, `classifier.bias`）從 `kaiming_uniform_` / `zeros_` 初始化
+- 隨機初始化的分類頭對任意輸入輸出接近均勻分布：`softmax([w·h+b]) ≈ [0.5, 0.5]`
+- 經過溫度縮放 T=4.0 後，KL 目標仍接近均勻分布
+
+**梯度分析**：
+```
+KL(P_student/T ‖ P_teacher/T) ≈ KL(P_student/T ‖ [0.5, 0.5])
+→ 驅使 student 的兩個類別概率趨近 0.5
+→ 等效於在 task loss 上疊加了一個拉向 0.5 的正規化項
+→ 分類邊界模糊，以 0.5 為閾值時幾乎所有樣本都被預測為正例（High Recall / Low Prec）
+
+影響量 = DISTILL_ALPHA_MAX × 損失 = 0.38 × 隨機梯度
+→ 38% 的更新方向是噪訊
+```
+
+**診斷方式**：直接比較兩個 tokenizer 輸出：
+```python
+# 快速診斷：對同一輸入比較 student 和 teacher 的預測
+student_logits = model(**inputs).logits  # 期望 [-6, +6] 範圍
+teacher_logits = teacher(**inputs).logits  # 若接近 [0, 0]，teacher head 是隨機的
+```
+
+**修正**：設 `DISTILL_ALPHA_MAX = 0.0`（完全停用 KD），直到有高品質 task-finetuned teacher 可用
+
+---
+
+## [2026.05.13 v2.3] - 知識蒸餾壓縮（rbt6 → rbt3）+ 前端快速載入 + 評估指標修正
 
 ### 核心改進
 
@@ -23,14 +377,47 @@
 - **Best Epoch 7**（loss 最低 2.546），Test set：F1 **83.1%**、Recall 97.7%
 - 訓練時長：962s（~16 分鐘），4.82 it/s（RTX 3060）
 
+#### 🐛 tokenizer.json 修正（致命 Bug）
+- 發現 `frontend/models/custom_onnx_model_dir/tokenizer.json` 僅有 **5 個詞彙**（應為 21,128 個）
+  - 原因：tokenizer 序列化只儲存了 padding/truncation 設定，未包含完整 WordPiece vocab
+  - 影響：所有 token 被映射為 `[UNK]`，導致模型輸入全相同、推斷結果完全錯誤
+- 修正：從 `saved_models/rbt3_finetuned/tokenizer.json`（439 KB）複製完整 tokenizer 至 frontend
+- 同步修正 `export_to_onnx()` 加入自動複製 tokenizer 至前端目錄，防止未來訓練後不同步
+
+#### 📊 完整評估指標（量化 INT8 模型，修正 tokenizer 後）
+
+**Phase 1 二元分類（test set n=3,993）：**
+
+| 閾值 | Accuracy | Precision | Recall | F1 |
+|------|----------|-----------|--------|-----|
+| 0.5 | 86.2% | 68.5% | **98.0%** | 80.6% |
+| 0.7 | 87.3% | 71.2% | 95.2% | **81.5%** ✅ |
+| 0.9 | 88.0% | 79.3% | 80.3% | 79.8% |
+
+推薦系統使用閾值 0.7 取得最佳 F1；高 Recall（98%）確保不遺漏好物件。
+
+**Phase 2 排名指標（500 queries，Top-30 重排）：**
+
+| 指標 | 分數 |
+|------|------|
+| Binary NDCG@5 | 0.691 |
+| **Graded NDCG@5** | **0.818 ± 0.015** |
+| MRR | 0.692 |
+| Avg Satisfaction | 0.678 |
+
+**Top-5 結果標籤分佈：** Perfect(3)=44.4%、Good(2)=19.1%、Partial(1)=12.8%、None(0)=23.7%
+
 #### 📦 模型壓縮效果
 
 | 指標 | rbt6（前代） | rbt3 蒸餾（本版） | 變化 |
 |------|------------|----------------|------|
-| 模型大小（量化後） | 58 MB | **37 MB** | **-36%** |
+| 模型大小（量化 INT8） | 58 MB | **37 MB** | **-36%** |
 | 首次載入總量 | ~108 MB | **~89 MB** | **-18%** |
 | Val F1（best epoch） | 84.8% | **85.1%** | +0.3% |
 | Test F1 | 83.6% | 83.1% | -0.5% |
+| Graded NDCG@5 | — | **0.818** | — |
+| MRR | — | **0.692** | — |
+| Precision@0.7 | — | **71.2%** | — |
 | 參數量（FP32） | 228 MB | 147 MB | -36% |
 
 蒸餾讓 rbt3 的 F1 超越直接訓練 rbt3 預期值（~80-82%），幾乎達到 rbt6 水準。

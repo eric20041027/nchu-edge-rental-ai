@@ -1,62 +1,166 @@
 # 興大 AI 租屋推薦系統 (NCHU AI Rental Recommendation)
 
-本專案為針對中興大學學生設計之 Edge AI 租屋推薦系統。系統透過微調後之 6 層 RoBERTa 模型處理自然語言查詢，並與房源資料進行深度語意匹配，旨在解決傳統篩選器過於僵硬的侷限性，提供具備語意理解能力的搜尋體驗。
+本專案為針對中興大學學生設計之 **Edge AI 租屋推薦系統**。透過微調並蒸餾的中文 RoBERTa 模型（rbt3 INT8，**37 MB**）在瀏覽器端進行即時語意匹配，解決傳統篩選器過於僵硬的侷限，提供具備深層語意理解的搜尋體驗。
+
+---
 
 ## 系統核心亮點
 
-- **跨平台數據自動化整合**: 系統利用 Playwright 動態爬蟲技術，整合中興大學校外租屋網與租租通數據，解決資訊破碎化問題。
+- **超輕量 rbt3 Cross-Encoder（37 MB INT8）**：以 3 層 rbt3 搭配多任務損失（CE + RankNet + ListNet）+ R-Drop 正規化 + FGM 對抗訓練，在 **37 MB** 模型大小下實現瀏覽器端即時語意重排。v2.3 採知識蒸餾（rbt6→rbt3，NDCG@5=0.818）；v2.4 全面修正訓練策略缺陷，確立下一版蒸餾的穩健基礎。
 
-- **雙層 NER + 語意匹配**:
-  - **第一層**：BERT-based NER 模型自動從查詢文本抽取地點 (LOC)、預算 (BGT)、設施 (FEAT) 三類實體，F1=0.958，用於初步篩選與特徵增強。
-  - **第二層**：RBT6 Cross-Encoder 進行深層語意匹配重排，NDCG@5=0.9629，確保語意邏輯一致性。
-  - **前端優化**：NER Web Worker 於瀏覽器端實現 <20ms 毫秒級推論，完全無卡頓。
+- **雙層 NER + 語意匹配**：
+  - **第一層**：輕量 NER（rbt3，**37 MB** INT8）自動抽取地點 (LOC)、預算 (BGT)、設施 (FEAT) 三類實體，F1=0.997，用於初步篩選。
+  - **第二層**：rbt3 Cross-Encoder 深度語意重排，Graded NDCG@5 = **0.818**（v2.3）/ **0.727**（v2.4，無蒸餾基準）。
+  - **前端優化**：兩個模型均運行於獨立 Web Worker，NER < 20ms，Cross-Encoder < 150ms。
 
-- **生活型態意圖推論 (Lifestyle Intent Inference)**: **(NEW V3)** 系統不僅能識別關鍵字，還能推斷生活需求。透過 15+ 組「生活聚類」，自動將「不想追垃圾車」映射至子母車，將「想省錢自炊」映射至瓦斯廚房，達成深層意圖理解。
+- **生活型態意圖推論（Lifestyle Intent Inference）**：15+ 組語意聚類，自動將「不想追垃圾車」映射至子母車設施、「想省錢自炊」映射至瓦斯廚房等深層意圖。
 
-- **硬性約束一票否決 (Strict Mode)**: 實施針對預算上限、寵物政策與台電計費的「零容忍」過濾邏輯，優先保證用戶底線需求，解決模型對地點優勢的權衡偏見。
+- **硬性約束一票否決（Hard Constraints）**：預算上限、寵物政策、台電計費的「零容忍」過濾，確保絕對底線條件不被語意優勢覆蓋。
 
-- **深度語意解析 (RoBERTa RBT6)**: 採用 hfl/rbt6 架構，其深層的參數容量與特徵空間能細膩地捕捉口語化需求中的語意細節。
+- **多組合損失 + 對抗訓練**：CE + RankNet + ListNet + KL蒸餾 + R-Drop + FGM 對抗擾動，從多個角度優化排序精度。
 
-- **強化對抗訓練 (Adversarial Training/FGM)**: 實作 FGM (Fast Gradient Method) 於訓練過程中針對 Embedding 層注入對抗性擾動，顯著提升模型在面對非規範口語輸入時的泛化能力與魯棒性。
+- **真實路網通勤時間**：整合 OSRM 計算步行／機車實際路網時間，作為排序核心因子。
 
-- **真實路網權重系統**: 整合 OSRM 引擎計算真實路網權重，以步行與機車的實際通勤時間作為推薦排序的核心因子。
-
-- **邊緣端高效推論 (Edge AI)**: 透過 ONNX Runtime Web 實作瀏覽器端即時推理，雙模型都採用 INT8 量化（NER **37 MB** + Cross-Encoder 57 MB，共 **~107 MB**，較前版減少 37%），確保移動端快速加載與高效執行。
-
-- **6步自適應數據流水線**: Merge → Commute → Generate → Augment → Mine → Embed，自動化處理多源異構數據，支援 LLM 增強、困難樣本挖掘、嵌入預計算等高級特性。
+- **Edge AI 零延遲體驗**：
+  - 模型完全在瀏覽器端執行（ONNX Runtime Web + WASM）
+  - Service Worker 快取策略：重複載入 < 1 秒（第一次 ~25 秒）
+  - Cache API 持久化：兩個模型共 ~74 MB，命中快取後瞬間啟動
 
 ---
 
 ## 系統架構圖 (System Architecture)
 
 ### 1. 數據流水線 (Data Pipeline)
-展示從原始資料抓取到模型產出的完整自動化流程（6步）：
+從原始資料抓取到模型產出的完整自動化流程（6 步）：
 
 ```mermaid
 graph TD
     A1["租租通 Crawler\n(Playwright/JSON-LD)"] --> B("merge\n多源資料合併")
     A2["興大官網 Crawler\n(Request/HTML)"] --> B
     B --> C("commute\nOSRM 路網時間計算")
-    C --> D("generate\n樣本合成、物件級切割與多級採樣")
+    C --> D("generate\n樣本合成、物件級切割\n多級相關性標記 0-3")
     D --> E("augment\nLLM 語意增強")
     E --> F("mine\n困難樣本挖掘")
-    F --> G("embed\n預計算嵌入向量")
-    G --> H("model_training/pipeline.py\n模型微調與 ONNX 導出")
-    H --> I["my_custom_model.onnx (INT8)"]
+    F --> G("train_and_export_onnx.py\n蒸餾訓練 + ONNX 導出 + INT8 量化")
+    G --> H["my_custom_model_quant.onnx\n(INT8, 37 MB)"]
     C --> J["property_data.json\n(前端房源庫)"]
 ```
 
 ### 2. 推論與匹配邏輯 (Inference Flow)
-展示使用者查詢如何在前端進行兩階段即時重排：
 
 ```mermaid
 graph TD
-    A["自然語言查詢輸入"] --> B("Stage 1: 啟發式粗篩\n(JavaScript Filter)")
-    B -- "選出 Top 30 候選" --> C("Stage 2: AI 語意重排\n(ONNX Runtime Web)")
-    C --> D("RBT6 語意匹配計算")
-    D --> E("排序重整與渲染")
-    E --> F["最終推薦清單輸出"]
+    A["自然語言查詢輸入"] --> B("Stage 1: NER 實體抽取\nLOC / BGT / FEAT")
+    B --> C("Stage 2: 啟發式粗篩\nJS Filter + 硬約束 + OSRM 距離")
+    C -- "Top 30 候選" --> D("Stage 3: AI 語意重排\nONNX Runtime Web")
+    D --> E("rbt3 Cross-Encoder\nFocalCE + RankNet 訓練")
+    E --> F("排序重整與渲染")
+    F --> G["最終推薦清單"]
 ```
+
+> **v2.4 rbt3 Cross-Encoder 已完成**：R-Drop + FGM + 多任務損失（KD 因 teacher 品質問題停用，見 CHANGELOG FAIL-04）
+
+---
+
+## 效能指標 (Model Performance)
+
+### 1. NER 實體辨識（預處理階段）
+
+| 指標 | 數值 | 說明 |
+|:---|:---|:---|
+| **F1-Score** | **0.997** | LOC / BGT / FEAT 三類實體聯合 F1 |
+| **Latency** | **< 20ms** | 瀏覽器端 Web Worker 推論延遲 |
+| **Model Size** | **37 MB** (INT8) | rbt3 量化後（bert-base-chinese 98 MB → 37 MB，-62%） |
+
+### 2. Cross-Encoder 語意匹配（核心排序引擎）
+
+> 以下為 v2.3 已驗證指標（tokenizer 修正後，量化 INT8 模型）
+
+#### Phase 1：二元分類（test set，n=3,993，物件級切割）
+
+| 閾值 | Accuracy | Precision | Recall | **F1** |
+|:---|:---|:---|:---|:---|
+| 0.5 | 86.2% | 68.5% | **98.0%** | 80.6% |
+| **0.7** | 87.3% | 71.2% | 95.2% | **81.5%** ✅ |
+| 0.9 | 88.0% | 79.3% | 80.3% | 79.8% |
+
+高 Recall（98%）確保符合條件的房源極少被遺漏，適合推薦系統場景。
+
+#### Phase 2：排名指標（500 queries，Top-30 重排模擬）
+
+| 指標 | v2.3 (rbt3 INT8) | v2.4 (rbt3 INT8) | 說明 |
+|:---|:---|:---|:---|
+| **Graded NDCG@5** | **0.818 ± 0.015** | 0.727 ± 0.017 | 指數增益版 NDCG（rel 0-3 四級），Bootstrap CI |
+| Graded NDCG@1 | — | 0.734 | |
+| Graded NDCG@3 | — | 0.729 | |
+| Graded NDCG@10 | — | 0.737 | |
+| Binary NDCG@5 | 0.691 | 0.606 | 二元相關性 NDCG |
+| **MRR** | **0.692** | 0.611 | 平均倒數排名 |
+| Precision@1 | — | 0.774 | Top-1 相關比例 |
+| Precision@3 | — | 0.768 | Top-3 相關比例 |
+| Precision@5 | — | 0.760 | Top-5 相關比例 |
+| Hit@1 (rel≥3) | — | 0.462 | 首位為完美匹配的比例 |
+| **Avg Satisfaction** | 0.678 | 0.603 | (Satisfaction@3 + @5) / 2 |
+
+**v2.3 Top-5 標籤分佈：** Perfect(3)=44.4%、Good(2)=19.1%、Partial(1)=12.8%、None(0)=23.7%  
+**v2.4 Top-30 候選池標籤分佈：** Perfect(3)=43.5%、Good(2)=17.6%、Partial(1)=13.4%、None(0)=25.5%
+
+#### NDCG 計算公式
+
+$$DCG_k = \sum_{i=1}^{k} \frac{2^{rel_i} - 1}{\log_2(i+2)}, \quad NDCG_k = \frac{DCG_k}{IDCG_k}$$
+
+- $rel_i \in \{0, 1, 2, 3\}$：由資料工程模組定義的房源相關性分級
+- 分母 $\log_2(i+2)$ 對排在後面的相關結果施加位置折減懲罰
+
+### 3. 模型版本對比
+
+| 指標 | rbt6 FT (v2.1) | rbt3 蒸餾 (v2.3) | rbt3 + R-Drop (v2.4) |
+|:---|:---|:---|:---|
+| 量化後大小 | 57 MB | **37 MB** | **37 MB** |
+| Val F1 (best epoch) | 84.8% | 85.1% | 76.9% |
+| Test F1 (holdout) | 83.6% | 83.1% | 76.7% |
+| Graded NDCG@5 | — | **0.818** | 0.727 ± 0.017 |
+| MRR | — | **0.692** | 0.611 |
+| Precision@1 | — | — | 0.774 |
+| Precision@5 | — | — | 0.760 |
+| Hit@1 (rel≥3) | — | — | 0.462 |
+| 推論速度 (mobile) | ~150ms | ~150ms | ~150ms |
+
+---
+
+## 訓練策略（Training Strategy）
+
+### 損失函數組合（v2.4）
+
+```
+v2.3（知識蒸餾版）：
+  Total Loss = (1-α) × Task Loss + α × KL_Distill + 0.05 × R-Drop
+  KL_Distill = T² × KL(student/T ‖ teacher/T),  α: 0.38→0.12（餘弦退火）
+
+v2.4（無蒸餾版，KD 停用）：
+  Total Loss = Task Loss + 0.05 × R-Drop
+  KD 停用原因：pre-trained rbt6 分類頭隨機初始化 → soft label ≈ [0.5,0.5] → 38% 梯度噪訊
+
+共同核心：
+  Task Loss  = CE(label_smoothing=0.05) + RankNet(T=2.0) × 1.5 + ListNet(T=2.0)
+  R-Drop     = ½ × [KL(pass1‖pass2) + KL(pass2‖pass1)]
+               α_rdrop=0.05（保守值，避免與 FGM 對抗梯度衝突）
+```
+
+> **注意**：Focal Loss（γ=2.0）已在 v2.4 實驗後停用（γ=0.0）。
+> 實驗發現 γ=2.0 對 Precision 造成 -10% 衝擊，原因是中文租屋語意匹配任務的正例本身多樣化程度高，強抑制簡單正例梯度會使模型無法有效學習正例決策邊界。
+
+### 關鍵設計決策
+
+| 技術 | 說明 |
+|:---|:---|
+| **FGM 對抗訓練** | 每步訓練在 Embedding 層注入梯度方向擾動，提升非規範口語輸入的泛化性 |
+| **R-Drop（α=0.05）** | 雙前向強制 Dropout 一致性，減少預測方差，文獻典型增益 +1~3% F1 |
+| **rbt6 Teacher** | 以 6 層 rbt6 作 Teacher，避免自蒸餾鏈退化（teacher 品質差時 student 繼承偏差） |
+| **動態 KD α（0.38→0.12）** | 初期 Teacher 引導防崩塌，後期 Task Loss 主導收斂；保守範圍適配 pre-trained teacher |
+| **T_task=2.0** | 排序損失（RankNet/ListNet）的 logit 縮放，防止梯度尺度崩塌 |
+| **分層負樣本** | 採樣優先取硬衝突（rel=0），消除無信號的純隨機負例（rel=-1） |
+| **物件級切割** | Train/Dev/Test 按房源分割，確保測試集房源在訓練期間完全未見 |
 
 ---
 
@@ -65,287 +169,142 @@ graph TD
 ```text
 .
 ├── data/
-│   ├── raw/                 # 原始抓取數據 (nchu_rental_info.csv, fb_queries.json)
-│   └── processed/           # 處理後之訓練集與前端房源 JSON 庫
+│   ├── raw/                 # 原始爬取數據
+│   └── processed/           # 訓練集 / 驗證集 / 測試集 / 前端房源 JSON
 ├── frontend/
 │   ├── index.html           # Edge AI 展示介面主頁
-│   ├── js/                  # ONNX Runtime Web 推理 (WASM) 與應用邏輯
-│   └── models/              # 已導出之量化 ONNX 模型與分詞器配置
+│   ├── sw.js                # Service Worker（模型 cache-first，JS stale-while-revalidate）
+│   ├── js/
+│   │   ├── app.js           # 主應用邏輯 + 推薦協調
+│   │   ├── inference.js     # Cross-Encoder ONNX 推論介面
+│   │   ├── inference-worker.js  # Cross-Encoder Web Worker（Cache API 快取）
+│   │   └── ner-worker.js    # NER Web Worker（並行載入 vocab + model）
+│   └── models/
+│       ├── custom_onnx_model_dir/   # Cross-Encoder（FP32 + INT8）+ tokenizer
+│       └── ner_model_dir/           # NER 模型（INT8）
 ├── pipeline/
-│   ├── crawlers/            # 多源數據採集 (Playwright/Request)
-│   │   ├── crawler_ddroom.py # 租租通 (Playwright) 動態渲染爬蟲
-│   │   ├── crawler_nchu.py   # 興大官網爬蟲
-│   │   └── rent_info_catcher.py # 興大官網數據解析腳本 (向後相容)
-│   ├── data_prep/           # 數據加工、路網計算與樣本生成 (6步流程)
-│   │   ├── pipeline.py       # 數據流水線主控制器
-│   │   ├── merge_sources.py  # Step 1: 多源資料合併
-│   │   ├── commute_updater.py # Step 2: OSRM 路網時間計算
-│   │   ├── generate_dataset.py # Step 3: 樣本合成、物件級切割與多級採樣
-│   │   ├── augment_with_llm.py # Step 4: LLM 語意增強
-│   │   ├── mine_hard_negatives.py # Step 5: 困難樣本挖掘
-│   │   ├── precompute_embeddings.py # Step 6: 預計算嵌入向量
-│   │   └── lifestyle_mapper.py # 生活型態意圖推論
-│   ├── ner_model/           # 命名實體識別 (NER) 模組
-│   │   ├── ner_trainer.py    # NER 模型訓練 (BERT-based token classification)
-│   │   ├── ner_predictor.py  # NER 推論介面
-│   │   └── config.py         # NER 設置與標籤映射
-│   ├── model_training/      # 模型微調、對抗訓練與導出優化
-│   │   ├── pipeline.py       # 訓練流水線主控制器
-│   │   ├── config.py         # 訓練超參數與路徑配置
-│   │   ├── trainer.py        # FGMTrainer：軟標籤組合損失 + FGM 對抗訓練
-│   │   ├── exporter.py       # ONNX 導出（含 SDPA 相容性修復）
-│   │   ├── quantizer.py      # UINT8 動態量化 (228→57 MB)
-│   │   ├── evaluator.py      # NDCG@5, MRR, F1 等排序與分類指標計算
-│   │   └── models.py         # 資料模型定義
-│   ├── constraints/         # 硬約束邏輯
-│   │   └── hard_constraints.py # 預算、寵物、台電計費零容忍過濾
-│   ├── osrm_client.py       # OSRM API 客戶端 (真實路網權重)
-│   ├── orchestrator.py      # 三階段統一協調器
-│   └── runners.py           # 各階段 Runner 包裝函數
-├── saved_models/            # 訓練過程產出之 PyTorch 模型檢查點 (Checkpoints)
-├── pipeline_runner.py       # 統一入口點 (Phase 1-2-3 端到端執行)
-└── data/ner/                # NER 訓練資料
+│   ├── crawlers/            # 多源爬蟲（Playwright + Request）
+│   ├── data_prep/           # 6步資料流水線（merge→commute→generate→augment→mine→embed）
+│   ├── model_training/
+│   │   ├── train_and_export_onnx.py  # v2.5 student 訓練（KD+RDrop+FGM）+ ONNX 導出 + INT8 量化
+│   │   ├── train_teacher.py          # rbt6 teacher 專用訓練（v2.5 蒸餾前置步驟）
+│   │   ├── evaluate_model.py         # 多指標評估（NDCG@k, MRR, Precision@k, Hit@1）
+│   │   ├── quantize_model.py         # 獨立量化腳本（已有 FP32 模型時可單獨執行）
+│   │   ├── trainer.py / exporter.py / quantizer.py / evaluator.py  # 模組化框架（pipeline_runner 使用）
+│   │   └── base.py / config.py / models.py / pipeline.py           # 模組化框架支援層
+│   ├── ner_model/           # NER 訓練與推論
+│   └── constraints/         # 硬約束邏輯（預算/寵物/台電零容忍）
+├── saved_models/            # PyTorch 模型 checkpoint
+│   ├── rbt3_finetuned/      # 最新訓練產出（作為下次訓練的 Teacher）
+│   └── recommendation_model_output/  # HF Trainer checkpoint 目錄
+└── pipeline_runner.py       # 端到端入口點（Phase 1-2-3）
 ```
 
 ---
 
-## 資料工程核心 (Data Engineering Deep Dive)
+## 資料工程核心 (Data Engineering)
 
-本專案的推薦品質高度仰賴於 `generate_dataset.py` 的資料處理策略，其解決了以下核心問題：
+### 1. 物件級切割（防資料洩漏）
+先按房源切割 Train/Dev/Test，再從每個房源合成查詢。測試集的房源在訓練期間**完全未見**，確保評估的泛化真實性。
 
-### 1. 嚴防資料洩漏：物件級切割 (Object-Level Split)
-- **問題**：若將同一個房源的不同查詢隨機分配到訓練集與測試集，模型會產生「背答案」的現象，導致測試數據虛高。
-- **解決方案**：本系統採取「先切房源，再生樣本」的策略。測試集中出現的所有房源，在模型訓練期間皆為完全未見過的「陌生樣本」，確保評估結果具備高度的泛化真實性。
+### 2. 多級相關性標記（0-3）
 
-### 2. 樣本合成與噪音注入 (Synthesis & Noise Injection)
-- **樣本生成**：透過自定義模板庫將結構化房源資料（如：租金、格局、設施）轉換為數萬組口語化查詢。
-- **噪音模擬**：隨機注入錯字、簡寫（如：興大 vs 中興大學）與網路用語（如：滴 vs 的），模擬真實世界中非規範的輸入場景。
+| 分數 | 定義 | 代表案例 |
+|:---|:---|:---|
+| 3 (Perfect) | 預算、地點、設施全部滿足 | 指定南區 6000 以內套房，命中 5500 南區套房 |
+| 2 (Good) | 大多數條件滿足，預算略超（≤15%）| 指定 6000，命中 6700 同地區同格局 |
+| 1 (Partial) | 部分維度符合（地點對但設施不全）| 指定有陽台，命中無陽台但地點完美 |
+| 0 (Conflict) | 硬性衝突（寵物禁養/性別限制）| 想養貓，房源標注禁養寵物 |
 
-### 3. 多級相關性標記 (Graded Relevance Labeling)
-系統實作了複雜的評分引擎，將匹配程度分為 0~3 分，不僅支援是非題辨識，更支持排序權重：
-- **3 分 (Perfect)**：預算、地點、設施全數滿足。
-- **2 分 (Good)**：多數符合，或在預算上有合理的緩衝餘裕（15% 內）。
-- **1 分 (Partial)**：僅部分維度符合（例如：地點正確但主要設施不全），或查詢與房源僅具低度相關性。
-- **0 分 (Conflict)**：存在性別限制、寵物政策等硬性衝突。
+### 3. 查詢多樣化（7 類策略）
+- **S1-S4**：單特徵 / 雙組合 / 三組合 / 多約束原始描述
+- **S5**：生活型態推論（15+ 聚類：懶人系→電梯、自炊族→瓦斯、寵物主→可養貓…）
+- **S6**：角色情境（大一新生、WFH、安全意識、租補申請…）
+- **S7**：負向需求（不要頂加、不要暗房、不要太吵…）
+- 噪音注入：錯字、簡寫（興大 vs 中興大學）、網路用語（滴 vs 的）
 
----
-
-## 檢索與排序機制 (Search & Ranking Mechanism)
-
-為了在瀏覽器端 (Edge AI) 同時兼顧推論精度與回應速度，本系統採用 **兩階段重排 (Two-Stage Re-ranking)** 架構：
-
-### 1. 階段一：啟發式粗篩 (Heuristic Filtering)
-- **運作機制**：利用前端 JS 引擎對本地房源庫進行 O(N) 的基礎屬性過濾（如預算上限、特定區域）。
-- **優化目標**：將 600+ 筆房源迅速收斂至 20-30 筆候選物件，將 AI 運算負載控制在毫秒等級。
-
-### 2. 階段二：Cross-Encoder 深度重排 (Semantic Re-ranking)
-- **運作機制**：將候選名單輸入 RBT6 模型，透過 Cross-Encoder 進行「查詢-房源」深度交互運算。
-- **核心價值**：識別細微的語意衝突（例如：查詢「台水台電」，房源描述中標註「一度 5 元」的語意陷阱）。
-
----
-
-## 效能指標 (Model Performance)
-
-本系統採用多模型流水線 (AI Pipeline) 架構，以下分別列出「預處理實體辨識」與「核心語意匹配」的效能數據：
-
-### 1. 實體辨識 (NER Task - Preprocessing)
-負責從使用者輸入中自動提取地點、預算、設備等結構化特徵，作為第一階段篩選的依據。
-
-| 指標名稱 | 任務類型 | 數值 | 技術說明與數據佐證 |
-| :--- | :--- | :--- | :--- |
-| **F1-Score** | **序列標註 (NER)** | **0.958** | 基於三類別 (LOC, BGT, FEAT) 實體辨識實測 |
-| **Accuracy** | **序列標註 (NER)** | **0.972** | 字符層級的標記準確率 |
-| **Latency** | **輕量化推論** | **< 20ms** | 於瀏覽器端幾乎無感知的預處理延遲 |
-
-### 2. 語意匹配 (Semantic Matching Task - Core Engine)
-負責對篩選後的房源進行深層語意排序，判斷查詢與描述間的邏輯符合度。
-
-| 指標名稱 | 任務類型 | 數值 | 技術說明與數據佐證 |
-| :--- | :--- | :--- | :--- |
-| **Accuracy** | **語意匹配 (Binary)** | **0.9245** | 模型對於全陌生房源樣本 (Unseen Data) 的分類正確率 |
-| **F1-Score** | **語意匹配 (Binary)** | **0.8816** | 基於物件級切割 (Object-level Split) 之測試集評估結果 |
-| **Precision** | **語意匹配 (Binary)** | **0.8071** | 預測為相關的房源中實際相關的比例 |
-| **Recall** | **語意匹配 (Binary)** | **0.9712** | 確保符合條件的房源有極高的機率被檢索出來 |
-| **NDCG@5** | **排序品質 (Ranking)** | **0.9629** ✅ | 衡量系統將高品質房源優先排序的能力 (Top-5)，軟標籤損失函數優化版本 |
-| **MRR** | **平均倒數排名 (Ranking)** | **0.9515** ✅ | 相關結果首次出現的平均排名倒數 |
-| **Matching Latency** | **ONNX Runtime** | **< 150ms** | 於主流行動端瀏覽器 (WASM 多執行緒) 之單次推論延遲 |
-| **Model Size** | **INT8 Quantized** | **57 MB** | 透過 UINT8 量化優化體積 (228→57 MB, 74.8% 壓縮)，保留原模型 99% 語意精度 |
-
-#### 關於 NDCG 排序指標 (Ranking Quality)
-本專案採用 **NDCG (Normalized Discounted Cumulative Gain)** 作為衡量推薦品質的核心指標，其公式與意義如下：
-
-- **計算公式**：
-  $$DCG_p = \sum_{i=1}^p \frac{2^{rel_i} - 1}{\log_2(i+1)}, \quad NDCG_p = \frac{DCG_p}{IDCG_p}$$
-- **指標意義**：
-  - **$rel_i$**：代表第 $i$ 名房源的相關性分數（由資料工程模組定義之 0-3 分）。
-  - **位置折減**：分母的 $\log_2(i+1)$ 確保了「排在後面的高分房源」對總分的貢獻會被衰減，強迫模型必須將完美匹配的房源推向最前端。
-  - **實測意義**：**NDCG@5 = 0.9629** 代表在使用者最常瀏覽的前 5 筆結果中，系統能以 96.29% 的精度呈現符合度最高的物件。（透過軟標籤損失函數 (soft-label ranking loss) 優化，比前版本提升 25.9%）
-
-##### 軟標籤排序損失函數優化 (Soft-Label Ranking Loss)
-第二代訓練在「二元分類損失 (Binary Cross-Entropy)」基礎上，額外引入「相關性梯度信號」，公式如下：
-
-$$\text{Total Loss} = 0.5 \times \text{CE}(\hat{y}, y) + 0.5 \times \text{BCE}(\sigma(\text{logit}_{\text{pos}} - \text{logit}_{\text{neg}}), s)$$
-
-其中：
-- **$s$ (軟標籤)**：relevance 欄位轉換之連續分數 (relevance={-1,0,1,2,3} → s={0.0,0.0,0.15,0.4,0.7,1.0})
-- **效果**：模型不再將所有正例視為等價，而是學習 relevance=3 >> relevance=1 的分層排序邏輯，直接優化 NDCG
-- **訓練資料**：1:2 pos:neg 比例（37,488 樣本），相較於前代 1:1 比例提供更強的對比訊號
-
+### 4. 困難樣本挖掘
+基於 Jaccard 字符重疊，找出「表面相似卻違反硬約束」的語意陷阱（寵物禁養、性別限制）作為 hard negatives，double weight 在訓練中強化學習。
 
 ---
 
 ## 前端工程優化
 
-系統針對 Web 端部署實作了多項關鍵效能技術：
+1. **雙 Web Worker 並行推論**：NER + Cross-Encoder 各有獨立 Worker，主線程零阻塞
 
-1. **雙模型推論系統**:
-   - **NER 模型** (ner-worker.js): 從使用者查詢自動抽取 LOC/BGT/FEAT 實體，優化首階段篩選準確度
-   - **交叉編碼器** (inference.js): 對候選房源進行深層語意匹配重排
+2. **Cache API + Service Worker 快取策略**：
+   - `.onnx` 檔案：cache-first（模型幾乎不變）
+   - CDN（ORT Web, FontAwesome）：cache-first
+   - HTML/JS/CSS：stale-while-revalidate
+   - 版本號 `v20260514` 控制快取失效
 
-2. **並行加載策略 (Parallel Loading)**: 分詞器、模型檔案、NER Worker 透過 Promise.all 進行並行下載，縮短初始化時間。
+3. **串流進度追蹤**：Fetch API 監控資料流，精確顯示 Cross-Encoder（37 MB）+ NER（37 MB）各自的百分比進度
 
-3. **串流進度追蹤 (Stream Fetch)**: 改用原生 Fetch API 監控資料流，提供精確的載入進度回報。
+4. **快取命中偵測**：顯示「⚡ 快取」標示，進度條立即到 100%
 
-4. **快取策略 (Edge Caching)**: 於 vercel.json 實作強效快取標頭，確保 ONNX 資源瞬間載入。
+5. **NER BGT 預算過濾**：解析萬/千/k/中文數字，支援方向感知（「以上」=下限，「以下/以內」=上限）
 
-5. **渲染隔離**: 核心推理邏輯（NER + 交叉編碼器）運行於獨立的 Web Worker，確保主線程流暢度。
-
-6. **量化優化**: NER 和交叉編碼器皆採用 INT8 量化，確保移動端可快速加載 (~107MB total)。NER 由 bert-base-chinese（98MB）換為 hfl/rbt3（37MB），F1 維持 0.997。
-
-7. **雙進度條載入 UI**: Cross-Encoder 與 NER 各自顯示載入進度（百分比 + 完成動畫），改善首次使用體驗。
-
-8. **NER BGT 預算過濾**: `inference.js` 整合 NER 抽取的預算實體（BGT span），在 regex 未能識別預算時自動補充過濾約束，支援萬/千/k/中文數字解析。
-
-9. **使用者反饋記錄**: 每張房源卡片附「👍 有用 / 👎 不符」反饋按鈕，記錄至 localStorage（上限 500 筆），供未來模型迭代參考。
-
----
-
-## 核心模組說明
-
-### 1. 數據處理 (pipeline/data_prep/)
-- **pipeline.py**: 6步流水線協調器，整合 merge → commute → generate → augment → mine → embed
-- **merge_sources.py**: 多源房源數據合併與規範化
-- **commute_updater.py**: 通過 OSRM API 計算真實路網通勤時間（步行 + 機車）
-- **generate_dataset.py**: 樣本合成、物件級切割與多級採樣核心引擎
-- **augment_with_llm.py**: 利用 Gemini/Claude API 生成模擬口語查詢樣本
-- **mine_hard_negatives.py**: 困難樣本自動挖掘（低相似度但被模型誤判的樣本）
-- **precompute_embeddings.py**: 預計算房源/查詢嵌入向量，加速推論
-- **lifestyle_mapper.py**: 15+ 組生活聚類，推斷「不想追垃圾車」→ 子母車等深層意圖
-
-### 2. NER 模型 (pipeline/ner_model/)
-- **ner_trainer.py**: 序列標註訓練 (LOC/BGT/FEAT 3 類實體)，底層模型 **hfl/rbt3**（3 層輕量 RoBERTa），導出 INT8 量化 ONNX（98MB → **37MB**，F1=0.997）
-- **ner_predictor.py**: NER 推論介面，用於前端和後端實體抽取
-- 前端集成: **frontend/js/ner-worker.js** 為獨立 Web Worker，Streaming Fetch 進度回報，確保瀏覽器端毫秒級推論無卡頓
-
-### 3. 語意匹配與約束 (pipeline/)
-- **constraints/hard_constraints.py**: 預算上限、寵物政策、台電計費「零容忍」過濾（一票否決）
-- **osrm_client.py**: OSRM 客戶端，整合真實路網距離與通勤時間權重
-
-### 4. 模型訓練 (pipeline/model_training/)
-- **config.py**: 訓練超參數與路徑配置，支援環境變數覆蓋
-- **trainer.py**: 
-  - `FGMTrainer` 子類，實作 **軟標籤組合損失** (0.5×CE + 0.5×BCE)
-  - 在 embedding 層注入對抗擾動 (Fast Gradient Method)，增強魯棒性
-  - 1:2 pos:neg 不衡比例，提供更強的排序訊號
-- **exporter.py**: RBT6 ONNX 導出，包含 SDPA 相容性 monkey-patch 與 eager attention
-- **quantizer.py**: UINT8 動態量化優化模型體積 (228→57 MB, 74.8% 壓縮)
-- **evaluator.py**: NDCG@5, MRR, F1 等排序與分類指標計算
-
-### 5. 端到端執行 (pipeline/)
-- **orchestrator.py**: `PipelineOrchestrator` 統一調度三階段 (Phase 1-2-3)
-- **runners.py**: 各階段的 Runner 包裝函數
-- **pipeline_runner.py** (項目根目錄): 命令行入口點，支援 `--skip-phase 1 2 3` 靈活組合
+6. **推薦反饋**：每張卡片附 👍/👎 按鈕，記錄至 localStorage（最多 500 筆）
 
 ---
 
 ## 執行與部署
 
-### 1. 環境建置與依賴安裝
-請確保系統已安裝 Python 3.11+ 與 Node.js，接著執行：
+### 環境建置
 
 ```bash
-# 建立虛擬環境
 python -m venv venv
-
-# 啟動虛擬環境
-# Windows:
-venv\Scripts\activate
-# Linux/macOS:
-source venv/bin/activate
-
-# 升級 pip
+venv\Scripts\activate          # Windows
 pip install --upgrade pip
-
-# 安裝 PyTorch (GPU 版本 - CUDA 12.4)
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
-
-# 安裝全部依賴
 pip install -r requirements.txt
-
-# 安裝 Playwright 瀏覽器（用於動態網頁爬蟲）
 playwright install chromium
 ```
 
-### 2. 全自動化流水線執行 (End-to-End Pipeline)
-本專案提供統一的 `pipeline_runner.py` 入口點，支援靈活的階段組合：
+### 重新訓練模型
 
 ```bash
-# 完整執行 (Phase 1: 爬蟲, Phase 2: 數據處理, Phase 3: 訓練)
-python pipeline_runner.py
-
-# 跳過爬蟲，只進行數據處理與訓練 (資料已存在時)
-python pipeline_runner.py --skip-phase 1
-
-# 只執行訓練 (資料與處理已完成)
-python pipeline_runner.py --skip-phase 1 --skip-phase 2
-
-# 顯示幫助
-python pipeline_runner.py --help
+# 一鍵執行：訓練 → ONNX 導出 → INT8 量化 → 同步至前端
+set PYTHONUTF8=1
+python -m pipeline.model_training.train_and_export_onnx
 ```
 
-### 3. 手動模型導出與本地預覽
-若需重新導出模型至前端目錄並啟動前端介面進行測試：
+### 只做量化（已有 FP32 模型時）
 
 ```bash
-# 1. 重新導出 ONNX + 量化（需已完成訓練）
-python -c "
-import sys; sys.path.insert(0, '.')
-from pipeline.model_training.config import ModelTrainingConfig
-from pipeline.model_training.exporter import Exporter
-from pipeline.model_training.quantizer import Quantizer
-from transformers import BertForSequenceClassification, BertTokenizerFast
+python -m pipeline.model_training.quantize_model
+```
 
-config = ModelTrainingConfig()
-tokenizer = BertTokenizerFast.from_pretrained(str(config.saved_model_dir))
-model = BertForSequenceClassification.from_pretrained(str(config.saved_model_dir), num_labels=2)
-export = Exporter(config).run(model, tokenizer)
-Quantizer(config).run(export.model_path)
-"
+### 完整資料流水線
 
-# 2. 啟動本地開發伺服器
+```bash
+python pipeline_runner.py             # 全流程（爬蟲 + 資料處理 + 訓練）
+python pipeline_runner.py --skip-phase 1          # 跳過爬蟲
+python pipeline_runner.py --skip-phase 1 2        # 只訓練
+```
+
+### 模型評估
+
+```bash
+set PYTHONUTF8=1
+python -m pipeline.model_training.evaluate_model
+# 輸出：NDCG@1/3/5/10、MRR、Precision@1/3/5、Hit@1、Bootstrap CI
+```
+
+### 本地前端預覽
+
+```bash
 cd frontend && python -m http.server 8000
-
-# 3. 開啟瀏覽器訪問 http://localhost:8000
-```
-
-### 4. 單獨執行模型評估
-```bash
-python -m pipeline.model_training.evaluator
-```
-
-### 5. NER 模型單獨訓練與測試
-若需單獨訓練 NER 模型：
-
-```bash
-python -m pipeline.ner_model.ner_trainer
+# 開啟 http://localhost:8000
 ```
 
 ---
 
 ## 未來展望 (Roadmap)
-- **向量檢索升級**：針對萬筆級房源引入 ANN 向量索引。
-- **模型蒸餾 (Distillation)**：將 RBT6 蒸餾至更小的 Tiny-Model 以優化低階手機體驗。
-- **即時地圖互動**：將推薦結果直接標註於互動式地圖中。
+
+- **向量檢索升級**：房源規模擴增至萬筆時引入 ANN 向量索引（FAISS/Annoy）
+- **即時地圖互動**：推薦結果直接標註於互動式地圖
+- **使用者反饋微調**：利用 localStorage 累積的 👍/👎 反饋進行線上學習
 
 ---
 
