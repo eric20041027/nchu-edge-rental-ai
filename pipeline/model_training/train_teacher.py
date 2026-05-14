@@ -1,18 +1,19 @@
 """
-train_teacher.py - Dedicated rbt6 Teacher Training (for v2.5 Knowledge Distillation)
+train_teacher.py - Dedicated rbt6 Teacher Training (for v2.6 Knowledge Distillation)
 
-Trains hfl/rbt6 (6-layer Chinese RoBERTa) on the rental dataset using the same
-multi-task loss as the student pipeline, then saves to saved_models/rbt6_teacher/.
+Trains hfl/rbt6 (6-layer Chinese RoBERTa) on the rental dataset, then saves to
+saved_models/rbt6_teacher/.
 
-This model is the FROZEN teacher for v2.5 student (rbt3) distillation.
-IMPORTANT: saved_models/rbt6_teacher/ is NEVER overwritten by student training.
-           The student saves to saved_models/rbt3_finetuned/ (different path).
+v2.6 change: RankNet + ListNet REMOVED from teacher loss.
+Rationale: ranking losses push all positive scores higher, inflating Recall but
+crushing Precision (v2.5 teacher: Rec=0.985, Prec=0.652). The teacher's role is
+to provide well-calibrated soft labels, not to be a ranking model. Pure CE + R-Drop
++ FGM gives cleaner probability distributions for distillation.
 
-Loss = CE(label_smoothing=0.05) + RankNet(T=2.0)×1.5 + ListNet(T=2.0)
-     + 0.05 × SymKL(pass1 ‖ pass2)    ← R-Drop regularisation
-     + FGM adversarial perturbation on word embeddings
+Loss = CE(label_smoothing=0.05) + 0.05 × SymKL(pass1 ‖ pass2) + FGM
+     (RankNet and ListNet intentionally excluded)
 
-Expected: F1 ≈ 86-89% (rbt6 has 6 layers vs rbt3's 3 layers; more capacity)
+Expected: F1 ≈ 83-88% with higher Precision ceiling.
 """
 
 import math
@@ -56,20 +57,20 @@ BASE_DIR         = os.path.dirname(__file__)
 TEACHER_SAVE_DIR = os.path.join(BASE_DIR, "../../saved_models/rbt6_teacher")
 DATA_DIR         = os.path.join(BASE_DIR, "../../data/processed")
 
-# Training hyperparams — LR lowered to 1e-5 to prevent post-peak oscillation
-LEARNING_RATE   = 1e-5
-NUM_EPOCHS      = 12
-PATIENCE        = 5          # Extra patience at lower LR (convergence is slower)
+# Training hyperparams — v2.6: LR=5e-6 for stable convergence, longer training
+LEARNING_RATE   = 5e-6
+NUM_EPOCHS      = 15
+PATIENCE        = 7
 BATCH_SIZE      = 32
 WEIGHT_DECAY    = 0.01
-WARMUP_RATIO    = 0.06
+WARMUP_RATIO    = 0.08       # Slightly longer warmup at very low LR
 MAX_LENGTH      = 64
 
-# Loss config (same as student for consistent soft-label quality)
+# Loss config — RankNet/ListNet removed; teacher only needs calibrated CE + R-Drop
 RDROP_ALPHA     = 0.05
 FOCAL_GAMMA     = 0.0        # Disabled
 LABEL_SMOOTHING = 0.05
-T_TASK          = 2.0        # Ranking loss temperature
+T_TASK          = 2.0        # Kept for compatibility (unused without ranking losses)
 
 # Sample weights (same as student)
 REL_MAP = {3: 12.0, 2: 4.0, 1: 0.8, 0: 5.0, -1: 0.3}
@@ -228,36 +229,14 @@ class TeacherTrainer(Trainer):
             logits     = logits1
             rdrop_loss = torch.tensor(0.0, device=logits1.device)
 
-        rel_logits = logits[:, 1] / T_TASK   # Temperature-scaled for ranking
-
-        # ── 1. Focal Cross-Entropy (γ=0 → standard CE) ────────────────────────
-        with torch.no_grad():
-            p_t = torch.exp(-F.cross_entropy(logits.detach(), labels, reduction="none"))
-        focal_weight = (1.0 - p_t) ** FOCAL_GAMMA
+        # ── CE loss only (no RankNet/ListNet — teacher needs clean calibration) ──
         ce_loss = F.cross_entropy(logits, labels, reduction="none",
                                   label_smoothing=LABEL_SMOOTHING)
-        focal_ce = focal_weight * ce_loss
-
         pp = torch.where(labels == 0,
                          torch.tensor(1.5, device=labels.device),
                          torch.ones(labels.shape, device=labels.device))
-        task_loss = (focal_ce * weights * pp).mean() if weights is not None \
-                    else (focal_ce * pp).mean()
-
-        # ── 2. RankNet (pairwise) ──────────────────────────────────────────────
-        s_i = rel_logits.unsqueeze(1)
-        s_j = rel_logits.unsqueeze(0)
-        r_i = relevance.unsqueeze(1)
-        r_j = relevance.unsqueeze(0)
-        mask = (r_i > r_j).float()
-        if mask.sum() > 0:
-            ranknet = torch.log(1 + torch.exp(-(s_i - s_j))) * mask
-            task_loss = task_loss + (ranknet.sum() / mask.sum()) * 1.5
-
-        # ── 3. ListNet (listwise) ─────────────────────────────────────────────
-        target_dist = torch.softmax(relevance, dim=0)
-        pred_dist   = torch.log_softmax(rel_logits, dim=0)
-        task_loss   = task_loss + (-torch.sum(target_dist * pred_dist))
+        task_loss = (ce_loss * weights * pp).mean() if weights is not None \
+                    else (ce_loss * pp).mean()
 
         # ── Combine ───────────────────────────────────────────────────────────
         loss = task_loss + RDROP_ALPHA * rdrop_loss
