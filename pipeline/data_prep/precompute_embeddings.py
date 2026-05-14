@@ -9,6 +9,18 @@ import csv
 import re
 from typing import Dict, List, Any
 
+def _parse_deposit(raw: str) -> int:
+    """Parse deposit string to integer (0 = no deposit)."""
+    if not raw or raw.strip() in ("", "無", "0", "0元", "免押金"):
+        return 0
+    m = re.search(r"(\d[\d,]*)", raw.replace(",", ""))
+    return int(m.group(1)) if m else 0
+
+def _deposit_str(raw: str) -> str:
+    """Format deposit for display."""
+    amount = _parse_deposit(raw)
+    return f"{amount:,}元" if amount else "免押金"
+
 def process_property_row(row: Dict[str, str]) -> Dict[str, Any]:
     """Parses and normalizes a single CSV row into a structured dictionary."""
     rent_str = row.get("租金", "")
@@ -176,11 +188,14 @@ def process_property_row(row: Dict[str, str]) -> Dict[str, Any]:
         "water_dispenser": "飲水機" in full_text,
         "private_washer": "個人洗衣機" in full_text or "獨洗" in full_text,
         "has_subsidy": "租屋補助" in full_text or "補助" in full_text,
-        "is_taipower": "台電" in full_text,
+        "is_taipower": electricity_billing == "台水台電",
         "fire_safety": row.get("消防逃生", ""),
         "security_gear": row.get("安全管理", ""),
         "rent_included": row.get("租金包含", ""),
         "features": row.get("特色", ""),
+        # Deposit
+        "deposit": _parse_deposit(row.get("押金", "")),
+        "deposit_str": _deposit_str(row.get("押金", "")),
     }
 
 def load_properties(csv_path: str = None) -> List[Dict[str, Any]]:
