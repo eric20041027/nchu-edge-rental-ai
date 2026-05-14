@@ -363,9 +363,11 @@ function createPropertyCardHTML(house, badgeClass) {
                 <span><i class="fa-solid fa-building"></i> ${house.floor}</span>
                 ${house.deposit === 0
                     ? `<span style="color: #4ade80; font-weight: 600;"><i class="fa-solid fa-circle-check"></i> 免押金</span>`
-                    : (house.deposit > 0
-                        ? `<span style="color: #94A3B8;"><i class="fa-solid fa-hand-holding-dollar"></i> 押金 ${house.deposit_str}</span>`
-                        : '')
+                    : house.deposit === -1
+                        ? `<span style="color: #fbbf24;"><i class="fa-solid fa-hand-holding-dollar"></i> 押金可議</span>`
+                        : (house.deposit > 0
+                            ? `<span style="color: #94A3B8;"><i class="fa-solid fa-hand-holding-dollar"></i> 押金 ${house.deposit_str}</span>`
+                            : '')
                 }
             </div>
             

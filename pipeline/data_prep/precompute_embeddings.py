@@ -10,16 +10,22 @@ import re
 from typing import Dict, List, Any
 
 def _parse_deposit(raw: str) -> int:
-    """Parse deposit string to integer (0 = no deposit)."""
+    """Parse deposit string to integer. Returns 0=免押金, -1=可議, positive=amount."""
     if not raw or raw.strip() in ("", "無", "0", "0元", "免押金"):
         return 0
+    if "可議" in raw:
+        return -1
     m = re.search(r"(\d[\d,]*)", raw.replace(",", ""))
-    return int(m.group(1)) if m else 0
+    return int(m.group(1)) if m else -1
 
 def _deposit_str(raw: str) -> str:
     """Format deposit for display."""
     amount = _parse_deposit(raw)
-    return f"{amount:,}元" if amount else "免押金"
+    if amount == 0:
+        return "免押金"
+    if amount == -1:
+        return "可議"
+    return f"{amount:,}元"
 
 def process_property_row(row: Dict[str, str]) -> Dict[str, Any]:
     """Parses and normalizes a single CSV row into a structured dictionary."""
@@ -80,12 +86,23 @@ def process_property_row(row: Dict[str, str]) -> Dict[str, Any]:
         row.get("租屋補助", "")
     ]).replace(" ", "")
     
-    # 1. Electricity Billing
+    # 1. Electricity Billing — check dedicated columns first, then full_text
+    elec_col = row.get("電費", "") + row.get("水費", "")
+    has_taipower = "台電" in full_text
+    has_taiwater = "台水" in full_text
+    has_ind_meter = "獨立電表" in full_text or "獨立電錶" in full_text
+
     electricity_billing = "不明"
     if "電" in inclusions:
         electricity_billing = "含電費"
-    elif "台水" in full_text or "台電" in full_text or "獨立電表" in full_text or "獨立電錶" in full_text:
+    elif has_taipower and has_taiwater:
         electricity_billing = "台水台電"
+    elif has_taipower:
+        electricity_billing = "台電"
+    elif has_taiwater:
+        electricity_billing = "台水"
+    elif has_ind_meter:
+        electricity_billing = "獨立電錶"
     else:
         # Check for X元/度 or 電X
         m = re.search(r"(?:電費?|電)[\D]*?(\d+(?:\.\d+)?)[元塊]?(?:/度|度)?", row.get("另計費用", "") + row.get("特色", ""))
@@ -188,7 +205,7 @@ def process_property_row(row: Dict[str, str]) -> Dict[str, Any]:
         "water_dispenser": "飲水機" in full_text,
         "private_washer": "個人洗衣機" in full_text or "獨洗" in full_text,
         "has_subsidy": "租屋補助" in full_text or "補助" in full_text,
-        "is_taipower": electricity_billing == "台水台電",
+        "is_taipower": electricity_billing in ("台電", "台水台電"),
         "fire_safety": row.get("消防逃生", ""),
         "security_gear": row.get("安全管理", ""),
         "rent_included": row.get("租金包含", ""),
@@ -254,6 +271,8 @@ def main() -> None:
             "security_gear": prop["security_gear"],
             "rent_included": prop["rent_included"],
             "features": prop["features"],
+            "deposit": prop["deposit"],
+            "deposit_str": prop["deposit_str"],
         }
         for i, prop in enumerate(properties)
     ]

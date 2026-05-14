@@ -33,7 +33,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台水",
     "billing_type": "standard",
     "service_level": "five_star",
     "safety_level": "high",
@@ -50,7 +50,7 @@
     "water_dispenser": false,
     "private_washer": false,
     "has_subsidy": true,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
@@ -114,8 +114,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 2,
@@ -172,8 +172,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可開伙/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 14000,
+    "deposit_str": "14,000元"
   },
   {
     "idx": 3,
@@ -357,7 +357,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "five_star",
     "safety_level": "high",
@@ -734,7 +734,7 @@
       "10000元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "five_star",
     "safety_level": "high",
@@ -1502,8 +1502,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 29000,
+    "deposit_str": "29,000元"
   },
   {
     "idx": 28,
@@ -2925,8 +2925,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 24000,
+    "deposit_str": "24,000元"
   },
   {
     "idx": 56,
@@ -3317,7 +3317,7 @@
       "10000元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "five_star",
     "safety_level": "high",
@@ -3641,8 +3641,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 70,
@@ -4755,8 +4755,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 24000,
+    "deposit_str": "24,000元"
   },
   {
     "idx": 92,
@@ -4940,7 +4940,7 @@
       "1001元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "five_star",
     "safety_level": "high",
@@ -4962,8 +4962,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可入籍/可報稅/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 96,
@@ -5436,7 +5436,7 @@
     "other_fees": [
       "電費"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "獨立電錶",
     "billing_type": "standard",
     "service_level": "none",
     "safety_level": "standard",
@@ -5453,7 +5453,7 @@
     "water_dispenser": true,
     "private_washer": false,
     "has_subsidy": false,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
@@ -5791,7 +5791,7 @@
       "1000元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "five_star",
     "safety_level": "high",
@@ -5888,7 +5888,7 @@
     "other_fees": [
       "電費"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "獨立電錶",
     "billing_type": "standard",
     "service_level": "none",
     "safety_level": "standard",
@@ -5905,7 +5905,7 @@
     "water_dispenser": true,
     "private_washer": false,
     "has_subsidy": false,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
@@ -6016,8 +6016,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 117,
@@ -6152,7 +6152,7 @@
       "1001元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -6174,8 +6174,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/可入籍/可報稅/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 120,
@@ -6755,7 +6755,7 @@
     "other_fees": [
       "電費"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "獨立電錶",
     "billing_type": "standard",
     "service_level": "none",
     "safety_level": "standard",
@@ -6772,7 +6772,7 @@
     "water_dispenser": true,
     "private_washer": false,
     "has_subsidy": false,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
@@ -7013,7 +7013,7 @@
       "瓦斯",
       "天然氣費"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "獨立電錶",
     "billing_type": "standard",
     "service_level": "none",
     "safety_level": "standard",
@@ -7030,7 +7030,7 @@
     "water_dispenser": false,
     "private_washer": false,
     "has_subsidy": false,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
@@ -7062,7 +7062,7 @@
     "other_fees": [
       "電費"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "獨立電錶",
     "billing_type": "standard",
     "service_level": "none",
     "safety_level": "standard",
@@ -7079,7 +7079,7 @@
     "water_dispenser": true,
     "private_washer": false,
     "has_subsidy": false,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
@@ -7114,7 +7114,7 @@
       "瓦斯",
       "天然氣費"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "獨立電錶",
     "billing_type": "standard",
     "service_level": "none",
     "safety_level": "standard",
@@ -7131,7 +7131,7 @@
     "water_dispenser": false,
     "private_washer": false,
     "has_subsidy": false,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
@@ -7325,7 +7325,7 @@
       "1001元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -7377,7 +7377,7 @@
       "瓦斯",
       "天然氣費"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "獨立電錶",
     "billing_type": "standard",
     "service_level": "none",
     "safety_level": "standard",
@@ -7394,7 +7394,7 @@
     "water_dispenser": false,
     "private_washer": false,
     "has_subsidy": false,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
@@ -7427,7 +7427,7 @@
       "水費",
       "電費"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "獨立電錶",
     "billing_type": "standard",
     "service_level": "none",
     "safety_level": "standard",
@@ -7444,7 +7444,7 @@
     "water_dispenser": true,
     "private_washer": false,
     "has_subsidy": false,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
@@ -7537,7 +7537,7 @@
       "水費",
       "電費"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "獨立電錶",
     "billing_type": "standard",
     "service_level": "none",
     "safety_level": "standard",
@@ -7554,7 +7554,7 @@
     "water_dispenser": true,
     "private_washer": false,
     "has_subsidy": false,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
@@ -7635,7 +7635,7 @@
     "other_fees": [
       "冷氣電費"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "獨立電錶",
     "billing_type": "standard",
     "service_level": "none",
     "safety_level": "standard",
@@ -7652,7 +7652,7 @@
     "water_dispenser": true,
     "private_washer": false,
     "has_subsidy": false,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
@@ -7742,7 +7742,7 @@
     "other_fees": [
       "電費"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "獨立電錶",
     "billing_type": "standard",
     "service_level": "none",
     "safety_level": "standard",
@@ -7759,7 +7759,7 @@
     "water_dispenser": true,
     "private_washer": false,
     "has_subsidy": false,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
@@ -7878,8 +7878,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/可入籍/可報稅/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 153,
@@ -7952,7 +7952,7 @@
     "other_fees": [
       "電費"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "獨立電錶",
     "billing_type": "standard",
     "service_level": "none",
     "safety_level": "standard",
@@ -7969,7 +7969,7 @@
     "water_dispenser": true,
     "private_washer": false,
     "has_subsidy": false,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
@@ -8001,7 +8001,7 @@
     "other_fees": [
       "電費"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "獨立電錶",
     "billing_type": "standard",
     "service_level": "none",
     "safety_level": "standard",
@@ -8018,7 +8018,7 @@
     "water_dispenser": true,
     "private_washer": false,
     "has_subsidy": false,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
@@ -8680,7 +8680,7 @@
       "水費",
       "電費"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "獨立電錶",
     "billing_type": "standard",
     "service_level": "none",
     "safety_level": "standard",
@@ -8697,7 +8697,7 @@
     "water_dispenser": true,
     "private_washer": false,
     "has_subsidy": false,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
@@ -8763,8 +8763,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 16000,
+    "deposit_str": "16,000元"
   },
   {
     "idx": 170,
@@ -8950,7 +8950,7 @@
       "水費",
       "電費"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "獨立電錶",
     "billing_type": "standard",
     "service_level": "none",
     "safety_level": "standard",
@@ -8967,7 +8967,7 @@
     "water_dispenser": false,
     "private_washer": false,
     "has_subsidy": false,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
@@ -9076,8 +9076,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 14600,
+    "deposit_str": "14,600元"
   },
   {
     "idx": 176,
@@ -9306,7 +9306,7 @@
     "other_fees": [
       "水費"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "獨立電錶",
     "billing_type": "standard",
     "service_level": "none",
     "safety_level": "standard",
@@ -9323,7 +9323,7 @@
     "water_dispenser": true,
     "private_washer": false,
     "has_subsidy": false,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
@@ -9357,7 +9357,7 @@
       "電費",
       "清潔費"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "獨立電錶",
     "billing_type": "standard",
     "service_level": "none",
     "safety_level": "standard",
@@ -9374,7 +9374,7 @@
     "water_dispenser": true,
     "private_washer": false,
     "has_subsidy": false,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
@@ -9407,7 +9407,7 @@
       "水費",
       "電費"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "獨立電錶",
     "billing_type": "standard",
     "service_level": "none",
     "safety_level": "standard",
@@ -9424,7 +9424,7 @@
     "water_dispenser": true,
     "private_washer": false,
     "has_subsidy": false,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
@@ -9565,7 +9565,7 @@
     "other_fees": [
       "電費"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "獨立電錶",
     "billing_type": "standard",
     "service_level": "none",
     "safety_level": "standard",
@@ -9582,7 +9582,7 @@
     "water_dispenser": true,
     "private_washer": false,
     "has_subsidy": false,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
@@ -9646,8 +9646,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 14000,
+    "deposit_str": "14,000元"
   },
   {
     "idx": 187,
@@ -9676,7 +9676,7 @@
       "管理費",
       "清潔費"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "獨立電錶",
     "billing_type": "standard",
     "service_level": "none",
     "safety_level": "standard",
@@ -9693,7 +9693,7 @@
     "water_dispenser": true,
     "private_washer": false,
     "has_subsidy": false,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
@@ -9726,7 +9726,7 @@
       "水費",
       "電費"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "獨立電錶",
     "billing_type": "standard",
     "service_level": "none",
     "safety_level": "standard",
@@ -9743,7 +9743,7 @@
     "water_dispenser": true,
     "private_washer": false,
     "has_subsidy": false,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
@@ -10268,8 +10268,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 24000,
+    "deposit_str": "24,000元"
   },
   {
     "idx": 198,
@@ -10329,8 +10329,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/可入籍/可報稅/可開伙/可養其他寵物/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 24000,
+    "deposit_str": "24,000元"
   },
   {
     "idx": 199,
@@ -10506,8 +10506,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/垃圾代收/定期清潔/對外窗/有陽台/有電梯/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 202,
@@ -10565,8 +10565,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 203,
@@ -10799,8 +10799,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可開伙/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 16600,
+    "deposit_str": "16,600元"
   },
   {
     "idx": 207,
@@ -10836,7 +10836,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -10858,8 +10858,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 18000,
+    "deposit_str": "18,000元"
   },
   {
     "idx": 208,
@@ -11032,8 +11032,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/可入籍/可報稅/可開伙/可養其他寵物/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 29000,
+    "deposit_str": "29,000元"
   },
   {
     "idx": 211,
@@ -11214,8 +11214,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 22000,
+    "deposit_str": "22,000元"
   },
   {
     "idx": 214,
@@ -11250,7 +11250,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -11272,8 +11272,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 18000,
+    "deposit_str": "18,000元"
   },
   {
     "idx": 215,
@@ -11447,8 +11447,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 24000,
+    "deposit_str": "24,000元"
   },
   {
     "idx": 218,
@@ -11679,8 +11679,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 222,
@@ -11736,8 +11736,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可養其他寵物/垃圾代收/定期清潔/對外窗/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 16000,
+    "deposit_str": "16,000元"
   },
   {
     "idx": 223,
@@ -11794,8 +11794,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/可入籍/可報稅/可開伙/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 224,
@@ -11853,8 +11853,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 225,
@@ -11892,7 +11892,7 @@
       "1001元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "five_star",
     "safety_level": "high",
@@ -11914,8 +11914,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 226,
@@ -11971,8 +11971,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 17600,
+    "deposit_str": "17,600元"
   },
   {
     "idx": 227,
@@ -12127,7 +12127,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "five_star",
     "safety_level": "high",
@@ -12185,7 +12185,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -12244,7 +12244,7 @@
       "1001元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -12325,8 +12325,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 48000,
+    "deposit_str": "48,000元"
   },
   {
     "idx": 233,
@@ -12561,8 +12561,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 24000,
+    "deposit_str": "24,000元"
   },
   {
     "idx": 237,
@@ -12597,7 +12597,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "standard",
@@ -12711,7 +12711,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -12733,8 +12733,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 240,
@@ -12771,7 +12771,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "five_star",
     "safety_level": "high",
@@ -12833,7 +12833,7 @@
       "1001元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -12855,8 +12855,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/可入籍/可報稅/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 242,
@@ -13270,8 +13270,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/可入籍/可報稅/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 11000,
+    "deposit_str": "11,000元"
   },
   {
     "idx": 249,
@@ -13327,8 +13327,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 18000,
+    "deposit_str": "18,000元"
   },
   {
     "idx": 250,
@@ -13383,8 +13383,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 11400,
+    "deposit_str": "11,400元"
   },
   {
     "idx": 251,
@@ -13535,7 +13535,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "five_star",
     "safety_level": "high",
@@ -13615,8 +13615,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 255,
@@ -13675,8 +13675,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 256,
@@ -13713,7 +13713,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "five_star",
     "safety_level": "high",
@@ -13914,8 +13914,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 260,
@@ -14006,7 +14006,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台水",
     "billing_type": "standard",
     "service_level": "five_star",
     "safety_level": "high",
@@ -14023,7 +14023,7 @@
     "water_dispenser": false,
     "private_washer": false,
     "has_subsidy": true,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
@@ -14087,8 +14087,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可養其他寵物/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 13000,
+    "deposit_str": "13,000元"
   },
   {
     "idx": 263,
@@ -14119,7 +14119,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台水",
     "billing_type": "standard",
     "service_level": "basic",
     "safety_level": "standard",
@@ -14136,13 +14136,13 @@
     "water_dispenser": false,
     "private_washer": false,
     "has_subsidy": true,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
     "features": "可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 27000,
+    "deposit_str": "27,000元"
   },
   {
     "idx": 264,
@@ -14177,7 +14177,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台水",
     "billing_type": "standard",
     "service_level": "five_star",
     "safety_level": "high",
@@ -14194,13 +14194,13 @@
     "water_dispenser": false,
     "private_washer": false,
     "has_subsidy": true,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 31000,
+    "deposit_str": "31,000元"
   },
   {
     "idx": 265,
@@ -14257,8 +14257,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可養其他寵物/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 266,
@@ -14357,7 +14357,7 @@
       "3000元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台水",
     "billing_type": "standard",
     "service_level": "five_star",
     "safety_level": "high",
@@ -14374,7 +14374,7 @@
     "water_dispenser": false,
     "private_washer": false,
     "has_subsidy": true,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
@@ -14411,7 +14411,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台水",
     "billing_type": "standard",
     "service_level": "five_star",
     "safety_level": "standard",
@@ -14428,13 +14428,13 @@
     "water_dispenser": false,
     "private_washer": false,
     "has_subsidy": true,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
     "features": "包裹代收/可養其他寵物/垃圾代收/對外窗/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 31000,
+    "deposit_str": "31,000元"
   },
   {
     "idx": 269,
@@ -14491,8 +14491,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可報稅/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 22000,
+    "deposit_str": "22,000元"
   },
   {
     "idx": 270,
@@ -14668,8 +14668,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可入籍/可報稅/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 14000,
+    "deposit_str": "14,000元"
   },
   {
     "idx": 273,
@@ -15000,7 +15000,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台水",
     "billing_type": "standard",
     "service_level": "basic",
     "safety_level": "high",
@@ -15017,7 +15017,7 @@
     "water_dispenser": false,
     "private_washer": false,
     "has_subsidy": true,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
@@ -15077,8 +15077,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 14000,
+    "deposit_str": "14,000元"
   },
   {
     "idx": 280,
@@ -15113,7 +15113,7 @@
       "1000元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -15255,8 +15255,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 283,
@@ -15549,8 +15549,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 288,
@@ -15729,8 +15729,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可報稅/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 16000,
+    "deposit_str": "16,000元"
   },
   {
     "idx": 291,
@@ -15791,8 +15791,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可入籍/可報稅/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 292,
@@ -15912,8 +15912,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 294,
@@ -16007,7 +16007,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -16323,8 +16323,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可報稅/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼/高齡友善",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 27000,
+    "deposit_str": "27,000元"
   },
   {
     "idx": 301,
@@ -16385,8 +16385,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可報稅/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 24000,
+    "deposit_str": "24,000元"
   },
   {
     "idx": 302,
@@ -16483,7 +16483,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -16801,8 +16801,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可開伙/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 18000,
+    "deposit_str": "18,000元"
   },
   {
     "idx": 309,
@@ -16912,8 +16912,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 29600,
+    "deposit_str": "29,600元"
   },
   {
     "idx": 311,
@@ -16949,7 +16949,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -16971,8 +16971,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 18000,
+    "deposit_str": "18,000元"
   },
   {
     "idx": 312,
@@ -17095,8 +17095,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可報稅/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 33000,
+    "deposit_str": "33,000元"
   },
   {
     "idx": 314,
@@ -17133,7 +17133,7 @@
       "1000元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -17252,7 +17252,7 @@
       "1000元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -17395,8 +17395,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可報稅/可開伙/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 319,
@@ -17433,7 +17433,7 @@
       "1000元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -17811,8 +17811,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 23000,
+    "deposit_str": "23,000元"
   },
   {
     "idx": 326,
@@ -17874,8 +17874,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可報稅/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 327,
@@ -17932,8 +17932,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 15000,
+    "deposit_str": "15,000元"
   },
   {
     "idx": 328,
@@ -18228,8 +18228,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 333,
@@ -18287,8 +18287,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 334,
@@ -18470,8 +18470,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 337,
@@ -18529,8 +18529,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 338,
@@ -18570,7 +18570,7 @@
       "960元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -18592,8 +18592,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/可入籍/可報稅/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 15000,
+    "deposit_str": "15,000元"
   },
   {
     "idx": 339,
@@ -18715,8 +18715,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可入籍/可報稅/可開伙/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 341,
@@ -18893,8 +18893,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可開伙/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 344,
@@ -19011,8 +19011,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 346,
@@ -19129,8 +19129,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可報稅/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 22000,
+    "deposit_str": "22,000元"
   },
   {
     "idx": 348,
@@ -19310,8 +19310,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可報稅/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 23000,
+    "deposit_str": "23,000元"
   },
   {
     "idx": 351,
@@ -19723,8 +19723,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 27000,
+    "deposit_str": "27,000元"
   },
   {
     "idx": 358,
@@ -20072,8 +20072,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 14000,
+    "deposit_str": "14,000元"
   },
   {
     "idx": 364,
@@ -20192,8 +20192,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可報稅/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 23000,
+    "deposit_str": "23,000元"
   },
   {
     "idx": 366,
@@ -20229,7 +20229,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -20251,8 +20251,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 19600,
+    "deposit_str": "19,600元"
   },
   {
     "idx": 367,
@@ -20408,7 +20408,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -20430,8 +20430,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 29000,
+    "deposit_str": "29,000元"
   },
   {
     "idx": 370,
@@ -20665,8 +20665,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 29000,
+    "deposit_str": "29,000元"
   },
   {
     "idx": 374,
@@ -20722,8 +20722,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可開伙/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 22000,
+    "deposit_str": "22,000元"
   },
   {
     "idx": 375,
@@ -20819,7 +20819,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -21318,8 +21318,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 16600,
+    "deposit_str": "16,600元"
   },
   {
     "idx": 385,
@@ -21376,8 +21376,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 17400,
+    "deposit_str": "17,400元"
   },
   {
     "idx": 386,
@@ -21433,8 +21433,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 22000,
+    "deposit_str": "22,000元"
   },
   {
     "idx": 387,
@@ -21550,8 +21550,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 20000,
+    "deposit_str": "20,000元"
   },
   {
     "idx": 389,
@@ -21665,8 +21665,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 23600,
+    "deposit_str": "23,600元"
   },
   {
     "idx": 391,
@@ -21724,8 +21724,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 27000,
+    "deposit_str": "27,000元"
   },
   {
     "idx": 392,
@@ -21761,7 +21761,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -21820,7 +21820,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -21842,8 +21842,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 27000,
+    "deposit_str": "27,000元"
   },
   {
     "idx": 394,
@@ -21901,8 +21901,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可開伙/可養其他寵物/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 23600,
+    "deposit_str": "23,600元"
   },
   {
     "idx": 395,
@@ -21940,7 +21940,7 @@
       "1000元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "five_star",
     "safety_level": "high",
@@ -21962,8 +21962,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 24000,
+    "deposit_str": "24,000元"
   },
   {
     "idx": 396,
@@ -22019,8 +22019,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可開伙/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 25600,
+    "deposit_str": "25,600元"
   },
   {
     "idx": 397,
@@ -22196,8 +22196,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 17200,
+    "deposit_str": "17,200元"
   },
   {
     "idx": 400,
@@ -22252,8 +22252,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 22000,
+    "deposit_str": "22,000元"
   },
   {
     "idx": 401,
@@ -22309,8 +22309,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可養貓/垃圾代收/定期清潔/對外窗/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 23000,
+    "deposit_str": "23,000元"
   },
   {
     "idx": 402,
@@ -22430,8 +22430,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可報稅/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 17600,
+    "deposit_str": "17,600元"
   },
   {
     "idx": 404,
@@ -22548,8 +22548,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 17600,
+    "deposit_str": "17,600元"
   },
   {
     "idx": 406,
@@ -22721,8 +22721,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 409,
@@ -22783,8 +22783,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可報稅/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 19599,
+    "deposit_str": "19,599元"
   },
   {
     "idx": 410,
@@ -22998,7 +22998,7 @@
       "1001元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "five_star",
     "safety_level": "high",
@@ -23020,8 +23020,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 414,
@@ -23297,7 +23297,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "five_star",
     "safety_level": "high",
@@ -23378,8 +23378,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 14000,
+    "deposit_str": "14,000元"
   },
   {
     "idx": 420,
@@ -23494,8 +23494,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 422,
@@ -23555,8 +23555,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/可入籍/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 423,
@@ -23671,8 +23671,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 34000,
+    "deposit_str": "34,000元"
   },
   {
     "idx": 425,
@@ -23792,8 +23792,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 427,
@@ -23970,8 +23970,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 430,
@@ -24381,8 +24381,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 28000,
+    "deposit_str": "28,000元"
   },
   {
     "idx": 437,
@@ -24562,8 +24562,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可報稅/可開伙/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 19000,
+    "deposit_str": "19,000元"
   },
   {
     "idx": 440,
@@ -24621,8 +24621,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 14000,
+    "deposit_str": "14,000元"
   },
   {
     "idx": 441,
@@ -24737,8 +24737,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 20000,
+    "deposit_str": "20,000元"
   },
   {
     "idx": 443,
@@ -24798,8 +24798,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可報稅/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 444,
@@ -24915,8 +24915,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 22000,
+    "deposit_str": "22,000元"
   },
   {
     "idx": 446,
@@ -25068,7 +25068,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -25090,8 +25090,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 38000,
+    "deposit_str": "38,000元"
   },
   {
     "idx": 449,
@@ -25451,8 +25451,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 24000,
+    "deposit_str": "24,000元"
   },
   {
     "idx": 455,
@@ -25628,8 +25628,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 20000,
+    "deposit_str": "20,000元"
   },
   {
     "idx": 458,
@@ -25666,7 +25666,7 @@
       "1000元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -25748,8 +25748,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 460,
@@ -25970,7 +25970,7 @@
       "1001元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -25992,8 +25992,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 464,
@@ -26150,7 +26150,7 @@
       "500元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -26172,8 +26172,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 33600,
+    "deposit_str": "33,600元"
   },
   {
     "idx": 467,
@@ -26231,8 +26231,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可開伙/可養其他寵物/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 31000,
+    "deposit_str": "31,000元"
   },
   {
     "idx": 468,
@@ -26330,7 +26330,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -26352,8 +26352,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 25000,
+    "deposit_str": "25,000元"
   },
   {
     "idx": 470,
@@ -26470,8 +26470,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可報稅/可開伙/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 472,
@@ -26590,8 +26590,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 474,
@@ -26768,8 +26768,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可入籍/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 477,
@@ -26868,7 +26868,7 @@
       "1001元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -26948,8 +26948,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 17000,
+    "deposit_str": "17,000元"
   },
   {
     "idx": 480,
@@ -27126,8 +27126,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可報稅/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 483,
@@ -27242,8 +27242,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 485,
@@ -27302,8 +27302,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可報稅/可開伙/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 20000,
+    "deposit_str": "20,000元"
   },
   {
     "idx": 486,
@@ -27361,8 +27361,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 487,
@@ -27539,8 +27539,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 17000,
+    "deposit_str": "17,000元"
   },
   {
     "idx": 490,
@@ -27717,8 +27717,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可開伙/可養其他寵物/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 28000,
+    "deposit_str": "28,000元"
   },
   {
     "idx": 493,
@@ -27777,8 +27777,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可報稅/可開伙/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 494,
@@ -27899,8 +27899,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 23000,
+    "deposit_str": "23,000元"
   },
   {
     "idx": 496,
@@ -27995,7 +27995,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -28017,8 +28017,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 23000,
+    "deposit_str": "23,000元"
   },
   {
     "idx": 498,
@@ -28195,8 +28195,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 23000,
+    "deposit_str": "23,000元"
   },
   {
     "idx": 501,
@@ -28314,8 +28314,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 16000,
+    "deposit_str": "16,000元"
   },
   {
     "idx": 503,
@@ -28438,8 +28438,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可報稅/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 505,
@@ -28495,8 +28495,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 29000,
+    "deposit_str": "29,000元"
   },
   {
     "idx": 506,
@@ -28555,8 +28555,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可報稅/可開伙/可養其他寵物/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 28000,
+    "deposit_str": "28,000元"
   },
   {
     "idx": 507,
@@ -28734,8 +28734,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 20000,
+    "deposit_str": "20,000元"
   },
   {
     "idx": 510,
@@ -28792,8 +28792,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可開伙/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 16000,
+    "deposit_str": "16,000元"
   },
   {
     "idx": 511,
@@ -28972,8 +28972,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 514,
@@ -29146,8 +29146,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 16400,
+    "deposit_str": "16,400元"
   },
   {
     "idx": 517,
@@ -29269,8 +29269,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可報稅/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 26400,
+    "deposit_str": "26,400元"
   },
   {
     "idx": 519,
@@ -29307,7 +29307,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -29329,8 +29329,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可報稅/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 25000,
+    "deposit_str": "25,000元"
   },
   {
     "idx": 520,
@@ -29387,8 +29387,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可開伙/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 26400,
+    "deposit_str": "26,400元"
   },
   {
     "idx": 521,
@@ -29624,8 +29624,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 18000,
+    "deposit_str": "18,000元"
   },
   {
     "idx": 525,
@@ -29686,8 +29686,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可報稅/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 22000,
+    "deposit_str": "22,000元"
   },
   {
     "idx": 526,
@@ -29806,8 +29806,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 27200,
+    "deposit_str": "27,200元"
   },
   {
     "idx": 528,
@@ -29865,8 +29865,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 529,
@@ -30012,7 +30012,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -30034,8 +30034,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 27200,
+    "deposit_str": "27,200元"
   },
   {
     "idx": 532,
@@ -30212,8 +30212,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 535,
@@ -30272,8 +30272,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 536,
@@ -30310,7 +30310,7 @@
       "1001元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -30332,8 +30332,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 537,
@@ -30389,8 +30389,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可開伙/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 16600,
+    "deposit_str": "16,600元"
   },
   {
     "idx": 538,
@@ -30450,8 +30450,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 22000,
+    "deposit_str": "22,000元"
   },
   {
     "idx": 539,
@@ -30509,8 +30509,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 22000,
+    "deposit_str": "22,000元"
   },
   {
     "idx": 540,
@@ -30568,8 +30568,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 20000,
+    "deposit_str": "20,000元"
   },
   {
     "idx": 541,
@@ -30627,8 +30627,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 16000,
+    "deposit_str": "16,000元"
   },
   {
     "idx": 542,
@@ -30802,8 +30802,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 545,
@@ -30899,7 +30899,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -31039,8 +31039,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 16400,
+    "deposit_str": "16,400元"
   },
   {
     "idx": 549,
@@ -31076,7 +31076,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -31219,8 +31219,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 20000,
+    "deposit_str": "20,000元"
   },
   {
     "idx": 552,
@@ -31521,8 +31521,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可報稅/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 557,
@@ -31623,7 +31623,7 @@
       "2001元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -31645,8 +31645,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可入籍/可報稅/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 559,
@@ -31820,8 +31820,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 562,
@@ -32110,8 +32110,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 567,
@@ -32290,8 +32290,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 23000,
+    "deposit_str": "23,000元"
   },
   {
     "idx": 570,
@@ -32347,8 +32347,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 15600,
+    "deposit_str": "15,600元"
   },
   {
     "idx": 571,
@@ -32407,8 +32407,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 572,
@@ -32469,8 +32469,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可報稅/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 29000,
+    "deposit_str": "29,000元"
   },
   {
     "idx": 573,
@@ -32527,8 +32527,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可開伙/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 33000,
+    "deposit_str": "33,000元"
   },
   {
     "idx": 574,
@@ -32647,8 +32647,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 576,
@@ -32707,8 +32707,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 577,
@@ -32766,8 +32766,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 30000,
+    "deposit_str": "30,000元"
   },
   {
     "idx": 578,
@@ -32827,8 +32827,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可報稅/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 16400,
+    "deposit_str": "16,400元"
   },
   {
     "idx": 579,
@@ -32886,8 +32886,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 580,
@@ -32947,8 +32947,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可報稅/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 32000,
+    "deposit_str": "32,000元"
   },
   {
     "idx": 581,
@@ -33178,8 +33178,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可開伙/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 585,
@@ -33236,8 +33236,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 19000,
+    "deposit_str": "19,000元"
   },
   {
     "idx": 586,
@@ -33410,8 +33410,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可開伙/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 33000,
+    "deposit_str": "33,000元"
   },
   {
     "idx": 589,
@@ -33466,8 +33466,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "可養其他寵物/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 34000,
+    "deposit_str": "34,000元"
   },
   {
     "idx": 590,
@@ -33580,8 +33580,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 27000,
+    "deposit_str": "27,000元"
   },
   {
     "idx": 592,
@@ -33637,8 +33637,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 27000,
+    "deposit_str": "27,000元"
   },
   {
     "idx": 593,
@@ -33730,7 +33730,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -33926,8 +33926,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 33000,
+    "deposit_str": "33,000元"
   },
   {
     "idx": 598,
@@ -33963,7 +33963,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -34142,7 +34142,7 @@
       "1400元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台水",
     "billing_type": "standard",
     "service_level": "five_star",
     "safety_level": "high",
@@ -34159,13 +34159,13 @@
     "water_dispenser": false,
     "private_washer": false,
     "has_subsidy": true,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可入籍/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 34200,
+    "deposit_str": "34,200元"
   },
   {
     "idx": 602,
@@ -34203,7 +34203,7 @@
       "1400元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台水",
     "billing_type": "standard",
     "service_level": "five_star",
     "safety_level": "high",
@@ -34220,13 +34220,13 @@
     "water_dispenser": false,
     "private_washer": false,
     "has_subsidy": true,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可入籍/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 34200,
+    "deposit_str": "34,200元"
   },
   {
     "idx": 603,
@@ -34258,7 +34258,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台水",
     "billing_type": "standard",
     "service_level": "basic",
     "safety_level": "high",
@@ -34275,7 +34275,7 @@
     "water_dispenser": false,
     "private_washer": false,
     "has_subsidy": true,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
@@ -34339,8 +34339,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 27000,
+    "deposit_str": "27,000元"
   },
   {
     "idx": 605,
@@ -34397,8 +34397,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/水泥隔間",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 606,
@@ -34496,7 +34496,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台水",
     "billing_type": "standard",
     "service_level": "basic",
     "safety_level": "high",
@@ -34513,7 +34513,7 @@
     "water_dispenser": false,
     "private_washer": false,
     "has_subsidy": true,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
@@ -34578,8 +34578,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可報稅/可開伙/可養其他寵物/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 13000,
+    "deposit_str": "13,000元"
   },
   {
     "idx": 609,
@@ -34638,8 +34638,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 28000,
+    "deposit_str": "28,000元"
   },
   {
     "idx": 610,
@@ -34695,8 +34695,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 13000,
+    "deposit_str": "13,000元"
   },
   {
     "idx": 611,
@@ -34756,8 +34756,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 17600,
+    "deposit_str": "17,600元"
   },
   {
     "idx": 612,
@@ -34815,8 +34815,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 27000,
+    "deposit_str": "27,000元"
   },
   {
     "idx": 613,
@@ -34928,8 +34928,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 23600,
+    "deposit_str": "23,600元"
   },
   {
     "idx": 615,
@@ -34988,8 +34988,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可報稅/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 26000,
+    "deposit_str": "26,000元"
   },
   {
     "idx": 616,
@@ -35169,8 +35169,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 29600,
+    "deposit_str": "29,600元"
   },
   {
     "idx": 619,
@@ -35204,7 +35204,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台水",
     "billing_type": "standard",
     "service_level": "basic",
     "safety_level": "high",
@@ -35221,7 +35221,7 @@
     "water_dispenser": false,
     "private_washer": false,
     "has_subsidy": true,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
@@ -35282,8 +35282,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 23600,
+    "deposit_str": "23,600元"
   },
   {
     "idx": 621,
@@ -35460,8 +35460,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 16000,
+    "deposit_str": "16,000元"
   },
   {
     "idx": 624,
@@ -35497,7 +35497,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -35519,8 +35519,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 16000,
+    "deposit_str": "16,000元"
   },
   {
     "idx": 625,
@@ -35637,8 +35637,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 627,
@@ -35752,8 +35752,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 12600,
+    "deposit_str": "12,600元"
   },
   {
     "idx": 629,
@@ -35811,8 +35811,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 21000,
+    "deposit_str": "21,000元"
   },
   {
     "idx": 630,
@@ -35923,8 +35923,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 13000,
+    "deposit_str": "13,000元"
   },
   {
     "idx": 632,
@@ -36363,7 +36363,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -36443,8 +36443,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 20000,
+    "deposit_str": "20,000元"
   },
   {
     "idx": 641,
@@ -36501,8 +36501,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 18600,
+    "deposit_str": "18,600元"
   },
   {
     "idx": 642,
@@ -36651,7 +36651,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -36905,8 +36905,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 20000,
+    "deposit_str": "20,000元"
   },
   {
     "idx": 649,
@@ -37194,8 +37194,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 25000,
+    "deposit_str": "25,000元"
   },
   {
     "idx": 654,
@@ -37252,8 +37252,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 23000,
+    "deposit_str": "23,000元"
   },
   {
     "idx": 655,
@@ -37311,8 +37311,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 16000,
+    "deposit_str": "16,000元"
   },
   {
     "idx": 656,
@@ -37461,7 +37461,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -37656,8 +37656,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 23000,
+    "deposit_str": "23,000元"
   },
   {
     "idx": 662,
@@ -38240,8 +38240,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 24000,
+    "deposit_str": "24,000元"
   },
   {
     "idx": 672,
@@ -38474,8 +38474,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 28000,
+    "deposit_str": "28,000元"
   },
   {
     "idx": 676,
@@ -38532,8 +38532,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可入籍/可報稅/可開伙/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 20000,
+    "deposit_str": "20,000元"
   },
   {
     "idx": 677,
@@ -38649,8 +38649,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 26000,
+    "deposit_str": "26,000元"
   },
   {
     "idx": 679,
@@ -38685,7 +38685,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -38707,8 +38707,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 19600,
+    "deposit_str": "19,600元"
   },
   {
     "idx": 680,
@@ -38745,7 +38745,7 @@
       "1000元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -38803,7 +38803,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -38882,8 +38882,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 16000,
+    "deposit_str": "16,000元"
   },
   {
     "idx": 683,
@@ -39054,8 +39054,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 16000,
+    "deposit_str": "16,000元"
   },
   {
     "idx": 686,
@@ -39092,7 +39092,7 @@
       "1001元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -39114,8 +39114,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 687,
@@ -39171,8 +39171,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 20000,
+    "deposit_str": "20,000元"
   },
   {
     "idx": 688,
@@ -39208,7 +39208,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -39230,8 +39230,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 19000,
+    "deposit_str": "19,000元"
   },
   {
     "idx": 689,
@@ -39344,8 +39344,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 16000,
+    "deposit_str": "16,000元"
   },
   {
     "idx": 691,
@@ -39401,8 +39401,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 19000,
+    "deposit_str": "19,000元"
   },
   {
     "idx": 692,
@@ -39549,7 +39549,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -39571,8 +39571,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 18000,
+    "deposit_str": "18,000元"
   },
   {
     "idx": 695,
@@ -39747,8 +39747,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 28000,
+    "deposit_str": "28,000元"
   },
   {
     "idx": 698,
@@ -39784,7 +39784,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -39864,8 +39864,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 18600,
+    "deposit_str": "18,600元"
   },
   {
     "idx": 700,
@@ -40038,8 +40038,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 21000,
+    "deposit_str": "21,000元"
   },
   {
     "idx": 703,
@@ -40093,8 +40093,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 19000,
+    "deposit_str": "19,000元"
   },
   {
     "idx": 704,
@@ -40154,8 +40154,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可開伙/可養其他寵物/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 705,
@@ -40268,8 +40268,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 28000,
+    "deposit_str": "28,000元"
   },
   {
     "idx": 707,
@@ -40417,7 +40417,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -40439,8 +40439,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 18000,
+    "deposit_str": "18,000元"
   },
   {
     "idx": 710,
@@ -40536,7 +40536,7 @@
       "1000元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -40616,8 +40616,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 26000,
+    "deposit_str": "26,000元"
   },
   {
     "idx": 713,
@@ -40992,7 +40992,7 @@
       "800元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -41130,8 +41130,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/可養其他寵物/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 17000,
+    "deposit_str": "17,000元"
   },
   {
     "idx": 722,
@@ -41337,7 +41337,7 @@
       "500元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -41419,8 +41419,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 15000,
+    "deposit_str": "15,000元"
   },
   {
     "idx": 727,
@@ -41477,8 +41477,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 20000,
+    "deposit_str": "20,000元"
   },
   {
     "idx": 728,
@@ -41575,7 +41575,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -41597,8 +41597,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 16000,
+    "deposit_str": "16,000元"
   },
   {
     "idx": 730,
@@ -41771,8 +41771,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 733,
@@ -42003,8 +42003,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 19000,
+    "deposit_str": "19,000元"
   },
   {
     "idx": 737,
@@ -42237,8 +42237,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可入籍/可報稅/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 20000,
+    "deposit_str": "20,000元"
   },
   {
     "idx": 741,
@@ -42296,8 +42296,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 22000,
+    "deposit_str": "22,000元"
   },
   {
     "idx": 742,
@@ -42390,7 +42390,7 @@
       "1001元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -42412,8 +42412,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 744,
@@ -42474,8 +42474,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/可入籍/可報稅/可開伙/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 52000,
+    "deposit_str": "52,000元"
   },
   {
     "idx": 745,
@@ -42590,8 +42590,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 22000,
+    "deposit_str": "22,000元"
   },
   {
     "idx": 747,
@@ -42741,7 +42741,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -42879,8 +42879,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 28000,
+    "deposit_str": "28,000元"
   },
   {
     "idx": 752,
@@ -42997,8 +42997,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/可開伙/可養其他寵物/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 28000,
+    "deposit_str": "28,000元"
   },
   {
     "idx": 754,
@@ -43052,8 +43052,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 28000,
+    "deposit_str": "28,000元"
   },
   {
     "idx": 755,
@@ -43087,7 +43087,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -43109,8 +43109,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 19000,
+    "deposit_str": "19,000元"
   },
   {
     "idx": 756,
@@ -43165,8 +43165,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 26000,
+    "deposit_str": "26,000元"
   },
   {
     "idx": 757,
@@ -43258,7 +43258,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -43280,8 +43280,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 26000,
+    "deposit_str": "26,000元"
   },
   {
     "idx": 759,
@@ -43452,8 +43452,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 22000,
+    "deposit_str": "22,000元"
   },
   {
     "idx": 762,
@@ -43510,8 +43510,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 763,
@@ -43570,8 +43570,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 22000,
+    "deposit_str": "22,000元"
   },
   {
     "idx": 764,
@@ -43626,8 +43626,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 26000,
+    "deposit_str": "26,000元"
   },
   {
     "idx": 765,
@@ -43684,8 +43684,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 22000,
+    "deposit_str": "22,000元"
   },
   {
     "idx": 766,
@@ -43857,8 +43857,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 22000,
+    "deposit_str": "22,000元"
   },
   {
     "idx": 769,
@@ -43915,8 +43915,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 23000,
+    "deposit_str": "23,000元"
   },
   {
     "idx": 770,
@@ -43953,7 +43953,7 @@
       "1000元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -44153,8 +44153,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 12400,
+    "deposit_str": "12,400元"
   },
   {
     "idx": 774,
@@ -44322,8 +44322,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 15000,
+    "deposit_str": "15,000元"
   },
   {
     "idx": 777,
@@ -44441,8 +44441,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可入籍/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 22000,
+    "deposit_str": "22,000元"
   },
   {
     "idx": 779,
@@ -44499,8 +44499,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 780,
@@ -44559,8 +44559,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 781,
@@ -44732,8 +44732,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 30000,
+    "deposit_str": "30,000元"
   },
   {
     "idx": 784,
@@ -44849,8 +44849,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 26000,
+    "deposit_str": "26,000元"
   },
   {
     "idx": 786,
@@ -44887,7 +44887,7 @@
       "500元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -44909,8 +44909,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/可開伙/可養其他寵物/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 15000,
+    "deposit_str": "15,000元"
   },
   {
     "idx": 787,
@@ -44945,7 +44945,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台水",
     "billing_type": "standard",
     "service_level": "basic",
     "safety_level": "high",
@@ -44962,13 +44962,13 @@
     "water_dispenser": false,
     "private_washer": false,
     "has_subsidy": true,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 788,
@@ -45023,8 +45023,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 26000,
+    "deposit_str": "26,000元"
   },
   {
     "idx": 789,
@@ -45082,8 +45082,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 21000,
+    "deposit_str": "21,000元"
   },
   {
     "idx": 790,
@@ -45141,8 +45141,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/可養其他寵物/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 791,
@@ -45292,7 +45292,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台水",
     "billing_type": "standard",
     "service_level": "basic",
     "safety_level": "high",
@@ -45309,13 +45309,13 @@
     "water_dispenser": false,
     "private_washer": false,
     "has_subsidy": true,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 794,
@@ -45351,7 +45351,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台水",
     "billing_type": "standard",
     "service_level": "basic",
     "safety_level": "high",
@@ -45368,7 +45368,7 @@
     "water_dispenser": false,
     "private_washer": false,
     "has_subsidy": true,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
@@ -45724,8 +45724,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/可開伙/可養其他寵物/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 801,
@@ -45760,7 +45760,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台水",
     "billing_type": "standard",
     "service_level": "basic",
     "safety_level": "high",
@@ -45777,13 +45777,13 @@
     "water_dispenser": false,
     "private_washer": false,
     "has_subsidy": true,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/可養其他寵物/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 22000,
+    "deposit_str": "22,000元"
   },
   {
     "idx": 802,
@@ -45817,7 +45817,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台水",
     "billing_type": "standard",
     "service_level": "basic",
     "safety_level": "high",
@@ -45834,13 +45834,13 @@
     "water_dispenser": false,
     "private_washer": false,
     "has_subsidy": true,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 803,
@@ -46286,7 +46286,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -46365,8 +46365,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 30000,
+    "deposit_str": "30,000元"
   },
   {
     "idx": 812,
@@ -46424,8 +46424,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 38000,
+    "deposit_str": "38,000元"
   },
   {
     "idx": 813,
@@ -46596,8 +46596,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 38000,
+    "deposit_str": "38,000元"
   },
   {
     "idx": 816,
@@ -46749,7 +46749,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -46805,7 +46805,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -46827,8 +46827,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 21000,
+    "deposit_str": "21,000元"
   },
   {
     "idx": 820,
@@ -46945,8 +46945,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 28000,
+    "deposit_str": "28,000元"
   },
   {
     "idx": 822,
@@ -46982,7 +46982,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -47004,8 +47004,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 38000,
+    "deposit_str": "38,000元"
   },
   {
     "idx": 823,
@@ -47063,8 +47063,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "免仲介費/可入籍/可報稅/可開伙/可養其他寵物/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 27999,
+    "deposit_str": "27,999元"
   },
   {
     "idx": 824,
@@ -47123,8 +47123,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 825,
@@ -47304,8 +47304,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/可入籍/可報稅/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 828,
@@ -47483,8 +47483,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 24000,
+    "deposit_str": "24,000元"
   },
   {
     "idx": 831,
@@ -47545,8 +47545,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 832,
@@ -47604,8 +47604,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 833,
@@ -47667,8 +47667,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/可入籍/可報稅/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 834,
@@ -47763,7 +47763,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -47845,8 +47845,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 22400,
+    "deposit_str": "22,400元"
   },
   {
     "idx": 837,
@@ -47997,7 +47997,7 @@
       "2749元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "none",
     "safety_level": "standard",
@@ -48113,7 +48113,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -48288,7 +48288,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -48404,7 +48404,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -48635,7 +48635,7 @@
       "1001元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -48657,8 +48657,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可養其他寵物/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 851,
@@ -48715,8 +48715,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 30000,
+    "deposit_str": "30,000元"
   },
   {
     "idx": 852,
@@ -48874,7 +48874,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -48955,8 +48955,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 27000,
+    "deposit_str": "27,000元"
   },
   {
     "idx": 856,
@@ -48993,7 +48993,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "five_star",
     "safety_level": "high",
@@ -49303,8 +49303,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/可入籍/可報稅/可開伙/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 31600,
+    "deposit_str": "31,600元"
   },
   {
     "idx": 862,
@@ -49417,8 +49417,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可入籍/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 26000,
+    "deposit_str": "26,000元"
   },
   {
     "idx": 864,
@@ -49475,8 +49475,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 24000,
+    "deposit_str": "24,000元"
   },
   {
     "idx": 865,
@@ -49513,7 +49513,7 @@
       "1001元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "five_star",
     "safety_level": "high",
@@ -49535,8 +49535,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可養其他寵物/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 866,
@@ -49594,8 +49594,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 867,
@@ -49656,8 +49656,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 868,
@@ -49756,7 +49756,7 @@
       "1001元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "five_star",
     "safety_level": "high",
@@ -50345,7 +50345,7 @@
       "1001元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -50426,8 +50426,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 26000,
+    "deposit_str": "26,000元"
   },
   {
     "idx": 881,
@@ -50488,8 +50488,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 882,
@@ -50608,8 +50608,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/可入籍/可報稅/可開伙/可養其他寵物/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 18000,
+    "deposit_str": "18,000元"
   },
   {
     "idx": 884,
@@ -50850,8 +50850,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 24000,
+    "deposit_str": "24,000元"
   },
   {
     "idx": 888,
@@ -50907,8 +50907,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 7000,
+    "deposit_str": "7,000元"
   },
   {
     "idx": 889,
@@ -50942,7 +50942,7 @@
       "1000元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -50998,7 +50998,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "five_star",
     "safety_level": "high",
@@ -51081,8 +51081,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可入籍/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 892,
@@ -51255,8 +51255,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 895,
@@ -51312,8 +51312,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可入籍/可開伙/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 34000,
+    "deposit_str": "34,000元"
   },
   {
     "idx": 896,
@@ -51373,8 +51373,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 29600,
+    "deposit_str": "29,600元"
   },
   {
     "idx": 897,
@@ -51486,8 +51486,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可入籍/可開伙/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 36000,
+    "deposit_str": "36,000元"
   },
   {
     "idx": 899,
@@ -51547,8 +51547,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可入籍/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 36000,
+    "deposit_str": "36,000元"
   },
   {
     "idx": 900,
@@ -51607,8 +51607,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可入籍/可報稅/可開伙/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 20100,
+    "deposit_str": "20,100元"
   },
   {
     "idx": 901,
@@ -51666,8 +51666,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可養其他寵物/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 36000,
+    "deposit_str": "36,000元"
   },
   {
     "idx": 902,
@@ -51724,8 +51724,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "包裹代收/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 30000,
+    "deposit_str": "30,000元"
   },
   {
     "idx": 903,
@@ -51783,8 +51783,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可開伙/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 23600,
+    "deposit_str": "23,600元"
   },
   {
     "idx": 904,
@@ -51819,7 +51819,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -51841,8 +51841,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/可入籍/可報稅/可開伙/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 25000,
+    "deposit_str": "25,000元"
   },
   {
     "idx": 905,
@@ -51961,8 +51961,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/可入籍/可報稅/可開伙/可養其他寵物/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 20000,
+    "deposit_str": "20,000元"
   },
   {
     "idx": 907,
@@ -52076,8 +52076,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "可養其他寵物/可養貓/垃圾代收/對外窗/有陽台/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 20000,
+    "deposit_str": "20,000元"
   },
   {
     "idx": 909,
@@ -52137,8 +52137,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 910,
@@ -52171,7 +52171,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -52251,8 +52251,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可入籍/可開伙/可養其他寵物/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 20000,
+    "deposit_str": "20,000元"
   },
   {
     "idx": 912,
@@ -52312,8 +52312,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可入籍/可開伙/可養其他寵物/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 20000,
+    "deposit_str": "20,000元"
   },
   {
     "idx": 913,
@@ -52371,8 +52371,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 23000,
+    "deposit_str": "23,000元"
   },
   {
     "idx": 914,
@@ -52488,8 +52488,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可入籍/可開伙/可養其他寵物/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 20000,
+    "deposit_str": "20,000元"
   },
   {
     "idx": 916,
@@ -52717,8 +52717,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 25000,
+    "deposit_str": "25,000元"
   },
   {
     "idx": 920,
@@ -52828,8 +52828,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "包裹代收/可養其他寵物/可養狗/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 27000,
+    "deposit_str": "27,000元"
   },
   {
     "idx": 922,
@@ -52887,8 +52887,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可養其他寵物/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 27000,
+    "deposit_str": "27,000元"
   },
   {
     "idx": 923,
@@ -53163,7 +53163,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台水",
     "billing_type": "standard",
     "service_level": "basic",
     "safety_level": "high",
@@ -53180,7 +53180,7 @@
     "water_dispenser": false,
     "private_washer": false,
     "has_subsidy": true,
-    "is_taipower": true,
+    "is_taipower": false,
     "fire_safety": "",
     "security_gear": "",
     "rent_included": "",
@@ -53283,7 +53283,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "five_star",
     "safety_level": "high",
@@ -53399,7 +53399,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -53421,8 +53421,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 14800,
+    "deposit_str": "14,800元"
   },
   {
     "idx": 932,
@@ -53459,7 +53459,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "five_star",
     "safety_level": "high",
@@ -53541,8 +53541,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/可入籍/可報稅/可開伙/可養貓/垃圾代收/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 934,
@@ -53580,7 +53580,7 @@
       "1000元",
       "月"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "five_star",
     "safety_level": "high",
@@ -53723,8 +53723,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可入籍/可報稅/可開伙/可養其他寵物/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": -1,
+    "deposit_str": "可議"
   },
   {
     "idx": 937,
@@ -53967,8 +53967,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 20000,
+    "deposit_str": "20,000元"
   },
   {
     "idx": 941,
@@ -54333,8 +54333,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可入籍/可報稅/可開伙/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼/高齡友善",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 23200,
+    "deposit_str": "23,200元"
   },
   {
     "idx": 947,
@@ -54577,8 +54577,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 30000,
+    "deposit_str": "30,000元"
   },
   {
     "idx": 951,
@@ -54787,7 +54787,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -55236,8 +55236,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可入籍/可報稅/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼/高齡友善",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 20000,
+    "deposit_str": "20,000元"
   },
   {
     "idx": 962,
@@ -55417,8 +55417,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可開伙/可養其他寵物/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 23000,
+    "deposit_str": "23,000元"
   },
   {
     "idx": 965,
@@ -55478,8 +55478,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/免仲介費/包裹代收/可入籍/可報稅/可開伙/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 24000,
+    "deposit_str": "24,000元"
   },
   {
     "idx": 966,
@@ -55537,8 +55537,8 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/可入籍/可開伙/可養其他寵物/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 23000,
+    "deposit_str": "23,000元"
   },
   {
     "idx": 967,
@@ -55573,7 +55573,7 @@
     "other_fees": [
       "無"
     ],
-    "electricity_billing": "台水台電",
+    "electricity_billing": "台電",
     "billing_type": "taipower",
     "service_level": "basic",
     "safety_level": "high",
@@ -55656,7 +55656,184 @@
     "security_gear": "",
     "rent_included": "",
     "features": "保全設施/包裹代收/可入籍/可開伙/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
-    "deposit": 0,
-    "deposit_str": "免押金"
+    "deposit": 23000,
+    "deposit_str": "23,000元"
+  },
+  {
+    "idx": 969,
+    "text": "套房 獨立 電梯大樓 南區 建成路 7500元 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
+    "url": "https://dd-room.com/object/5xgptex1rjowta5m",
+    "address": "台中市南區建成路",
+    "room_type": "套房",
+    "building_type": "獨立 電梯大樓",
+    "rent": 7500,
+    "rent_str": "7500元/月",
+    "size": "10",
+    "floor": "6 樓/7樓",
+    "furniture": "冰箱/冷氣/床/桌子/椅子/洗衣機/熱水器/第四台/網路/衣櫃/電視",
+    "distance": 0.0,
+    "img": "https://static.dd-room.com/images/object/5/x/g/5xgptex1rjowta5m/cover/eaa9aa5bf6255414efdcc4c9b5ad9619_766x510.jpg",
+    "contact": "",
+    "phone": "",
+    "notes": [
+      "保全設施",
+      "免仲介費",
+      "包裹代收",
+      "可養其他寵物",
+      "可養狗",
+      "可養貓",
+      "垃圾代收",
+      "定期清潔",
+      "對外窗",
+      "有陽台",
+      "有電梯",
+      "氣密窗",
+      "水泥隔間",
+      "租金補貼"
+    ],
+    "other_fees": [
+      "1000元",
+      "月"
+    ],
+    "electricity_billing": "台水台電",
+    "billing_type": "taipower",
+    "service_level": "five_star",
+    "safety_level": "high",
+    "cp_tag": "high_cp",
+    "geo_tier": "core",
+    "condition": "standard",
+    "has_window": true,
+    "has_balcony": true,
+    "has_elevator": true,
+    "has_parking": false,
+    "has_waste_disposal": true,
+    "is_rooftop": false,
+    "is_wooden_partition": false,
+    "water_dispenser": false,
+    "private_washer": false,
+    "has_subsidy": true,
+    "is_taipower": true,
+    "fire_safety": "",
+    "security_gear": "",
+    "rent_included": "",
+    "features": "保全設施/免仲介費/包裹代收/可養其他寵物/可養狗/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
+    "deposit": 17000,
+    "deposit_str": "17,000元"
+  },
+  {
+    "idx": 970,
+    "text": "套房 分租 電梯大樓 南區 美村路二段 8000元 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
+    "url": "https://dd-room.com/object/r4altymp4vrqxoyp",
+    "address": "台中市南區美村路二段",
+    "room_type": "套房",
+    "building_type": "分租 電梯大樓",
+    "rent": 8000,
+    "rent_str": "8000元/月",
+    "size": "12",
+    "floor": "7 樓/9樓",
+    "furniture": "冰箱/冷氣/床/桌子/椅子/沙發/洗衣機/熱水器/網路/衣櫃/電視",
+    "distance": 0.0,
+    "img": "https://static.dd-room.com/images/object/r/4/a/r4altymp4vrqxoyp/cover/80785cf682572aeb5ce36ec969ada411_766x510.jpg",
+    "contact": "",
+    "phone": "0958168096",
+    "notes": [
+      "保全設施",
+      "包裹代收",
+      "可養其他寵物",
+      "可養貓",
+      "垃圾代收",
+      "定期清潔",
+      "對外窗",
+      "有陽台",
+      "有電梯",
+      "氣密窗",
+      "水泥隔間",
+      "租金補貼"
+    ],
+    "other_fees": [
+      "無"
+    ],
+    "electricity_billing": "不明",
+    "billing_type": "standard",
+    "service_level": "five_star",
+    "safety_level": "high",
+    "cp_tag": "high_cp",
+    "geo_tier": "core",
+    "condition": "standard",
+    "has_window": true,
+    "has_balcony": true,
+    "has_elevator": true,
+    "has_parking": false,
+    "has_waste_disposal": true,
+    "is_rooftop": false,
+    "is_wooden_partition": false,
+    "water_dispenser": false,
+    "private_washer": false,
+    "has_subsidy": true,
+    "is_taipower": false,
+    "fire_safety": "",
+    "security_gear": "",
+    "rent_included": "",
+    "features": "保全設施/包裹代收/可養其他寵物/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/氣密窗/水泥隔間/租金補貼",
+    "deposit": 16000,
+    "deposit_str": "16,000元"
+  },
+  {
+    "idx": 971,
+    "text": "套房 獨立 電梯大樓 南區 學府路 5500元 冰箱 冷氣 床 桌子 椅子",
+    "url": "https://dd-room.com/object/rwctq4riphkgmfu9",
+    "address": "台中市南區學府路",
+    "room_type": "套房",
+    "building_type": "獨立 電梯大樓",
+    "rent": 5500,
+    "rent_str": "5500元/月",
+    "size": "9",
+    "floor": "8 樓/19樓",
+    "furniture": "冰箱/冷氣/床/桌子/椅子/洗衣機/熱水器/網路/衣櫃",
+    "distance": 0.0,
+    "img": "https://static.dd-room.com/images/object/r/w/c/rwctq4riphkgmfu9/cover/f510f954f25ff26cdb32ecab6c5a601e_766x510.jpg",
+    "contact": "",
+    "phone": "0958168096",
+    "notes": [
+      "保全設施",
+      "免仲介費",
+      "包裹代收",
+      "可養貓",
+      "垃圾代收",
+      "定期清潔",
+      "對外窗",
+      "有陽台",
+      "有電梯",
+      "水泥隔間",
+      "租金補貼"
+    ],
+    "other_fees": [
+      "500元",
+      "月"
+    ],
+    "electricity_billing": "不明",
+    "billing_type": "standard",
+    "service_level": "five_star",
+    "safety_level": "high",
+    "cp_tag": "high_cp",
+    "geo_tier": "core",
+    "condition": "standard",
+    "has_window": true,
+    "has_balcony": true,
+    "has_elevator": true,
+    "has_parking": false,
+    "has_waste_disposal": true,
+    "is_rooftop": false,
+    "is_wooden_partition": false,
+    "water_dispenser": false,
+    "private_washer": false,
+    "has_subsidy": true,
+    "is_taipower": false,
+    "fire_safety": "",
+    "security_gear": "",
+    "rent_included": "",
+    "features": "保全設施/免仲介費/包裹代收/可養貓/垃圾代收/定期清潔/對外窗/有陽台/有電梯/水泥隔間/租金補貼",
+    "deposit": 11000,
+    "deposit_str": "11,000元"
   }
 ]
