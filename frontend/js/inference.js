@@ -721,7 +721,12 @@ function calculateRuleBasedScore(candidates, queryKeywords, text, constraints) {
 
         if (wantsUtilityBilling) {
             totalRequirements++;
-            let utilityMatch = prop.electricity_billing === "台水台電" || prop.electricity_billing === "含電費";
+            let utilityMatch = prop.electricity_billing && (
+                prop.electricity_billing.includes("台電") ||
+                prop.electricity_billing.includes("台水") ||
+                prop.electricity_billing === "含電費" ||
+                prop.electricity_billing === "獨立電錶"
+            );
             if (utilityMatch) {
                 matchCount++;
                 kScore += 10;
