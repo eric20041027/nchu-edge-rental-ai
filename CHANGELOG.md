@@ -2,6 +2,59 @@
 
 ---
 
+## [2026.05.14 v2.5] - 專用 rbt6 Teacher 訓練 + KD 恢復 + 前端資料修正
+
+### 核心目標
+
+v2.4 因自蒸餾鏈退化導致 KD 被迫停用，v2.5 目標：訓練一個 **task-finetuned rbt6 teacher**，讓 KD 重新產生正增益。
+
+### Teacher 訓練（train_teacher.py）
+
+| 項目 | 配置 |
+|------|------|
+| 基礎模型 | hfl/rbt6（6 層）|
+| 儲存路徑 | `saved_models/rbt6_teacher/`（與 student 路徑分離，永不被覆蓋）|
+| 學習率 | 1e-5（第一輪 2e-5 造成 epoch2 後振盪，降低後收斂更穩）|
+| Epochs | 12（patience=5）|
+| 最佳 Val F1 | **0.787**（epoch 6）|
+| Holdout F1 | **0.785**，Acc=84.1%，Recall=98.5% |
+
+第一輪（LR=2e-5）best=0.766，後續 epochs 振盪於 0.728~0.754——典型 LR 過高症狀。降至 1e-5 後收斂點提升至 0.787。
+
+### v2.5 Student 訓練結果
+
+| Epoch | Val F1 | 說明 |
+|-------|--------|------|
+| 1 | 62.7% | warmup |
+| 2 | 74.3% | |
+| 3 | 74.7% | |
+| 4 | 75.8% | |
+| 5 | 76.0% | |
+| **6** | **76.4%** | ← best |
+| 7~10 | 74.8~75.5% | patience 4/6 |
+| **Holdout** | **76.6%** | Acc=82.6%，Rec=96.9% |
+
+- 訓練時長：1055s（~17.6 分鐘），6.3 it/s，RTX 3060
+- ONNX 導出：FP32 → **36.8 MB**（INT8）
+
+**與 v2.4 比較**：Holdout F1 0.766 vs 0.767（幾乎持平）。KD 本次未帶來顯著增益，原因是 teacher（F1=0.787）相較 student 優勢僅 +1.8%，soft label 分辨力有限。
+
+### 前端資料修正（同版本發布）
+
+1. **electricity_billing 拆分**：原本 `台水台電` 一刀切，現拆分為四個離散值：
+   - `台電`（97 筆）、`台水`（18 筆）、`台水台電`（345 筆）、`獨立電錶`（21 筆）
+2. **is_taipower 修正**：原本只判斷 `"台電" in full_text`，現改為 `electricity_billing in ("台電", "台水台電")`，修正漏判 97 筆純台電物件的 bug
+3. **押金顯示修正**：`押金可議`（92 筆）之前被 `_parse_deposit()` 解析為 0 顯示「免押金」，現修正為 `-1` 顯示琥珀色「押金可議」
+4. **房型不符衝突提示**：當推薦物件房型與使用者指定不符時，在卡片上顯示紅色警示（如「此房源為雅房，您指定的是套房」）
+5. **重新生成 property_data.json**（972 筆）
+
+### 技術問題修正
+
+- **ONNX export UnicodeEncodeError**（Windows cp950 無法編碼 ✅）：在 `export_to_onnx()` 前加入 `sys.stdout.reconfigure(encoding="utf-8")`
+- **OS error 1224**（Windows 記憶體映射衝突）：export 步驟改為跳過重複的 `model.save_pretrained`，直接從已儲存的 checkpoint 載入
+
+---
+
 ## [2026.05.14 v2.4] - R-Drop + rbt6 Teacher + 動態蒸餾 α + 訓練策略全面修正
 
 ### 改進動機與問題分析

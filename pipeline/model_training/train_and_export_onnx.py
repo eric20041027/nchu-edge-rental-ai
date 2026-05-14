@@ -598,6 +598,9 @@ def export_to_onnx(model: PreTrainedModel, tokenizer: PreTrainedTokenizer):
 
     import logging as _logging
     _logging.getLogger("torch.onnx").setLevel(_logging.ERROR)
+    # Force UTF-8 stdout to prevent UnicodeEncodeError on Windows (torch.onnx prints ✅)
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
     torch.onnx.export(
         model,
