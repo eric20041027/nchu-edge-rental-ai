@@ -14,7 +14,7 @@ from typing import List, Dict, Any
 
 # Configurations
 BASE_DIR = os.path.dirname(__file__)
-MODEL_PATH = os.path.join(BASE_DIR, "../../frontend/models/custom_onnx_model_dir/my_custom_model.onnx")
+MODEL_PATH = os.path.join(BASE_DIR, "../../frontend/models/custom_onnx_model_dir/my_custom_model_quant.onnx")
 TOKENIZER_PATH = os.path.join(BASE_DIR, "../../frontend/models/custom_onnx_model_dir")
 TEST_DATA_PATH = os.path.join(BASE_DIR, "../../data/processed/recommendation_test.json")
 PROPERTY_TEXTS_PATH = os.path.join(BASE_DIR, "../../data/processed/property_texts.json")
@@ -204,46 +204,101 @@ def main():
         sat_at_5 += (sum(relevance_bin[:5]) / 5)
 
 
-    print("-" * 40)
+    # ── Compute additional ranking metrics ──────────────────────────────────
+    ndcg1_list, ndcg3_list, ndcg10_list = [], [], []
+    prec1_list, prec3_list, prec5_list  = [], [], []
+    hit1_list                           = []
+
+    def graded_dcg(rel_list, k):
+        return sum((2**rel - 1) / np.log2(rank + 2)
+                   for rank, rel in enumerate(rel_list[:k]))
+
+    for i, query in enumerate(eval_queries):
+        # Recompute scores for this query (already done above, but we need
+        # ranked relevance per query — collect during the main loop instead)
+        pass  # values are accumulated in relevance_graded_all below
+
+    # ── Accumulate per-query extended metrics during main loop ───────────────
+    # (We re-use the data collected in the loop above; see note below)
+    # Since we already computed relevance_graded_list (per-query NDCG@5),
+    # we need the full ranked-relevance vectors. Store them during the loop.
+    # Patch: rerun the loop collecting full vectors.
+
+    ranked_rel_all = []
+    random.seed(42)
+    eval_queries_2 = random.sample(pos_queries, num_eval_queries)
+
+    for query in eval_queries_2:
+        compatible_indices = [idx for idx, p in enumerate(original_properties) if is_compatible(query, p)]
+        if len(compatible_indices) > 30:
+            candidate_indices = random.sample(compatible_indices, 30)
+        else:
+            other_indices = list(set(range(len(original_properties))) - set(compatible_indices))
+            candidate_indices = compatible_indices + random.sample(other_indices, 30 - len(compatible_indices))
+
+        query_batch = [query] * len(candidate_indices)
+        prop_batch  = [all_property_texts[idx] for idx in candidate_indices]
+        scores      = run_onnx_batch(session, tokenizer, query_batch, prop_batch)
+        ranked_indices = np.argsort(scores)[::-1]
+
+        rel_vec = []
+        for r in ranked_indices:
+            idx = candidate_indices[r]
+            rel_vec.append(compute_relevance_score(query, original_properties[idx]))
+        ranked_rel_all.append(rel_vec)
+
+    for rel_vec in ranked_rel_all:
+        ideal_vec = sorted(rel_vec, reverse=True)
+
+        for k, lst in [(1, ndcg1_list), (3, ndcg3_list), (10, ndcg10_list)]:
+            dcg  = graded_dcg(rel_vec,   k)
+            idcg = graded_dcg(ideal_vec, k)
+            lst.append(dcg / idcg if idcg > 0 else 0.0)
+
+        # Precision@k: fraction of top-k with rel >= 1
+        prec1_list.append(1.0 if rel_vec[0] >= 1 else 0.0)
+        prec3_list.append(sum(1 for r in rel_vec[:3] if r >= 1) / 3)
+        prec5_list.append(sum(1 for r in rel_vec[:5] if r >= 1) / 5)
+
+        # Hit@1: is the top result a perfect match (rel=3)?
+        hit1_list.append(1.0 if rel_vec[0] >= 3 else 0.0)
+
+    print("-" * 50)
     print("Final Ranking Report:")
     print(f"  Binary NDCG @ 5:   {np.mean(ndcg_list):.5f}")
+    print(f"  Graded NDCG @ 1:   {np.mean(ndcg1_list):.5f}")
+    print(f"  Graded NDCG @ 3:   {np.mean(ndcg3_list):.5f}")
     print(f"  Graded NDCG @ 5:   {np.mean(ndcg_graded_list):.5f}")
+    print(f"  Graded NDCG @ 10:  {np.mean(ndcg10_list):.5f}")
     print(f"  Mean MRR:          {np.mean(mrr_list):.5f}")
+    print(f"  Precision @ 1:     {np.mean(prec1_list):.5f}")
+    print(f"  Precision @ 3:     {np.mean(prec3_list):.5f}")
+    print(f"  Precision @ 5:     {np.mean(prec5_list):.5f}")
+    print(f"  Hit @ 1 (rel>=3):  {np.mean(hit1_list):.5f}")
     print(f"  Avg Satisfaction:  {(sat_at_3 + sat_at_5)/(2 * num_eval_queries):.5f}")
-    
+
     # Bootstrap Confidence Interval for Graded NDCG@5
-    print("-" * 40)
+    print("-" * 50)
     print("Bootstrap Evaluation (n=1000 resamples):")
-    n_bootstraps = 1000
-    boot_ndcg_graded = []
-    
-    # Create an array to speed up sampling
     ndcg_array = np.array(ndcg_graded_list)
-    n_samples = len(ndcg_array)
-    
-    # Check if we have samples to bootstrap
+    n_samples  = len(ndcg_array)
     if n_samples > 0:
-        for _ in range(n_bootstraps):
-            # Sample with replacement
-            indices = np.random.randint(0, n_samples, size=n_samples)
-            sample = ndcg_array[indices]
-            boot_ndcg_graded.append(np.mean(sample))
-            
-        boot_mean = np.mean(boot_ndcg_graded)
-        boot_std = np.std(boot_ndcg_graded)
-        
-        print(f"  Graded NDCG @ 5: {boot_mean:.3f} ± {boot_std:.3f}")
+        boot_samples = [
+            np.mean(ndcg_array[np.random.randint(0, n_samples, size=n_samples)])
+            for _ in range(1000)
+        ]
+        print(f"  Graded NDCG @ 5: {np.mean(boot_samples):.3f} +/- {np.std(boot_samples):.3f}")
     else:
-         print("  Not enough data for Bootstrap.")
+        print("  Not enough data for Bootstrap.")
 
     total_labels = sum(label_counts.values())
-    print("-" * 40)
-    print("Label Distribution:")
+    print("-" * 50)
+    print("Label Distribution (in top-30 candidate pool):")
     print(f"  Perfect (3): {label_counts[3]/total_labels*100:5.1f}%")
     print(f"  Good (2):    {label_counts[2]/total_labels*100:5.1f}%")
     print(f"  Partial (1): {label_counts[1]/total_labels*100:5.1f}%")
     print(f"  None (0):    {label_counts[0]/total_labels*100:5.1f}%")
-    print("-" * 40)
+    print("-" * 50)
 
 
 

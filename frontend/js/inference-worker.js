@@ -15,8 +15,8 @@ let session = null;
 const MAX_LENGTH = 64;
 
 // Cache API key — bump version string when model weights change
-const MODEL_CACHE_NAME = 'rental-models-v20260513';
-const MODEL_CACHE_KEY  = 'cross-encoder-quant-v20260513';
+const MODEL_CACHE_NAME = 'rental-models-v20260514';
+const MODEL_CACHE_KEY  = 'cross-encoder-quant-v20260514';
 
 /**
  * Loads the ONNX model via Cache API (instant on repeat visits) or
