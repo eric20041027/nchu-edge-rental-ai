@@ -127,11 +127,13 @@ graph TD
 
 ### 蒸餾損失
 
-令 $P_s = \sigma(z_s / T)$、$P_t = \sigma(z_t / T)$，完整損失為：
+$$P_s = \sigma(z_s / T), \quad P_t = \sigma(z_t / T)$$
+
+完整損失為：
 
 $$\mathcal{L} = (1-\alpha)\,\mathcal{L}_{\text{task}} + \alpha \cdot T^2 \cdot D_{\mathrm{KL}}(P_s \| P_t) + \alpha_{\text{rdrop}}\,\mathcal{L}_{\text{R-Drop}}$$
 
-- $z_s$：student logits；$z_t$：teacher logits（凍結，純推論）
+- $z_s$: student logits, $z_t$: teacher logits（凍結，純推論）
 - $T = 4.0$：蒸餾溫度。原始 logits 差值 ≈ 6.4 → softmax ≈ [0.002, 0.998]（資訊量趨零）；縮放後差值 ≈ 1.6 → softmax ≈ [0.17, 0.83]（類別間序資訊可傳遞）
 - $T^2$ 係數：抵消溫度縮放對梯度幅度的影響，確保 KL loss 與 task loss 在相同數量級
 
@@ -139,12 +141,12 @@ $$\mathcal{L} = (1-\alpha)\,\mathcal{L}_{\text{task}} + \alpha \cdot T^2 \cdot D
 
 $$\alpha(t) = \alpha_{\min} + (\alpha_{\max} - \alpha_{\min}) \cdot \frac{1 + \cos\left(\dfrac{\pi t}{T_{\text{epoch}}}\right)}{2}$$
 
-其中 $\alpha_{\min} = 0.12$、$\alpha_{\max} = 0.38$、$T_{\text{epoch}} = 10$
+$$\alpha_{\min} = 0.12, \quad \alpha_{\max} = 0.38, \quad T_{\text{epoch}} = 10$$
 
 | 訓練階段 | $\alpha$ | 效果 |
 |:---|:---|:---|
-| 初期（$t \to 0$）| 0.38 | teacher 主導，防止 student 初期崩塌 |
-| 末期（$t \to T$）| 0.12 | task loss 主導，student 收斂至任務最優點 |
+| 初期（t → 0）| 0.38 | teacher 主導，防止 student 初期崩塌 |
+| 末期（t → 10）| 0.12 | task loss 主導，student 收斂至任務最優點 |
 
 ---
 
@@ -221,7 +223,7 @@ $$D_{\mathrm{KL}}(P \| Q) = \sum_i P_i \log \frac{P_i}{Q_i}$$
 
 - 非對稱：$D_{\mathrm{KL}}(P\|Q) \neq D_{\mathrm{KL}}(Q\|P)$
 - 當 $P = Q$ 時等於 0；$P$ 與 $Q$ 差異越大，值越大
-- 在蒸餾中：$P = \sigma(z_t / T)$（teacher 軟化分佈），$Q = \sigma(z_s / T)$（student 軟化分佈），最小化 KL 即讓 student 逼近 teacher 的機率形狀
+- 在蒸餾中：令 $P = \sigma(z_t / T)$ 為 teacher 軟化分佈，$Q = \sigma(z_s / T)$ 為 student 軟化分佈，最小化 KL 即讓 student 逼近 teacher 的機率形狀
 
 ---
 
