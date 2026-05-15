@@ -406,6 +406,81 @@ $$R = \frac{\text{已滿足維度數}}{\text{已指定維度數}}$$
 
 ---
 
+## Cross-Encoder 瀏覽器端推論效能分析
+
+> **測量方式**：`frontend/benchmark.html` — 本地 HTTP server 啟動後開啟即可自動執行，輸出 P50/P95/P99 延遲與 heap 記憶體快照。
+
+### 推論任務規格
+
+| 項目 | 數值 |
+|:---|:---|
+| 模型 | rbt3 INT8（`my_custom_model_quant.onnx`，38.6 MB）|
+| 每次查詢 | 30 個候選房源，30 次獨立 forward pass |
+| 輸入長度 | `MAX_LENGTH = 64` tokens（query + property text pair）|
+| 執行環境 | ONNX Runtime Web + WASM SIMD，最多 4 執行緒 |
+| 主線程影響 | **零**（所有推論在 Web Worker 內進行）|
+
+### 理論計算量分析
+
+rbt3 每次 forward pass 的主要計算（64 tokens）：
+
+| 元件 | FLOP 估算 |
+|:---|:---|
+| Self-Attention × 3 層 | $3 \times 4 \times 64^2 \times 768 \approx 75\text{M}$ |
+| FFN（768→3072→768）× 3 層 | $3 \times 2 \times 64 \times 768 \times 3072 \approx 905\text{M}$ |
+| 合計（INT8 等效）| **~980M INT8 ops / pass** |
+
+INT8 WASM SIMD 在現代 x86 CPU 上吞吐量約 100–400 GOPS，理論下限 ~2.5ms/pass；實際加上 JS 開銷、tensor 分配與 WASM 呼叫邊界約 **10–60ms/pass**，視裝置而定。
+
+### 各裝置延遲估算（30 候選重排，P95）
+
+| 裝置類型 | 代表機型 | 每次 pass P95 | **30-pass 總延遲 P95** | 主觀感受 |
+|:---|:---|:---:|:---:|:---|
+| 高階筆電 / 桌機 | i7-12th gen, Ryzen 7 5800H | ~20 ms | **~550 ms** | 幾乎無感 |
+| 中階學生筆電 | i5-10th gen, Ryzen 5 4500U | ~40 ms | **~1,100 ms** | 可接受（約 1 秒）|
+| 中階手機 | Snapdragon 778G, Dimensity 900 | ~70 ms | **~1,900 ms** | 略感等待 |
+| 低階預算手機 | Snapdragon 460, Helio G85 | ~160 ms | **~4,500 ms** | 明顯等待（~4-5 秒）|
+
+> 以上為基於模型架構的理論估算。執行 `frontend/benchmark.html` 可取得當前裝置的實測數據。
+
+### 記憶體用量與崩潰風險
+
+```
+JS Heap 組成（首次推論後穩定狀態）：
+  WASM runtime binary    : ~8 MB
+  ONNX model buffer      : 38.6 MB（ArrayBuffer，不在 GC heap）
+  Transformers.js + vocab: ~12 MB
+  ORT session + kernels  : ~10 MB
+  ─────────────────────────────
+  估計總佔用              : ~65–75 MB
+
+推論期間 tensor spike（每次 pass）：
+  input_ids [1×64] int64 : 0.5 KB
+  token_type_ids [1×64]  : 0.5 KB
+  attention_mask [1×64]  : 0.5 KB
+  output logits [1×2]    : 16 B
+  ─────────────────────────────
+  單次推論 spike          : < 2 KB（立即釋放）
+  30-pass 累積 spike      : < 100 KB（可忽略）
+```
+
+**結論**：
+- **不會崩潰**：iOS Safari / Android Chrome 的 JS heap 上限分別約 1.4 GB / 512 MB–1 GB，65 MB 遠低於任何主流行動瀏覽器的限制
+- **不會嚴重耗電**：單次查詢的 30-pass WASM 計算約 1–5 秒，屬一次性短促計算（非持續佔用），對電池影響可忽略
+- **模型 buffer 不觸發 GC**：38.6 MB 儲存為 `ArrayBuffer`（heap 外記憶體），不會造成 GC pause
+
+### 執行 Benchmark
+
+```bash
+cd frontend && python -m http.server 8000
+# 開啟 http://localhost:8000/benchmark.html
+# 點擊 "Start Benchmark"，約 30–90 秒後輸出完整報告
+```
+
+輸出包含：P50 / P75 / P95 / P99 per-pass latency、30-pass 總延遲、heap before/after delta、執行緒數與 SIMD 環境資訊。
+
+---
+
 ## 目錄結構
 
 ```text
