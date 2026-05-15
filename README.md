@@ -127,17 +127,19 @@ graph TD
 
 ### 蒸餾損失
 
-$$\mathcal{L} = (1-\alpha)\,\mathcal{L}_{\text{task}} + \alpha \cdot T^2 \cdot D_{\mathrm{KL}}\!\left(\sigma\!\left(\frac{z_s}{T}\right) \,\middle\|\, \sigma\!\left(\frac{z_t}{T}\right)\right) + \alpha_{\text{rdrop}}\,\mathcal{L}_{\text{R-Drop}}$$
+令 $P_s = \sigma(z_s / T)$、$P_t = \sigma(z_t / T)$，完整損失為：
 
-- $z_s$：student logits，$z_t$：teacher logits（凍結，純推論）
-- $T=4.0$：蒸餾溫度。原始 logits 差值 ≈ 6.4 → softmax ≈ [0.002, 0.998]（資訊量趨零）；縮放後差值 ≈ 1.6 → softmax ≈ [0.17, 0.83]（類別間序資訊可傳遞）
+$$\mathcal{L} = (1-\alpha)\,\mathcal{L}_{\text{task}} + \alpha \cdot T^2 \cdot D_{\mathrm{KL}}(P_s \| P_t) + \alpha_{\text{rdrop}}\,\mathcal{L}_{\text{R-Drop}}$$
+
+- $z_s$：student logits；$z_t$：teacher logits（凍結，純推論）
+- $T = 4.0$：蒸餾溫度。原始 logits 差值 ≈ 6.4 → softmax ≈ [0.002, 0.998]（資訊量趨零）；縮放後差值 ≈ 1.6 → softmax ≈ [0.17, 0.83]（類別間序資訊可傳遞）
 - $T^2$ 係數：抵消溫度縮放對梯度幅度的影響，確保 KL loss 與 task loss 在相同數量級
 
 ### 動態蒸餾權重 α（餘弦退火）
 
-$$\alpha(t) = \alpha_{\min} + (\alpha_{\max} - \alpha_{\min}) \cdot \frac{1 + \cos\!\left(\dfrac{\pi\,t}{T_{\text{epoch}}}\right)}{2}$$
+$$\alpha(t) = \alpha_{\min} + (\alpha_{\max} - \alpha_{\min}) \cdot \frac{1 + \cos\left(\dfrac{\pi t}{T_{\text{epoch}}}\right)}{2}$$
 
-參數：$\alpha_{\min}=0.12$，$\alpha_{\max}=0.38$，$T_{\text{epoch}}=10$
+其中 $\alpha_{\min} = 0.12$、$\alpha_{\max} = 0.38$、$T_{\text{epoch}} = 10$
 
 | 訓練階段 | $\alpha$ | 效果 |
 |:---|:---|:---|
@@ -162,15 +164,17 @@ $\mathcal{L}_{\text{CE}}$：label smoothing $\varepsilon=0.05$；$\alpha_{\text{
 
 ### RankNet 排序損失
 
-$$\mathcal{L}_{\text{RankNet}} = \frac{1}{|\mathcal{P}|}\sum_{(i,j)\in\mathcal{P}} \log\!\left(1 + e^{-(s_i - s_j)}\right), \quad s_k = \frac{z_k^{(1)}}{T_{\text{task}}}$$
+$$\mathcal{L}_{\text{RankNet}} = \frac{1}{|\mathcal{P}|}\sum_{(i,j)\in\mathcal{P}} \log\left(1 + e^{-(s_i - s_j)}\right), \quad s_k = \frac{z_k^{(1)}}{T_{\text{task}}}$$
 
-$\mathcal{P} = \{(i,j) \mid r_i > r_j\}$，$T_{\text{task}}=2.0$
+其中 $\mathcal{P} = \{(i,j) \mid r_i > r_j\}$、$T_{\text{task}} = 2.0$
 
 **為何需要 $T_{\text{task}}$**：若 $s_i - s_j \approx 6.0$，則 $e^{-6} \approx 0.0025$，梯度趨近於零（梯度消失）；$T_{\text{task}}=2.0$ 將差值縮至 3.0，使 $e^{-3} \approx 0.050$，維持有效梯度。
 
 ### ListNet 列表損失
 
-$$\mathcal{L}_{\text{ListNet}} = -\sum_{i} P_i^* \log P_i, \quad P_i = \text{softmax}\!\left(\frac{s}{T_{\text{task}}}\right)_{\!i}, \quad P_i^* = \text{softmax}(r)_i$$
+$$\mathcal{L}_{\text{ListNet}} = -\sum_{i} P_i^* \log P_i$$
+
+$$P_i = \text{softmax}\left(\frac{s}{T_{\text{task}}}\right)_i \quad \text{(predicted)}, \qquad P_i^* = \text{softmax}(r)_i \quad \text{(target)}$$
 
 ### 關鍵設計一覽
 
@@ -242,11 +246,11 @@ $$\sigma_T(z_i) = \frac{e^{z_i / T}}{\sum_j e^{z_j / T}}$$
 
 **原理**：讓某個超參數在訓練過程中以餘弦曲線平滑衰減，相比線性衰減更平緩，末期下降速度更慢，有助於在收斂末段微調。
 
-$$v(t) = v_{\min} + (v_{\max} - v_{\min}) \cdot \frac{1 + \cos\!\left(\dfrac{\pi\,t}{T_{\text{total}}}\right)}{2}$$
+$$v(t) = v_{\min} + (v_{\max} - v_{\min}) \cdot \frac{1 + \cos\left(\dfrac{\pi t}{T_{\text{total}}}\right)}{2}$$
 
 **本專案用途：動態蒸餾權重 $\alpha$**
 
-$$\alpha(t) = 0.12 + 0.26 \cdot \frac{1 + \cos\!\left(\dfrac{\pi\,t}{10}\right)}{2}$$
+$$\alpha(t) = 0.12 + 0.26 \cdot \frac{1 + \cos\left(\dfrac{\pi t}{10}\right)}{2}$$
 
 | epoch | $\cos(\pi t/10)$ | $\alpha$ | 訓練重心 |
 |:---:|:---:|:---:|:---|
@@ -262,7 +266,7 @@ $$\alpha(t) = 0.12 + 0.26 \cdot \frac{1 + \cos\!\left(\dfrac{\pi\,t}{10}\right)}
 
 **原理**：由 Burges et al.（2005, Microsoft Research）提出。從訓練集中萃取所有「i 應排在 j 前面」的配對 $(i, j)$，對每個配對最小化 sigmoid 交叉熵，要求分數差 $s_i - s_j > 0$。
 
-$$\mathcal{L}_{\text{RankNet}} = \frac{1}{|\mathcal{P}|}\sum_{(i,j)\in\mathcal{P}} \log\!\left(1 + e^{-(s_i - s_j)}\right), \quad \mathcal{P} = \{(i,j) \mid r_i > r_j\}$$
+$$\mathcal{L}_{\text{RankNet}} = \frac{1}{|\mathcal{P}|}\sum_{(i,j)\in\mathcal{P}} \log\left(1 + e^{-(s_i - s_j)}\right), \quad \mathcal{P} = \{(i,j) \mid r_i > r_j\}$$
 
 **優於 CE 的地方**：CE 只知道「這個是 Match / 不是 Match」，無法利用 rel=1, 2, 3 之間的順序關係；RankNet 可直接利用 4 級相關性標籤的偏序資訊。
 
@@ -280,7 +284,7 @@ $$s_k = \frac{z_k^{(1)}}{T_{\text{task}}}$$
 
 $$\mathcal{L}_{\text{ListNet}} = -\sum_{i} P_i^{*} \log P_i$$
 
-$$P_i = \text{softmax}\!\left(\frac{s}{T_{\text{task}}}\right)_i \quad \text{（模型預測分佈）}, \qquad P_i^{*} = \text{softmax}(r)_i \quad \text{（真實相關性分佈）}$$
+$$P_i = \text{softmax}\left(\frac{s}{T_{\text{task}}}\right)_i \quad \text{(predicted dist.)}, \qquad P_i^{*} = \text{softmax}(r)_i \quad \text{(target dist.)}$$
 
 **RankNet vs ListNet 的互補性**：RankNet 專注於兩兩之間誰該排前面（局部序）；ListNet 要求整體分佈形狀相似（全局序）。兩者合用可從不同角度優化排序品質。
 
