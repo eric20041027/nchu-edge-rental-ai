@@ -340,6 +340,8 @@ $$y_{\text{smooth}} = (1 - \varepsilon)\,y + \frac{\varepsilon}{K}$$
 
 每對（查詢, 房源）由 `compute_relevance_score()` 自動計算 0–3 分。
 
+**實際儲存值範圍：−1、0、1、2、3**，其中 −1 為隨機採樣負樣本的 sentinel 值：`is_compatible()=False`（確定有硬衝突），但非 top-Jaccard 挑選，屬於明顯不符的「簡單負樣本」。訓練時與 rel=0 同等視為 `label=0`，僅用於採樣比例監控（見[負樣本採樣策略](#負樣本採樣策略v24v28-的-bug-根源)）。
+
 #### Part A：硬性衝突（直接回傳 0）
 
 | 衝突類型 | 判斷邏輯 |
