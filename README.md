@@ -51,7 +51,7 @@
 |:---|:---|:---|:---|
 | **Graded NDCG@5** | **0.833 ± 0.014** ✅ | 0.818 | 4 級相關性（0-3）指數增益 NDCG，Bootstrap CI（n=1000）|
 
-**NDCG@5 = 0.833** 代表：在 30 個候選房源中，Top-5 的排列順序與理想排序的相似度為 83.3%。分母採指數增益（$2^{rel} - 1$），使 Perfect match（rel=3）的排名效益是 Partial（rel=1）的 7 倍。
+**NDCG@5 = 0.833** 代表：在 30 個候選房源中，Top-5 的排列順序與理想排序的相似度為 83.3%。分母採指數增益 ($2^{rel} - 1$)，使 Perfect match（rel=3）的排名效益是 Partial（rel=1）的 7 倍。
 
 $$NDCG_k = \frac{DCG_k}{IDCG_k}, \quad DCG_k = \sum_{i=1}^{k} \frac{2^{rel_i} - 1}{\log_2(i+2)}$$
 
@@ -217,11 +217,11 @@ $$P_i = \text{softmax}\left(\frac{s}{T_{\text{task}}}\right)_i \quad \text{(pred
 
 ### KL 散度（Kullback-Leibler Divergence）
 
-**原理**：衡量兩個機率分佈之間的差異。$D_{\mathrm{KL}}(P \| Q)$ 表示「用 Q 描述 P 時，相較於用 P 自身描述所多出的資訊量」。
+**原理**：$D_{\mathrm{KL}}(P \| Q)$ 衡量兩個機率分佈之間的差異，表示「用 Q 描述 P 時，相較於用 P 自身描述所多出的資訊量」。
 
 $$D_{\mathrm{KL}}(P \| Q) = \sum_i P_i \log \frac{P_i}{Q_i}$$
 
-- 非對稱：$D_{\mathrm{KL}}(P\|Q) \neq D_{\mathrm{KL}}(Q\|P)$
+- 非對稱: $D_{\mathrm{KL}}(P\|Q) \neq D_{\mathrm{KL}}(Q\|P)$
 - 當 $P = Q$ 時等於 0，兩分佈差異越大則值越大
 - 在蒸餾中：令 $P = \sigma(z_t / T)$ 為 teacher 軟化分佈, $Q = \sigma(z_s / T)$ 為 student 軟化分佈，最小化 KL 即讓 student 逼近 teacher 的機率形狀
 
@@ -229,7 +229,7 @@ $$D_{\mathrm{KL}}(P \| Q) = \sum_i P_i \log \frac{P_i}{Q_i}$$
 
 ### 溫度縮放（Temperature Scaling）
 
-**原理**：在 softmax 前將 logits 除以溫度 $T$，使輸出分佈趨於平滑（$T > 1$）或銳化（$T < 1$）。
+**原理**：在 softmax 前將 logits 除以溫度 $T$，使輸出分佈趨於平滑 ($T > 1$) 或銳化 ($T < 1$)。
 
 $$\sigma_T(z_i) = \frac{e^{z_i / T}}{\sum_j e^{z_j / T}}$$
 
