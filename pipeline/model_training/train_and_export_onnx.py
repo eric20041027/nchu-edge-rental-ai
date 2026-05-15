@@ -1,5 +1,5 @@
 """
-train_and_export_onnx.py - R-Drop + FGM + KD + Multi-Task Ranking  (v2.5)
+train_and_export_onnx.py - R-Drop + FGM + KD + Multi-Task Ranking  (v2.9)
 
 Architecture: hfl/rbt3 (3-layer Chinese RoBERTa) ← distilled from rbt6 teacher
 
@@ -681,7 +681,7 @@ def export_to_onnx(model: PreTrainedModel, tokenizer: PreTrainedTokenizer):
 def main():
     kd_status = "disabled" if DISTILL_ALPHA_MAX == 0.0 else f"{DISTILL_ALPHA_MAX}→{DISTILL_ALPHA_MIN} (cosine)"
     print("=" * 60)
-    print(f"  v2.5: CE + RankNet + ListNet + KD + R-Drop + FGM")
+    print(f"  v2.9: CE + RankNet + ListNet + KD + R-Drop + FGM")
     print(f"  KD α: {kd_status},  T={DISTILL_TEMPERATURE}")
     print(f"  R-Drop α={RDROP_ALPHA},  Focal γ={FOCAL_GAMMA}")
     print(f"  Teacher: {TEACHER_MODEL_PATH}")
