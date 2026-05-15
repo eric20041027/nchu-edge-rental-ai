@@ -154,46 +154,8 @@ def tokenize_datasets(train_ds: Dataset, eval_ds: Dataset,
     )
 
 
-# ── Metrics ────────────────────────────────────────────────────────────────────
-
-def compute_metrics(p):
-    predictions, labels = p
-    preds = np.argmax(predictions, axis=1)
-    acc   = (preds == labels).mean()
-    tp    = ((preds == 1) & (labels == 1)).sum()
-    fp    = ((preds == 1) & (labels == 0)).sum()
-    fn    = ((preds == 0) & (labels == 1)).sum()
-    prec  = tp / (tp + fp) if (tp + fp) > 0 else 0
-    rec   = tp / (tp + fn) if (tp + fn) > 0 else 0
-    f1    = 2 * prec * rec / (prec + rec) if (prec + rec) > 0 else 0
-    return {
-        "accuracy":  round(float(acc),  3),
-        "precision": round(float(prec), 3),
-        "recall":    round(float(rec),  3),
-        "f1":        round(float(f1),   3),
-    }
-
-
-# ── FGM Adversarial Training ───────────────────────────────────────────────────
-
-class FGM:
-    def __init__(self, model):
-        self.model  = model
-        self.backup = {}
-
-    def attack(self, epsilon=1.0, emb_name="word_embeddings"):
-        for name, param in self.model.named_parameters():
-            if param.requires_grad and emb_name in name:
-                self.backup[name] = param.data.clone()
-                norm = torch.norm(param.grad)
-                if norm != 0 and not torch.isnan(norm):
-                    param.data.add_(epsilon * param.grad / norm)
-
-    def restore(self, emb_name="word_embeddings"):
-        for name, param in self.model.named_parameters():
-            if param.requires_grad and emb_name in name:
-                param.data = self.backup[name]
-        self.backup = {}
+# ── Shared utilities (FGM, metrics, callbacks) ────────────────────────────────
+from .training_utils import FGM, compute_metrics, CleanLogCallback, CustomEarlyStoppingCallback
 
 
 # ── Teacher Trainer (CE + RankNet + ListNet + R-Drop + FGM) ───────────────────
@@ -209,16 +171,20 @@ class TeacherTrainer(Trainer):
     def compute_loss(self, model, inputs, return_outputs=False,
                      use_rdrop: bool = True, **kwargs):
         labels    = inputs.get("labels")
-        weights   = inputs.pop("sample_weight", None)
+        weights   = inputs.get("sample_weight", None)   # non-destructive read
         relevance = inputs.get("relevance", labels.float())
 
+        # Strip non-model keys before forwarding (never mutate the original dict)
+        _EXTRA_KEYS = {"sample_weight", "relevance"}
+        model_inputs = {k: v for k, v in inputs.items() if k not in _EXTRA_KEYS}
+
         # ── Forward pass 1 ────────────────────────────────────────────────────
-        outputs1 = model(**inputs)
+        outputs1 = model(**model_inputs)
         logits1  = outputs1.get("logits")   # [B, 2]
 
         # ── R-Drop: forward pass 2 ────────────────────────────────────────────
         if model.training and use_rdrop and RDROP_ALPHA > 0:
-            outputs2 = model(**inputs)
+            outputs2 = model(**model_inputs)
             logits2  = outputs2.get("logits")
             p1 = F.softmax(logits1, dim=-1)
             p2 = F.softmax(logits2, dim=-1)
@@ -250,7 +216,8 @@ class TeacherTrainer(Trainer):
         r_j = relevance.unsqueeze(0)
         mask = (r_i > r_j).float()
         if mask.sum() > 0:
-            ranknet = torch.log(1 + torch.exp(-(s_i - s_j))) * mask
+            # F.softplus is numerically stable (avoids exp overflow for large differences)
+            ranknet = F.softplus(-(s_i - s_j)) * mask
             task_loss = task_loss + (ranknet.sum() / mask.sum()) * 1.5
 
         # ── 3. ListNet (listwise) ──────────────────────────────────────────────
@@ -275,45 +242,13 @@ class TeacherTrainer(Trainer):
 
         fgm = FGM(model)
         fgm.attack()
-        loss_adv = self.compute_loss(model, inputs, use_rdrop=False)
-        self.accelerator.backward(loss_adv)   # ← accumulates adversarial grads
-        fgm.restore()
+        try:
+            loss_adv = self.compute_loss(model, inputs, use_rdrop=False)
+            self.accelerator.backward(loss_adv)   # ← accumulates adversarial grads
+        finally:
+            fgm.restore()   # always restore even if adversarial backward throws
 
         return loss.detach()
-
-
-# ── Callbacks ──────────────────────────────────────────────────────────────────
-
-class CleanLogCallback(TrainerCallback):
-    def on_log(self, args, state, control, logs=None, **kwargs):
-        if not logs:
-            return
-        if "loss" in logs:
-            print(f"  {'Epoch':>5} {logs.get('epoch', 0):>5.2f} | "
-                  f"Loss: {logs.get('loss', 0):>8.5f} | "
-                  f"LR: {logs.get('learning_rate', 0):>9.2e}")
-        elif "eval_loss" in logs:
-            print("-" * 70)
-            print(f"  VALIDATION | Loss: {logs.get('eval_loss', 0):>8.5f} | "
-                  f"Acc: {logs.get('eval_accuracy', 0):>7.5f} | "
-                  f"Prec: {logs.get('eval_precision', 0):>7.5f} | "
-                  f"Rec: {logs.get('eval_recall', 0):>7.5f} | "
-                  f"F1: {logs.get('eval_f1', 0):>7.5f}")
-            print("-" * 70)
-
-
-class CustomEarlyStoppingCallback(EarlyStoppingCallback):
-    def on_evaluate(self, args, state, control, metrics, **kwargs):
-        super().on_evaluate(args, state, control, metrics, **kwargs)
-        c = self.early_stopping_patience_counter
-        p = self.early_stopping_patience
-        metric_val = metrics.get(f"eval_{args.metric_for_best_model}", 0)
-        if c > 0:
-            print(f"  [EarlyStopping] Patience: {c}/{p}  "
-                  f"(best {args.metric_for_best_model}={state.best_metric:.5f})")
-        else:
-            print(f"  [EarlyStopping] New best "
-                  f"{args.metric_for_best_model}={metric_val:.5f}  Patience reset.")
 
 
 # ── Main Training ──────────────────────────────────────────────────────────────

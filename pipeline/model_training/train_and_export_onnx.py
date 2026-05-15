@@ -144,26 +144,8 @@ def load_and_balance_data(train_path: str, dev_path: str) -> Tuple[Dataset, Data
     return Dataset.from_list(train_data), Dataset.from_list(dev_data)
 
 
-# ── Adversarial Training (FGM) ────────────────────────────────────────────────
-
-class FGM:
-    def __init__(self, model):
-        self.model = model
-        self.backup = {}
-
-    def attack(self, epsilon=1.0, emb_name="word_embeddings"):
-        for name, param in self.model.named_parameters():
-            if param.requires_grad and emb_name in name:
-                self.backup[name] = param.data.clone()
-                norm = torch.norm(param.grad)
-                if norm != 0 and not torch.isnan(norm):
-                    param.data.add_(epsilon * param.grad / norm)
-
-    def restore(self, emb_name="word_embeddings"):
-        for name, param in self.model.named_parameters():
-            if param.requires_grad and emb_name in name:
-                param.data = self.backup[name]
-        self.backup = {}
+# ── Shared utilities (FGM, metrics, callbacks) ────────────────────────────────
+from .training_utils import FGM, compute_metrics, CleanLogCallback, CustomEarlyStoppingCallback
 
 
 # ── Custom Trainer with Distillation + R-Drop + Focal Loss ────────────────────
@@ -201,10 +183,10 @@ class DistillTrainer(Trainer):
 
     # ── Teacher forward ───────────────────────────────────────────────────────
 
-    def _teacher_logits(self, inputs: dict) -> torch.Tensor:
+    def _teacher_logits(self, model_inputs: dict) -> torch.Tensor:
         teacher_inputs = {
-            k: v for k, v in inputs.items()
-            if k in ("input_ids", "attention_mask", "token_type_ids", "labels")
+            k: v for k, v in model_inputs.items()
+            if k in ("input_ids", "attention_mask", "token_type_ids")
         }
         with torch.no_grad():
             out = self.teacher(**teacher_inputs)
@@ -215,16 +197,20 @@ class DistillTrainer(Trainer):
     def compute_loss(self, model, inputs, return_outputs=False,
                      use_rdrop: bool = True, **kwargs):
         labels    = inputs.get("labels")
-        weights   = inputs.pop("sample_weight", None)
+        weights   = inputs.get("sample_weight", None)   # non-destructive read
         relevance = inputs.get("relevance", labels.float())
 
+        # Strip non-model keys before forwarding (never mutate the original dict)
+        _EXTRA_KEYS = {"sample_weight", "relevance"}
+        model_inputs = {k: v for k, v in inputs.items() if k not in _EXTRA_KEYS}
+
         # ── Forward pass 1 ────────────────────────────────────────────────────
-        outputs1 = model(**inputs)
+        outputs1 = model(**model_inputs)
         logits1  = outputs1.get("logits")   # [B, 2]
 
         # ── R-Drop: forward pass 2 (different dropout mask) ───────────────────
         if model.training and use_rdrop and RDROP_ALPHA > 0:
-            outputs2 = model(**inputs)
+            outputs2 = model(**model_inputs)
             logits2  = outputs2.get("logits")
             # Symmetric KL
             p1 = F.softmax(logits1, dim=-1)
@@ -275,7 +261,8 @@ class DistillTrainer(Trainer):
         r_j = relevance.unsqueeze(0)
         mask = (r_i > r_j).float()
         if mask.sum() > 0:
-            ranknet = torch.log(1 + torch.exp(-(s_i - s_j))) * mask
+            # F.softplus is numerically stable (avoids exp overflow for large differences)
+            ranknet = F.softplus(-(s_i - s_j)) * mask
             task_loss = task_loss + (ranknet.sum() / mask.sum()) * 1.5
 
         # ── 3. ListNet (listwise) ─────────────────────────────────────────────
@@ -289,7 +276,7 @@ class DistillTrainer(Trainer):
             teacher_device = next(self.teacher.parameters()).device
             if teacher_device != logits.device:
                 self.teacher.to(logits.device)
-            teacher_logits = self._teacher_logits(inputs)
+            teacher_logits = self._teacher_logits(model_inputs)
             T = DISTILL_TEMPERATURE
             kl_loss = F.kl_div(
                 F.log_softmax(logits         / T, dim=-1),
@@ -323,9 +310,11 @@ class DistillTrainer(Trainer):
         # 2. FGM attack on student embeddings; adversarial pass without R-Drop
         fgm = FGM(model)
         fgm.attack()
-        loss_adv = self.compute_loss(model, inputs, use_rdrop=False)
-        self.accelerator.backward(loss_adv)   # ← accumulates adversarial grads
-        fgm.restore()
+        try:
+            loss_adv = self.compute_loss(model, inputs, use_rdrop=False)
+            self.accelerator.backward(loss_adv)   # ← accumulates adversarial grads
+        finally:
+            fgm.restore()   # always restore even if adversarial backward throws
 
         return loss.detach()
 
@@ -366,45 +355,7 @@ def tokenize_datasets(
     )
 
 
-# ── Metrics ────────────────────────────────────────────────────────────────────
-
-def compute_metrics(p):
-    predictions, labels = p
-    preds = np.argmax(predictions, axis=1)
-    acc   = (preds == labels).mean()
-    tp    = ((preds == 1) & (labels == 1)).sum()
-    fp    = ((preds == 1) & (labels == 0)).sum()
-    fn    = ((preds == 0) & (labels == 1)).sum()
-    prec  = tp / (tp + fp) if (tp + fp) > 0 else 0
-    rec   = tp / (tp + fn) if (tp + fn) > 0 else 0
-    f1    = 2 * prec * rec / (prec + rec) if (prec + rec) > 0 else 0
-    return {
-        "accuracy":  round(float(acc),  3),
-        "precision": round(float(prec), 3),
-        "recall":    round(float(rec),  3),
-        "f1":        round(float(f1),   3),
-    }
-
-
 # ── Callbacks ──────────────────────────────────────────────────────────────────
-
-class CleanLogCallback(TrainerCallback):
-    def on_log(self, args, state, control, logs=None, **kwargs):
-        if not logs:
-            return
-        if "loss" in logs:
-            print(f"  {'Epoch':>5} {logs.get('epoch', 0):>5.2f} | "
-                  f"Loss: {logs.get('loss', 0):>8.5f} | "
-                  f"LR: {logs.get('learning_rate', 0):>9.2e}")
-        elif "eval_loss" in logs:
-            print("-" * 70)
-            print(f"  VALIDATION | Loss: {logs.get('eval_loss', 0):>8.5f} | "
-                  f"Acc: {logs.get('eval_accuracy', 0):>7.5f} | "
-                  f"Prec: {logs.get('eval_precision', 0):>7.5f} | "
-                  f"Rec: {logs.get('eval_recall', 0):>7.5f} | "
-                  f"F1: {logs.get('eval_f1', 0):>7.5f}")
-            print("-" * 70)
-
 
 class AlphaLogCallback(TrainerCallback):
     """Prints the current KD alpha at the start of each epoch (no-op when KD disabled)."""
@@ -416,20 +367,6 @@ class AlphaLogCallback(TrainerCallback):
             alpha = self._trainer._get_current_alpha()
             print(f"  [KD] Epoch {state.epoch:.0f} | alpha={alpha:.3f} "
                   f"(range [{DISTILL_ALPHA_MIN}, {DISTILL_ALPHA_MAX}])")
-
-
-class CustomEarlyStoppingCallback(EarlyStoppingCallback):
-    def on_evaluate(self, args, state, control, metrics, **kwargs):
-        super().on_evaluate(args, state, control, metrics, **kwargs)
-        c = self.early_stopping_patience_counter
-        p = self.early_stopping_patience
-        metric_val = metrics.get(f"eval_{args.metric_for_best_model}", 0)
-        if c > 0:
-            print(f"  [EarlyStopping] Patience: {c}/{p}  "
-                  f"(best {args.metric_for_best_model}={state.best_metric:.5f})")
-        else:
-            print(f"  [EarlyStopping] New best {args.metric_for_best_model}={metric_val:.5f}  "
-                  f"Patience reset.")
 
 
 # ── Train ──────────────────────────────────────────────────────────────────────
@@ -576,10 +513,8 @@ def export_to_onnx(model: PreTrainedModel, tokenizer: PreTrainedTokenizer):
         truncation=True,
     )
 
-    model.to("cpu")
-    model.eval()
-    model.config.attn_implementation = "eager"
-
+    # Reload from disk with attn_implementation="eager" to ensure ONNX export
+    # uses the standard attention path (avoids flash-attn / SDPA which can't export)
     from transformers import AutoModelForSequenceClassification as AMSC
     model = AMSC.from_pretrained(SAVED_MODEL_DIR, attn_implementation="eager")
     model.to("cpu")

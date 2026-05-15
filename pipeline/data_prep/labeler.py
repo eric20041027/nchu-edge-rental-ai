@@ -29,7 +29,7 @@ class SilverLabeler(BaseProcessor):
     def _init_client(self):
         """Initialize Gemini client."""
         if not self.api_key:
-            self.logger.warning("ANTHROPIC_API_KEY not set. Silver labeling disabled.")
+            self.logger.warning("GOOGLE_API_KEY not set. Silver labeling (Gemini) disabled.")
             return None
 
         try:

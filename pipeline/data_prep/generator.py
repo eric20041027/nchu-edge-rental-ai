@@ -307,50 +307,52 @@ class DatasetGenerator(BaseProcessor):
     def _compute_relevance_score(self, query: str, prop: Dict[str, Any]) -> int:
         """Compute graded relevance score (0-3).
 
-        Scoring:
-        - 0: Hard conflict (room type mismatch, exclusion, etc.)
-        - 1: Partial match (only 1 dimension matches)
-        - 2: Good match (most dimensions match, minor deviations)
-        - 3: Perfect match (all specified dimensions satisfied)
+        .. deprecated::
+            This simplified implementation is kept for backward compatibility only.
+            All callers should use ``generate_dataset.compute_relevance_score`` directly,
+            which is the authoritative implementation with 9 scoring dimensions
+            (budget direction, electricity billing, lifestyle intent, geo-tier bonus, etc.).
+            Using this stub risks inconsistent label quality if the pipeline is migrated
+            to this class.
         """
-        # Hard conflict checks
-        if "套房" in query and prop.get("room_type") != "套房":
-            return 0
-        if "雅房" in query and prop.get("room_type") != "雅房":
-            return 0
-        if "住宅" in query and prop.get("room_type") != "住宅":
-            return 0
+        import warnings
+        warnings.warn(
+            "generator._compute_relevance_score is deprecated. "
+            "Use pipeline.data_prep.generate_dataset.compute_relevance_score instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        try:
+            from pipeline.data_prep.generate_dataset import compute_relevance_score as _authoritative
+            return _authoritative(query, prop)
+        except ImportError:
+            pass
 
-        # Budget constraint
+        # ── Fallback (only if generate_dataset cannot be imported) ──────────
         budget_match = re.search(r"(\d{4,5})", query)
         if budget_match:
             budget = int(budget_match.group(1))
             if prop.get("rent", 0) > budget * 1.1:
                 return 0
 
-        # Compute match score
         dimensions = 0
-        satisfied = 0
+        satisfied  = 0
 
-        # Dimension 1: Room type
         if prop.get("room_type"):
             dimensions += 1
             if prop["room_type"] in query:
                 satisfied += 1
 
-        # Dimension 2: Region
         if prop.get("region"):
             dimensions += 1
             if prop["region"] in query or prop.get("address", "") in query:
                 satisfied += 1
 
-        # Dimension 3: Budget
         if prop.get("rent"):
             dimensions += 1
             if budget_match and prop["rent"] <= int(budget_match.group(1)):
                 satisfied += 1
 
-        # Dimension 4: Features
         if prop.get("furniture"):
             dimensions += 1
             matched_furniture = sum(1 for f in prop["furniture"] if f in query)
@@ -358,7 +360,7 @@ class DatasetGenerator(BaseProcessor):
                 satisfied += matched_furniture / len(prop["furniture"])
 
         if dimensions == 0:
-            return 2  # No constraints specified → generic good match
+            return 2
 
         ratio = satisfied / dimensions
         if ratio >= 0.85:

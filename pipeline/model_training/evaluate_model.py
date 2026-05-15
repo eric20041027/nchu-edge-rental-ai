@@ -22,7 +22,6 @@ BATCH_SIZE = 1 # Static batch size for this ONNX model
 
 # Import compatibility logic
 sys.path.append(os.path.join(BASE_DIR, "../../"))
-sys.path.append(os.path.join(BASE_DIR, "../../"))
 from pipeline.data_prep.generate_dataset import load_properties, is_compatible, compute_relevance_score
 
 
@@ -141,37 +140,45 @@ def main():
     ndcg_graded_list = []
     label_counts = {0: 0, 1: 0, 2: 0, 3: 0}
     sat_at_3, sat_at_5 = 0, 0
-    
+
+    # Extended metrics (collected in same loop — no second pass needed)
+    ndcg1_list, ndcg3_list, ndcg10_list = [], [], []
+    prec1_list, prec3_list, prec5_list  = [], [], []
+    hit1_list                           = []
+    ranked_rel_all                      = []
+
+    def graded_dcg(rel_list, k):
+        return sum((2**rel - 1) / np.log2(rank + 2)
+                   for rank, rel in enumerate(rel_list[:k]))
+
     # Precompute all property texts for re-ranking
     all_property_texts = [property_to_text(p) for p in original_properties]
 
     for i, query in enumerate(eval_queries):
         if i % 20 == 0: print(f"  Evaluating query {i+1}/{num_eval_queries}...")
 
-        
         # Step A: Pre-filter (Plausible candidates)
-        # In reality, this is rule-based. Here we simulate by taking 
-        # all compatible properties + some random ones to reach 30.
         compatible_indices = [idx for idx, p in enumerate(original_properties) if is_compatible(query, p)]
-        
+
         if len(compatible_indices) > 30:
             candidate_indices = random.sample(compatible_indices, 30)
         else:
             other_indices = list(set(range(len(original_properties))) - set(compatible_indices))
             candidate_indices = compatible_indices + random.sample(other_indices, 30 - len(compatible_indices))
-        
+
         # Step B: AI Re-rank
         query_batch = [query] * len(candidate_indices)
         prop_batch = [all_property_texts[idx] for idx in candidate_indices]
         scores = run_onnx_batch(session, tokenizer, query_batch, prop_batch)
-        
+
         # Step C: Evaluate Ranking
         ranked_indices = np.argsort(scores)[::-1]
-        
+
         # Binary relevance (for legacy NDCG/MRR)
-        relevance_bin = [1 if idx in compatible_indices else 0 for idx in [candidate_indices[r] for r in ranked_indices]]
-        
-        # Graded relevance (0-3) using the official scoring logic
+        relevance_bin = [1 if idx in compatible_indices else 0
+                         for idx in [candidate_indices[r] for r in ranked_indices]]
+
+        # Graded relevance (0-3) — collected once, reused for all metrics
         relevance_graded = []
         for r in ranked_indices:
             idx = candidate_indices[r]
@@ -179,74 +186,30 @@ def main():
             relevance_graded.append(rel)
             label_counts[rel] += 1
 
-        
-        # Binary NDCG@5 (Old method)
-        dcg_bin = sum([rel / np.log2(rank + 2) for rank, rel in enumerate(relevance_bin[:5])])
-        idcg_bin = sum([rel / np.log2(rank + 2) for rank, rel in enumerate(sorted(relevance_bin, reverse=True)[:5])])
+        ranked_rel_all.append(relevance_graded)
+
+        # Binary NDCG@5
+        dcg_bin  = sum(rel / np.log2(rank + 2) for rank, rel in enumerate(relevance_bin[:5]))
+        idcg_bin = sum(rel / np.log2(rank + 2) for rank, rel in enumerate(sorted(relevance_bin, reverse=True)[:5]))
         ndcg_list.append(dcg_bin / idcg_bin if idcg_bin > 0 else 0)
-        
-        # Graded NDCG@5 (New Exponential method: (2^rel - 1) / log2(rank+2))
-        def get_graded_dcg(rel_list):
-            return sum([(2**rel - 1) / np.log2(rank + 2) for rank, rel in enumerate(rel_list)])
-            
-        dcg_graded = get_graded_dcg(relevance_graded[:5])
-        idcg_graded = get_graded_dcg(sorted(relevance_graded, reverse=True)[:5])
+
+        # Graded NDCG@5
+        dcg_graded  = graded_dcg(relevance_graded, 5)
+        idcg_graded = graded_dcg(sorted(relevance_graded, reverse=True), 5)
         ndcg_graded_list.append(dcg_graded / idcg_graded if idcg_graded > 0 else 0)
-        
+
         # MRR
         for rank, rel in enumerate(relevance_bin):
             if rel > 0:
                 mrr_list.append(1 / (rank + 1))
                 break
-        else: mrr_list.append(0)
-        
-        sat_at_3 += (sum(relevance_bin[:3]) / 3)
-        sat_at_5 += (sum(relevance_bin[:5]) / 5)
-
-
-    # ── Compute additional ranking metrics ──────────────────────────────────
-    ndcg1_list, ndcg3_list, ndcg10_list = [], [], []
-    prec1_list, prec3_list, prec5_list  = [], [], []
-    hit1_list                           = []
-
-    def graded_dcg(rel_list, k):
-        return sum((2**rel - 1) / np.log2(rank + 2)
-                   for rank, rel in enumerate(rel_list[:k]))
-
-    for i, query in enumerate(eval_queries):
-        # Recompute scores for this query (already done above, but we need
-        # ranked relevance per query — collect during the main loop instead)
-        pass  # values are accumulated in relevance_graded_all below
-
-    # ── Accumulate per-query extended metrics during main loop ───────────────
-    # (We re-use the data collected in the loop above; see note below)
-    # Since we already computed relevance_graded_list (per-query NDCG@5),
-    # we need the full ranked-relevance vectors. Store them during the loop.
-    # Patch: rerun the loop collecting full vectors.
-
-    ranked_rel_all = []
-    random.seed(42)
-    eval_queries_2 = random.sample(pos_queries, num_eval_queries)
-
-    for query in eval_queries_2:
-        compatible_indices = [idx for idx, p in enumerate(original_properties) if is_compatible(query, p)]
-        if len(compatible_indices) > 30:
-            candidate_indices = random.sample(compatible_indices, 30)
         else:
-            other_indices = list(set(range(len(original_properties))) - set(compatible_indices))
-            candidate_indices = compatible_indices + random.sample(other_indices, 30 - len(compatible_indices))
+            mrr_list.append(0)
 
-        query_batch = [query] * len(candidate_indices)
-        prop_batch  = [all_property_texts[idx] for idx in candidate_indices]
-        scores      = run_onnx_batch(session, tokenizer, query_batch, prop_batch)
-        ranked_indices = np.argsort(scores)[::-1]
+        sat_at_3 += sum(relevance_bin[:3]) / 3
+        sat_at_5 += sum(relevance_bin[:5]) / 5
 
-        rel_vec = []
-        for r in ranked_indices:
-            idx = candidate_indices[r]
-            rel_vec.append(compute_relevance_score(query, original_properties[idx]))
-        ranked_rel_all.append(rel_vec)
-
+    # ── Compute extended metrics from collected vectors ──────────────────────
     for rel_vec in ranked_rel_all:
         ideal_vec = sorted(rel_vec, reverse=True)
 

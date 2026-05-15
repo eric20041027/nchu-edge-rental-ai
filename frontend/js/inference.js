@@ -462,17 +462,21 @@ function filterHardExclusions(properties, constraints) {
         
         if (maxElectricityPrice) {
             // "5元/度"
-            const match = prop.electricity_billing.match(/(\d+(?:\.\d+)?)/);
+            const billing = prop.electricity_billing || "";
+            const match = billing.match(/(\d+(?:\.\d+)?)/);
             if (match && parseFloat(match[1]) > maxElectricityPrice) continue;
         }
 
-        // If user specifically asks for Taishui Taipower and NOT maxElectricityPrice, 
+        // If user specifically asks for Taishui Taipower and NOT maxElectricityPrice,
         // we can filter out properties that are explicitly > 5 NTD, though we handle this softly in scoring too.
-        if (wantsUtilityBilling && prop.electricity_billing && prop.electricity_billing.includes("度")) {
-            const match = prop.electricity_billing.match(/(\d+(?:\.\d+)?)/);
-            if (match && parseFloat(match[1]) >= 5) {
-                // If they explicitly want Taishui Taipower, properties charging >= 5/kwh are generally rejected
-                continue; 
+        if (wantsUtilityBilling) {
+            const billing = prop.electricity_billing || "";
+            if (billing.includes("度")) {
+                const match = billing.match(/(\d+(?:\.\d+)?)/);
+                if (match && parseFloat(match[1]) >= 5) {
+                    // If they explicitly want Taishui Taipower, properties charging >= 5/kwh are generally rejected
+                    continue;
+                }
             }
         }
 
@@ -531,13 +535,27 @@ function parseBudgetFromNER(budgetSpans) {
 function expandQueryIntent(query) {
     let expanded = query;
     const intentMap = {
-        '潔癖': '全新 獨洗 禁菸 質感 裝潢 漂亮',
+        '潔癖': '全新 獨洗 禁菸 乾淨',
+        '稍微潔癖': '全新 獨洗 禁菸 乾淨',
+        '愛乾淨': '全新 獨洗 禁菸 乾淨',
+        '懶人': '電梯 子母車 垃圾處理 飲水機',
+        '自炊': '廚房 瓦斯 開火 自炊',
+        '外送族': '管理員 飲水機 子母車',
+        '不想出門': '管理員 飲水機 子母車',
         '下班晚': '子母車 垃圾代收 門禁 管理員 安全',
+        '不想追垃圾車': '子母車 垃圾處理',
         '省錢': '台電 台水 便宜 補助 租補',
-        '怕熱': '台電 變頻冷氣 西曬隔熱',
-        '怕吵': '水泥隔間 巷弄 靜巷 頂樓',
-        '高品質': '五星級 管理員 電梯 漂亮 全新 質感',
-        '生活便利': '超商 興大路 核心區 核心 核心圈'
+        '省電費': '變頻 台電',
+        '怕熱': '冷氣 變頻冷氣',
+        '怕悶熱': '陽台 採光 通風 對外窗',
+        '怕吵': '隔音 氣密窗 禁菸 靜巷',
+        '安靜': '隔音 氣密窗 禁菸 靜巷',
+        '首租': '全新',
+        '高品質': '管理員 電梯 漂亮 全新 質感',
+        '有車': '車位 停車場',
+        '開車': '車位 停車場',
+        '生活便利': '超商 興大路 核心區 核心 核心圈',
+        '網美': '裝潢 採光 漂亮 落地窗',
     };
 
     for (const [intent, expansion] of Object.entries(intentMap)) {
