@@ -123,27 +123,15 @@ def load_and_balance_data(train_path: str, dev_path: str) -> Tuple[Dataset, Data
     random.seed(42)
     pos_samples = [d for d in train_data if d["label"] == 1]
 
-    # ── Stratified negative sampling ──────────────────────────────────────────
-    # Prioritise hard-conflict negatives (rel=0) over random negatives (rel=-1).
-    # Hard conflicts teach the model genuine constraint violations; random
-    # negatives carry little semantic signal once the model is well-trained.
-    neg_all     = [d for d in train_data if d["label"] == 0]
-    neg_hard    = [d for d in neg_all if d.get("relevance", -1) == 0]
-    neg_easy    = [d for d in neg_all if d.get("relevance", -1) == -1]
-
+    # ── Random negative sampling (v2.9) ───────────────────────────────────────
+    # Use random sampling from ALL negatives (mirrors v2.3 approach).
+    # Stratified hard-first sampling excluded rel=-1 entirely because neg_hard
+    # alone exceeded target_neg, causing the model to overfit on hard conflicts
+    # and lose calibration on the easy end of the scoring range.
+    # Natural mix: ~69% rel=0 (hard) + ~31% rel=-1 (easy).
+    neg_all    = [d for d in train_data if d["label"] == 0]
     target_neg = len(pos_samples)
-    if len(neg_hard) >= target_neg:
-        # Enough hard conflicts to fill the quota alone
-        neg_samples = random.sample(neg_hard, target_neg)
-    else:
-        # Take all hard conflicts and fill the remainder with easy negatives
-        n_easy = min(target_neg - len(neg_hard), len(neg_easy))
-        neg_samples = neg_hard + random.sample(neg_easy, n_easy)
-        # If still short (unlikely), top up with any remaining negatives
-        if len(neg_samples) < target_neg:
-            remaining = [d for d in neg_all if d not in set(neg_samples)]
-            neg_samples += random.sample(remaining,
-                                         min(target_neg - len(neg_samples), len(remaining)))
+    neg_samples = random.sample(neg_all, min(target_neg, len(neg_all)))
 
     print(f"  Distribution: POS={len(pos_samples)}, NEG={len(neg_samples)} "
           f"(hard-conflict={sum(1 for d in neg_samples if d.get('relevance',-1)==0)}, "
