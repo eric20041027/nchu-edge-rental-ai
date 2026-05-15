@@ -162,7 +162,7 @@ $$\mathcal{L}_{\text{teacher}} = \mathcal{L}_{\text{CE}} + 1.5\,\mathcal{L}_{\te
 
 $$\mathcal{L}_{\text{student}} = (1-\alpha)\underbrace{\left(\mathcal{L}_{\text{CE}} + 1.5\,\mathcal{L}_{\text{RankNet}} + \mathcal{L}_{\text{ListNet}}\right)}_{\mathcal{L}_{\text{task}}} + \alpha\,T^2\,D_{\mathrm{KL}} + \alpha_{\text{rdrop}}\,\mathcal{L}_{\text{R-Drop}}$$
 
-$\mathcal{L}_{\text{CE}}$: label smoothing $\varepsilon=0.05$, $\alpha_{\text{rdrop}}=0.05$
+$$\mathcal{L}_{\text{CE}}:\text{ label smoothing},\quad \varepsilon=0.05,\quad \alpha_{\text{rdrop}}=0.05$$
 
 ### RankNet 排序損失
 
