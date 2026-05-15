@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>Cross-Encoder WASM Benchmark</title>
+<style>
+  body { font-family: monospace; background: #1a1a1a; color: #e0e0e0; padding: 24px; }
+  h2 { color: #7eb8f7; }
+  pre { background: #2a2a2a; padding: 16px; border-radius: 8px; white-space: pre-wrap; font-size: 13px; }
+  .ok  { color: #6fcf97; }
+  .warn{ color: #f2c94c; }
+  .err { color: #eb5757; }
+  button { padding: 10px 24px; font-size: 15px; background: #2d6bc4; color: #fff;
+           border: none; border-radius: 6px; cursor: pointer; margin-top: 12px; }
+  button:disabled { background: #555; }
+</style>
+</head>
+<body>
+<h2>Cross-Encoder WASM Benchmark — rbt3 INT8 × 30 candidates</h2>
+<button id="startBtn" onclick="runBenchmark()">▶ Start Benchmark</button>
+<pre id="log">Press "Start Benchmark" to begin...\n</pre>
+
+<script type="module">
+// ──────────────────────────────────────────────────────────
+// Benchmark configuration
+// ──────────────────────────────────────────────────────────
+const MAX_LENGTH   = 64;
+const N_CANDIDATES = 30;
+const N_WARMUP     = 3;   // warm-up passes (excluded from stats)
+const N_REPEATS    = 5;   // full 30-pass runs for statistics
+
+// Realistic query + 30 synthetic property descriptions
+const QUERY = "南區套房 5500以內 要台電計費 有洗衣機 近興大";
+
+const PROPERTIES = [
+  "南區 套房 月租5200 台電計費 附洗衣機冷氣冰箱 近台中路 步行8分鐘",
+  "南區 套房 月租5500 台水台電 洗衣機冷氣 興大旁 全新裝潢",
+  "南區 雅房 月租4000 公電 附冷氣 共用衛浴 興大附近",
+  "大里 套房 月租5000 台電 有洗衣機 騎車10分鐘",
+  "南區 套房 月租6000 台電計費 電梯大樓 附全套家電",
+  "南區 套房 月租5300 固定電費 洗衣機 近中興大學",
+  "西區 套房 月租6500 台電 捷運旁 全新",
+  "南區 套房 月租5000 台水台電 獨立衛浴 有洗衣機",
+  "南區 套房 月租5800 台電 電梯 有冷氣洗衣機冰箱",
+  "南區 頂加 月租3500 公電 無洗衣機 採光不足",
+  "南區 套房 月租5500 台電計費 有陽台 洗衣機",
+  "北屯 套房 月租5500 台電 離市區較遠",
+  "南區 套房 月租5400 台電 步行興大5分鐘 附洗衣機",
+  "南區 雅房 月租3800 共用洗衣機 台電 近市場",
+  "南區 套房 月租5000 台電計費 木地板 有書桌",
+  "南區 套房 月租5600 台水台電 電梯 全新首租",
+  "南區 套房 月租4800 台電 整理中 有冷氣",
+  "南區 套房 月租5500 固定電費每度4元 洗衣機",
+  "南區 套房 月租5200 台電 近興大正門 附家電",
+  "太平 套房 月租4500 台電 騎車15分鐘 新裝潢",
+  "南區 套房 月租5500 台電計費 可養小型寵物",
+  "南區 套房 月租5300 台電 有保全 洗衣機冷氣",
+  "南區 套房 月租5700 台電 陽台 採光佳 洗衣機",
+  "南區 套房 月租5100 台電 近公車站 附冷氣洗衣機",
+  "南區 套房 月租5500 禁寵物 台電 全新裝潢",
+  "南區 套房 月租5400 台電計費 步行興大7分鐘 含網路",
+  "南區 套房 月租5200 台電 有管理員 電梯 洗衣機",
+  "南區 套房 月租6200 台電 頂樓 加蓋 屋況普通",
+  "南區 套房 月租5500 台水台電 全新 首租 洗衣機",
+  "南區 套房 月租5000 台電 近興大 獨立門禁 洗衣機冷氣冰箱"
+];
+
+// ──────────────────────────────────────────────────────────
+const log = (msg, cls='') => {
+  const el = document.getElementById('log');
+  el.innerHTML += cls ? `<span class="${cls}">${msg}</span>\n` : msg + '\n';
+  el.scrollTop = el.scrollHeight;
+};
+
+const fmt = (n, d=1) => n.toFixed(d);
+const memMB = () => {
+  if (performance.memory) return (performance.memory.usedJSHeapSize / 1048576).toFixed(1);
+  return null;
+};
+
+function pct(arr, p) {
+  const s = [...arr].sort((a,b)=>a-b);
+  const i = Math.ceil(p/100 * s.length) - 1;
+  return s[Math.max(0,i)];
+}
+
+window.runBenchmark = async function() {
+  document.getElementById('startBtn').disabled = true;
+  document.getElementById('log').innerHTML = '';
+
+  log('=== Cross-Encoder WASM Benchmark ===');
+  log(`Model  : rbt3 INT8 (my_custom_model_quant.onnx)`);
+  log(`Task   : ${N_CANDIDATES} candidates × (tokenize + forward pass)`);
+  log(`Threads: up to ${Math.min(navigator.hardwareConcurrency||4, 4)}`);
+  log(`UA     : ${navigator.userAgent.split(')')[0]})`);
+  log('');
+
+  // ── 1. Load ORT ──────────────────────────────────────────
+  log('[1/4] Loading ONNX Runtime Web...');
+  const t0 = performance.now();
+  const ortModule = await import('https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.mjs');
+  const ort = ortModule.default ?? ortModule;
+  log(`      ort loaded in ${fmt(performance.now()-t0)} ms`, 'ok');
+
+  // ── 2. Load Tokenizer ────────────────────────────────────
+  log('[2/4] Loading tokenizer...');
+  const { AutoTokenizer, env } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1');
+  env.allowRemoteModels = false;
+  env.allowLocalModels  = true;
+  env.useBrowserCache   = true;
+  env.localModelPath    = location.origin + '/';
+  const t1 = performance.now();
+  const tokenizer = await AutoTokenizer.from_pretrained('models/custom_onnx_model_dir');
+  log(`      tokenizer loaded in ${fmt(performance.now()-t1)} ms`, 'ok');
+
+  // ── 3. Load + Init ONNX Session ──────────────────────────
+  log('[3/4] Creating ONNX session...');
+  const t2 = performance.now();
+  const modelUrl = location.origin + '/models/custom_onnx_model_dir/my_custom_model_quant.onnx';
+  const resp = await fetch(modelUrl);
+  const modelBuffer = new Uint8Array(await resp.arrayBuffer());
+  const session = await ort.InferenceSession.create(modelBuffer, {
+    executionProviders: ['wasm'],
+    graphOptimizationLevel: 'all',
+    numThreads: Math.min(navigator.hardwareConcurrency||4, 4),
+  });
+  const sessionInitMs = performance.now() - t2;
+  log(`      session init in ${fmt(sessionInitMs)} ms (model ${(modelBuffer.length/1048576).toFixed(1)} MB)`, 'ok');
+
+  const mem0 = memMB();
+  if (mem0) log(`      heap after model load: ${mem0} MB`);
+
+  // ── 4. Inference Benchmark ───────────────────────────────
+  log('');
+  log('[4/4] Running inference benchmark...');
+
+  async function score30(query) {
+    const times = [];
+    for (const prop of PROPERTIES) {
+      const ts = performance.now();
+      const enc = await tokenizer(query, {
+        text_pair: prop, padding: 'max_length', truncation: true,
+        max_length: MAX_LENGTH, return_tensors: 'np', return_token_type_ids: true,
+      });
+      const inputs = {};
+      for (const k of session.inputNames) {
+        if (enc[k]) inputs[k] = new ort.Tensor('int64',
+          BigInt64Array.from(enc[k].data.map(v=>BigInt(v))), enc[k].dims);
+      }
+      const out = await session.run(inputs);
+      const lg = out.logits.data;
+      const mx = Math.max(lg[0], lg[1]);
+      void (Math.exp(lg[1]-mx) / (Math.exp(lg[0]-mx) + Math.exp(lg[1]-mx)));
+      times.push(performance.now() - ts);
+    }
+    return times;
+  }
+
+  // Warm-up
+  log(`      warm-up ${N_WARMUP} × 30 passes...`);
+  for (let i = 0; i < N_WARMUP; i++) await score30(QUERY);
+
+  // Timed runs
+  log(`      measuring ${N_REPEATS} × 30 passes...`);
+  const allPerPass = [];
+  const allTotal   = [];
+  for (let r = 0; r < N_REPEATS; r++) {
+    const tRun = performance.now();
+    const times = await score30(QUERY);
+    const total = performance.now() - tRun;
+    allPerPass.push(...times);
+    allTotal.push(total);
+    log(`      run ${r+1}: total=${fmt(total)} ms  avg/pass=${fmt(times.reduce((a,b)=>a+b,0)/times.length)} ms`);
+  }
+
+  const mem1 = memMB();
+
+  // ── 5. Statistics ────────────────────────────────────────
+  log('');
+  log('═══════════ RESULTS ═══════════', 'ok');
+  log('');
+  log('── Per-pass latency (single tokenize + forward) ──');
+  log(`   P50  : ${fmt(pct(allPerPass,50))} ms`);
+  log(`   P75  : ${fmt(pct(allPerPass,75))} ms`);
+  log(`   P95  : ${fmt(pct(allPerPass,95))} ms  ← target KPI`, 'ok');
+  log(`   P99  : ${fmt(pct(allPerPass,99))} ms`);
+  log(`   Min  : ${fmt(Math.min(...allPerPass))} ms`);
+  log(`   Max  : ${fmt(Math.max(...allPerPass))} ms`);
+  log('');
+  log('── Full 30-candidate rerank latency ──');
+  log(`   P50  : ${fmt(pct(allTotal,50))} ms`);
+  log(`   P95  : ${fmt(pct(allTotal,95))} ms  ← end-user visible`, 'ok');
+  log(`   Min  : ${fmt(Math.min(...allTotal))} ms`);
+  log(`   Max  : ${fmt(Math.max(...allTotal))} ms`);
+  log('');
+  log('── Memory ──');
+  if (mem0 && mem1) {
+    const delta = (parseFloat(mem1)-parseFloat(mem0)).toFixed(1);
+    log(`   Heap before 1st run : ${mem0} MB`);
+    log(`   Heap after  5th run : ${mem1} MB`);
+    log(`   Inference delta     : ${delta >= 0 ? '+' : ''}${delta} MB`);
+  } else {
+    log('   performance.memory not available (non-Chrome or cross-origin)', 'warn');
+    log('   → Use DevTools Memory tab for accurate heap profiling', 'warn');
+  }
+  log('');
+  log('── Session Init ──');
+  log(`   Model buffer size : ${(modelBuffer.length/1048576).toFixed(1)} MB`);
+  log(`   Session init time : ${fmt(sessionInitMs)} ms (one-time, cached thereafter)`);
+  log('');
+  log('── Environment ──');
+  log(`   Threads           : ${Math.min(navigator.hardwareConcurrency||4, 4)}`);
+  log(`   HW concurrency    : ${navigator.hardwareConcurrency || 'unknown'}`);
+  log(`   SIMD support      : ${typeof WebAssembly !== 'undefined' ? 'likely (modern browser)' : 'N/A'}`);
+  log(`   MAX_LENGTH        : ${MAX_LENGTH} tokens`);
+  log('═══════════════════════════════', 'ok');
+
+  document.getElementById('startBtn').disabled = false;
+};
+</script>
+</body>
+</html>
