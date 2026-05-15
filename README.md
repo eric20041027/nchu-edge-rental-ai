@@ -162,15 +162,15 @@ $$\mathcal{L}_{\text{teacher}} = \mathcal{L}_{\text{CE}} + 1.5\,\mathcal{L}_{\te
 
 $$\mathcal{L}_{\text{student}} = (1-\alpha)\underbrace{\left(\mathcal{L}_{\text{CE}} + 1.5\,\mathcal{L}_{\text{RankNet}} + \mathcal{L}_{\text{ListNet}}\right)}_{\mathcal{L}_{\text{task}}} + \alpha\,T^2\,D_{\mathrm{KL}} + \alpha_{\text{rdrop}}\,\mathcal{L}_{\text{R-Drop}}$$
 
-$\mathcal{L}_{\text{CE}}$：label smoothing $\varepsilon=0.05$；$\alpha_{\text{rdrop}}=0.05$
+$\mathcal{L}_{\text{CE}}$: label smoothing $\varepsilon=0.05$, $\alpha_{\text{rdrop}}=0.05$
 
 ### RankNet 排序損失
 
 $$\mathcal{L}_{\text{RankNet}} = \frac{1}{|\mathcal{P}|}\sum_{(i,j)\in\mathcal{P}} \log\left(1 + e^{-(s_i - s_j)}\right), \quad s_k = \frac{z_k^{(1)}}{T_{\text{task}}}$$
 
-其中 $\mathcal{P} = \{(i,j) \mid r_i > r_j\}$、$T_{\text{task}} = 2.0$
+其中 $\mathcal{P} = \{(i,j) \mid r_i > r_j\}$, $T_{\text{task}} = 2.0$
 
-**為何需要 $T_{\text{task}}$**：若 $s_i - s_j \approx 6.0$，則 $e^{-6} \approx 0.0025$，梯度趨近於零（梯度消失）；$T_{\text{task}}=2.0$ 將差值縮至 3.0，使 $e^{-3} \approx 0.050$，維持有效梯度。
+**為何需要 $T_{\text{task}}$**：若 $s_i - s_j \approx 6.0$, 則 $e^{-6} \approx 0.0025$ (梯度消失). $T_{\text{task}}=2.0$ 縮至差值 3.0, $e^{-3} \approx 0.050$, 維持有效梯度。
 
 ### ListNet 列表損失
 
@@ -222,8 +222,8 @@ $$P_i = \text{softmax}\left(\frac{s}{T_{\text{task}}}\right)_i \quad \text{(pred
 $$D_{\mathrm{KL}}(P \| Q) = \sum_i P_i \log \frac{P_i}{Q_i}$$
 
 - 非對稱：$D_{\mathrm{KL}}(P\|Q) \neq D_{\mathrm{KL}}(Q\|P)$
-- 當 $P = Q$ 時等於 0；$P$ 與 $Q$ 差異越大，值越大
-- 在蒸餾中：令 $P = \sigma(z_t / T)$ 為 teacher 軟化分佈，$Q = \sigma(z_s / T)$ 為 student 軟化分佈，最小化 KL 即讓 student 逼近 teacher 的機率形狀
+- 當 $P = Q$ 時等於 0，兩分佈差異越大則值越大
+- 在蒸餾中：令 $P = \sigma(z_t / T)$ 為 teacher 軟化分佈, $Q = \sigma(z_s / T)$ 為 student 軟化分佈，最小化 KL 即讓 student 逼近 teacher 的機率形狀
 
 ---
 
@@ -240,7 +240,7 @@ $$\sigma_T(z_i) = \frac{e^{z_i / T}}{\sum_j e^{z_j / T}}$$
 | $T=1.0$（原始）| $[-3.2,\ +3.2]$ | $[0.002,\ 0.998]$ | 近似 one-hot，邊界資訊幾乎消失 |
 | $T=4.0$（蒸餾）| $[-0.8,\ +0.8]$ | $[0.31,\ 0.69]$ | 類別間距可傳遞 |
 
-**$T^2$ 梯度補償**：溫度縮放會使梯度幅度縮小為原來的 $1/T^2$，乘回 $T^2$ 確保蒸餾 loss 與 task loss 在相同數量級，不需要額外調整 learning rate。
+**$T^2$ 梯度補償**：溫度縮放會使梯度幅度縮小為原來的 $1/T^2$, 乘回 $T^2$ 確保蒸餾 loss 與 task loss 在相同數量級，不需要額外調整 learning rate。
 
 ---
 
@@ -266,7 +266,7 @@ $$\alpha(t) = 0.12 + 0.26 \cdot \frac{1 + \cos\left(\dfrac{\pi t}{10}\right)}{2}
 
 ### RankNet（配對排序損失）
 
-**原理**：由 Burges et al.（2005, Microsoft Research）提出。從訓練集中萃取所有「i 應排在 j 前面」的配對 $(i, j)$，對每個配對最小化 sigmoid 交叉熵，要求分數差 $s_i - s_j > 0$。
+**原理**：由 Burges et al.（2005, Microsoft Research）提出。從訓練集中萃取所有「i 應排在 j 前面」的配對 $(i, j)$, 對每個配對最小化 sigmoid 交叉熵，要求分數差 $s_i - s_j > 0$。
 
 $$\mathcal{L}_{\text{RankNet}} = \frac{1}{|\mathcal{P}|}\sum_{(i,j)\in\mathcal{P}} \log\left(1 + e^{-(s_i - s_j)}\right), \quad \mathcal{P} = \{(i,j) \mid r_i > r_j\}$$
 
@@ -276,7 +276,7 @@ $$\mathcal{L}_{\text{RankNet}} = \frac{1}{|\mathcal{P}|}\sum_{(i,j)\in\mathcal{P
 
 $$s_k = \frac{z_k^{(1)}}{T_{\text{task}}}$$
 
-若模型已收斂、$s_i - s_j \approx 6.0$，則 $\nabla \mathcal{L} \propto e^{-6} \approx 0.0025$（梯度幾乎消失）；$T_{\text{task}}=2.0$ 將差值縮至 3.0，$\nabla \mathcal{L} \propto e^{-3} \approx 0.050$，維持有效學習。
+若模型已收斂, $s_i - s_j \approx 6.0$, 梯度 $\nabla \mathcal{L} \propto e^{-6} \approx 0.0025$ (幾乎消失). $T_{\text{task}}=2.0$ 縮至差值 3.0, 梯度 $\nabla \mathcal{L} \propto e^{-3} \approx 0.050$, 維持有效學習。
 
 ---
 
@@ -298,7 +298,7 @@ $$P_i = \text{softmax}\left(\frac{s}{T_{\text{task}}}\right)_i \quad \text{(pred
 
 $$\mathcal{L}_{\text{R-Drop}} = \frac{1}{2}\left[D_{\mathrm{KL}}(P_1 \| P_2) + D_{\mathrm{KL}}(P_2 \| P_1)\right]$$
 
-其中 $P_1 = \sigma(z^{(1)})$、$P_2 = \sigma(z^{(2)})$ 為同一輸入兩次 Dropout 前向的輸出機率。
+其中 $P_1 = \sigma(z^{(1)})$, $P_2 = \sigma(z^{(2)})$ 為同一輸入兩次 Dropout 前向的輸出機率。
 
 **效果**：減少預測方差，文獻報告在分類/NLU 任務上典型增益 +1–3% F1，且幾乎不增加推論成本（推論時不做第二次 forward）。本專案設定 $\alpha_{\text{rdrop}} = 0.05$（保守值，避免與 FGM 的對抗梯度衝突）。
 
@@ -320,11 +320,11 @@ $$\text{adversarial backward: } \mathcal{L}(\theta,\ \text{emb} + \delta)$$
 
 ### Label Smoothing（標籤平滑）
 
-**原理**：訓練時不使用 one-hot 標籤 $y \in \{0, 1\}$，而是以 $\varepsilon$ 的比例混入均勻分佈：
+**原理**：訓練時不使用 one-hot 標籤 $y \in \{0, 1\}$, 而是以 $\varepsilon$ 的比例混入均勻分佈：
 
 $$y_{\text{smooth}} = (1 - \varepsilon)\,y + \frac{\varepsilon}{K}$$
 
-其中 $K=2$（二元分類），$\varepsilon=0.05$。即正樣本標籤從 1.0 → 0.975，負樣本從 0.0 → 0.025。
+其中 $K=2$ (二元分類), $\varepsilon=0.05$。即正樣本標籤從 1.0 → 0.975，負樣本從 0.0 → 0.025。
 
 **效果**：防止模型對訓練資料的標籤過度自信（logits 趨向 $\pm\infty$），改善信心校準（calibration），讓模型輸出的機率分數更能反映真實相關性，而非只追求分類邊界的最大化。對知識蒸餾尤為重要：teacher 的 soft label 如果本身校準不佳，傳遞給 student 的資訊也會有偏。
 
