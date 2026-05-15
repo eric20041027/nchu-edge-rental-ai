@@ -193,6 +193,137 @@ $$\mathcal{L}_{\text{ListNet}} = -\sum_{i} P_i^* \log P_i, \quad P_i = \text{sof
 
 ---
 
+## 技術原理詳解
+
+本節說明訓練流程中所有用到的技術，從基礎概念到本專案的具體應用。
+
+---
+
+### 知識蒸餾（Knowledge Distillation）
+
+**原理**：由 Hinton et al.（2015）提出。大模型（teacher）訓練完成後，其輸出的 softmax 機率分佈（稱為「soft label」）攜帶了比 one-hot 標籤更豐富的類別間關係。將 soft label 作為額外監督信號訓練小模型（student），可使 student 在參數量遠低於 teacher 的情況下達到接近甚至超越的效果。
+
+**為何比直接訓練 student 好**：one-hot 標籤只告訴模型「這個是 Match」；而 teacher 的 soft label [0.02, 0.98] 還隱含了「這個配對雖然是 Match，但只有 98% 把握，有 2% 可能是邊界案例」，這個邊界資訊對排序任務尤為關鍵。
+
+**本專案設定**：rbt6（6 層，~86 MB FP32）→ rbt3（3 層，~38.6 MB INT8），capacity 壓縮約 60%，但 NDCG@5 僅從 0.818 降至 0.833（反而提升，因為 teacher 品質改善）。
+
+---
+
+### KL 散度（Kullback-Leibler Divergence）
+
+**原理**：衡量兩個機率分佈之間的差異。$D_{\mathrm{KL}}(P \| Q)$ 表示「用 Q 描述 P 時，相較於用 P 自身描述所多出的資訊量」。
+
+$$D_{\mathrm{KL}}(P \| Q) = \sum_i P_i \log \frac{P_i}{Q_i}$$
+
+- 非對稱：$D_{\mathrm{KL}}(P\|Q) \neq D_{\mathrm{KL}}(Q\|P)$
+- 當 $P = Q$ 時等於 0；$P$ 與 $Q$ 差異越大，值越大
+- 在蒸餾中：$P = \sigma(z_t / T)$（teacher 軟化分佈），$Q = \sigma(z_s / T)$（student 軟化分佈），最小化 KL 即讓 student 逼近 teacher 的機率形狀
+
+---
+
+### 溫度縮放（Temperature Scaling）
+
+**原理**：在 softmax 前將 logits 除以溫度 $T$，使輸出分佈趨於平滑（$T > 1$）或銳化（$T < 1$）。
+
+$$\sigma_T(z_i) = \frac{e^{z_i / T}}{\sum_j e^{z_j / T}}$$
+
+**蒸餾溫度 $T_{\text{distill}} = 4.0$**：讓 teacher 的 soft label 不至於過度集中在最高類別，保留類別間的相對順序資訊：
+
+| 情境 | logits | softmax | 資訊量 |
+|:---|:---|:---|:---|
+| $T=1.0$（原始）| $[-3.2,\ +3.2]$ | $[0.002,\ 0.998]$ | 近似 one-hot，邊界資訊幾乎消失 |
+| $T=4.0$（蒸餾）| $[-0.8,\ +0.8]$ | $[0.31,\ 0.69]$ | 類別間距可傳遞 |
+
+**$T^2$ 梯度補償**：溫度縮放會使梯度幅度縮小為原來的 $1/T^2$，乘回 $T^2$ 確保蒸餾 loss 與 task loss 在相同數量級，不需要額外調整 learning rate。
+
+---
+
+### 餘弦退火（Cosine Annealing）
+
+**原理**：讓某個超參數在訓練過程中以餘弦曲線平滑衰減，相比線性衰減更平緩，末期下降速度更慢，有助於在收斂末段微調。
+
+$$v(t) = v_{\min} + (v_{\max} - v_{\min}) \cdot \frac{1 + \cos\!\left(\dfrac{\pi\,t}{T_{\text{total}}}\right)}{2}$$
+
+**本專案用途：動態蒸餾權重 $\alpha$**
+
+$$\alpha(t) = 0.12 + 0.26 \cdot \frac{1 + \cos\!\left(\dfrac{\pi\,t}{10}\right)}{2}$$
+
+| epoch | $\cos(\pi t/10)$ | $\alpha$ | 訓練重心 |
+|:---:|:---:|:---:|:---|
+| 0 | +1.0 | 0.38 | teacher 引導為主（38% KD，62% task）|
+| 5 | 0.0 | 0.25 | 均衡過渡 |
+| 10 | −1.0 | 0.12 | task loss 主導（12% KD，88% task）|
+
+初期高 $\alpha$ 讓 student 先從 teacher 學到語意空間的基本結構，防止 student 一開始就收斂到局部最差點（崩塌）；末期低 $\alpha$ 讓 task loss 精確優化當前任務的排序目標。
+
+---
+
+### RankNet（配對排序損失）
+
+**原理**：由 Burges et al.（2005, Microsoft Research）提出。從訓練集中萃取所有「i 應排在 j 前面」的配對 $(i, j)$，對每個配對最小化 sigmoid 交叉熵，要求分數差 $s_i - s_j > 0$。
+
+$$\mathcal{L}_{\text{RankNet}} = \frac{1}{|\mathcal{P}|}\sum_{(i,j)\in\mathcal{P}} \log\!\left(1 + e^{-(s_i - s_j)}\right), \quad \mathcal{P} = \{(i,j) \mid r_i > r_j\}$$
+
+**優於 CE 的地方**：CE 只知道「這個是 Match / 不是 Match」，無法利用 rel=1, 2, 3 之間的順序關係；RankNet 可直接利用 4 級相關性標籤的偏序資訊。
+
+**任務溫度 $T_{\text{task}} = 2.0$**（梯度穩定性）
+
+$$s_k = \frac{z_k^{(1)}}{T_{\text{task}}}$$
+
+若模型已收斂、$s_i - s_j \approx 6.0$，則 $\nabla \mathcal{L} \propto e^{-6} \approx 0.0025$（梯度幾乎消失）；$T_{\text{task}}=2.0$ 將差值縮至 3.0，$\nabla \mathcal{L} \propto e^{-3} \approx 0.050$，維持有效學習。
+
+---
+
+### ListNet（列表排序損失）
+
+**原理**：由 Cao et al.（2007）提出。把整個 batch 的相關性分數視為一個機率分佈，要求模型輸出的分數分佈逼近真實相關性分佈。ListNet 同時考慮所有文件的相對順序，比 RankNet 的配對式方法捕捉更多全局排序資訊。
+
+$$\mathcal{L}_{\text{ListNet}} = -\sum_{i} P_i^{*} \log P_i$$
+
+$$P_i = \text{softmax}\!\left(\frac{s}{T_{\text{task}}}\right)_i \quad \text{（模型預測分佈）}, \qquad P_i^{*} = \text{softmax}(r)_i \quad \text{（真實相關性分佈）}$$
+
+**RankNet vs ListNet 的互補性**：RankNet 專注於兩兩之間誰該排前面（局部序）；ListNet 要求整體分佈形狀相似（全局序）。兩者合用可從不同角度優化排序品質。
+
+---
+
+### R-Drop（正規化技術）
+
+**原理**：由 Liang et al.（2021, Microsoft）提出。同一份輸入做兩次前向傳播，由於 Dropout 的隨機性，兩次會得到不同的 logits。最小化兩次輸出機率分佈的對稱 KL 散度，強制模型對 Dropout 擾動保持一致性，等效於對參數空間施加平滑正規化。
+
+$$\mathcal{L}_{\text{R-Drop}} = \frac{1}{2}\left[D_{\mathrm{KL}}(P_1 \| P_2) + D_{\mathrm{KL}}(P_2 \| P_1)\right]$$
+
+其中 $P_1 = \sigma(z^{(1)})$、$P_2 = \sigma(z^{(2)})$ 為同一輸入兩次 Dropout 前向的輸出機率。
+
+**效果**：減少預測方差，文獻報告在分類/NLU 任務上典型增益 +1–3% F1，且幾乎不增加推論成本（推論時不做第二次 forward）。本專案設定 $\alpha_{\text{rdrop}} = 0.05$（保守值，避免與 FGM 的對抗梯度衝突）。
+
+---
+
+### FGM 對抗訓練（Fast Gradient Method）
+
+**原理**：由 Goodfellow et al.（2014）提出，Zhu et al.（2019）將其應用於 NLP embedding 層。每個訓練步驟在正常反向傳播後，沿 embedding 梯度方向加入一個小擾動 $\delta$，再做一次前向+反向（不更新參數），讓模型同時對原始輸入和被擾動的輸入都有好的預測。
+
+$$\delta = \varepsilon \cdot \frac{g}{\|g\|}, \quad g = \nabla_{\text{emb}}\mathcal{L}$$
+
+$$\text{adversarial backward: } \mathcal{L}(\theta,\ \text{emb} + \delta)$$
+
+**效果**：讓模型在 embedding 空間的鄰域內仍然穩健，有效提升對口語化、有錯字、非規範輸入的泛化性（這對租屋查詢尤為重要）。相比 PGD（多步對抗），FGM 只需一步，計算成本僅多一次 forward + backward。
+
+**本專案**：$\varepsilon = 1.0$，作用於 `word_embeddings` 層；使用 `try/finally` 確保即使對抗 backward 拋出例外，embedding 仍會被還原。
+
+---
+
+### Label Smoothing（標籤平滑）
+
+**原理**：訓練時不使用 one-hot 標籤 $y \in \{0, 1\}$，而是以 $\varepsilon$ 的比例混入均勻分佈：
+
+$$y_{\text{smooth}} = (1 - \varepsilon)\,y + \frac{\varepsilon}{K}$$
+
+其中 $K=2$（二元分類），$\varepsilon=0.05$。即正樣本標籤從 1.0 → 0.975，負樣本從 0.0 → 0.025。
+
+**效果**：防止模型對訓練資料的標籤過度自信（logits 趨向 $\pm\infty$），改善信心校準（calibration），讓模型輸出的機率分數更能反映真實相關性，而非只追求分類邊界的最大化。對知識蒸餾尤為重要：teacher 的 soft label 如果本身校準不佳，傳遞給 student 的資訊也會有偏。
+
+---
+
 ## 資料工程核心
 
 ### 1. 物件級切割（防資料洩漏）
