@@ -190,18 +190,6 @@ async function fetchRecommendations(inputText) {
     await new Promise(resolve => setTimeout(resolve, 100));
 
     try {
-        // No more hard-coded whitelist guard. Let the AI decide based on results.
-        const isRelevant = true; // Always proceed to scoring stage
-
-        if (!isRelevant && inputText.length > 1) {
-            recommendationList.innerHTML = `<div style="text-align: center; color: #ff6b6b; padding: 2rem;">
-                <i class="fa-solid fa-circle-question" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
-                偵測到不相干的文字，請重新輸入更具體的租屋需求。<br>
-                <small style="color: #aaa;">例如：「預算 6000 南區 套房」</small>
-            </div>`;
-            return;
-        }
-
         // Progressive rendering: show rule-based results immediately, then AI re-ranks
         let partialShown = false;
         const data = await recommend(inputText, 20, (partialResults) => {
@@ -489,8 +477,7 @@ function saveFeedback(query, propertyId, vote) {
 
 // Event delegation — one listener on the list container handles all cards
 document.addEventListener('DOMContentLoaded', () => {
-    const list = document.getElementById('recommendation-list') ||
-                 document.querySelector('.recommendation-list');
+    const list = document.getElementById('recommendationList');
     if (!list) return;
 
     list.addEventListener('click', e => {
@@ -500,8 +487,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const bar    = btn.closest('.feedback-bar');
         const propId = btn.dataset.id;
         const vote   = parseInt(btn.dataset.v, 10);
-        const query  = document.getElementById('query-input')?.value ||
-                       document.getElementById('searchInput')?.value || '';
+        const query  = document.getElementById('userRequirement')?.value || '';
 
         // Persist
         saveFeedback(query, propId, vote);
