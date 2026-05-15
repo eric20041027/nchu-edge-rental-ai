@@ -2,6 +2,68 @@
 
 ---
 
+## [2026.05.15] - 程式碼品質全面審查、文件重構與 README LaTeX 修復
+
+### README.md 重構
+
+- **整體資訊排序優化**：系統亮點 → 效能指標 → 架構圖 → 知識蒸餾 → 訓練策略 → 資料工程，細節內容後置
+- **Phase 1 / Phase 2 說明強化**：補充閾值意義說明表（0.5 / 0.7 / 0.9 適用場景），Phase 2 聚焦 Graded NDCG@5 單一指標
+- **Part C 公式修正**：`score_ratio` 改以 LaTeX 明確定義 $R = \text{已滿足維度數} / \text{已指定維度數}$
+- **蒸餾參數全部公式化**：T=4.0、α 餘弦退火範圍、T²補償全以 LaTeX 表達
+- **新增「技術原理詳解」章節**：涵蓋知識蒸餾、KL 散度、溫度縮放、餘弦退火、RankNet、ListNet、R-Drop、FGM、Label Smoothing 共 9 項技術的原理與本專案具體設定
+- **新增 rel=-1 說明**：多級相關性標記章節補充 sentinel 值 -1 的定義、採樣方式與訓練用途
+
+### GitHub LaTeX 渲染修復（多輪）
+
+確認並修復以下失敗模式：
+- `$A$、$B$`、`$A$；$B$` — 中文全形標點直接夾在兩個 `$` 間
+- `。$A$`、`：$A$`、`（$A$` — 中文標點直接在開頭 `$` 前
+- 段落第一個字元為 `$` — parser 無法穩定識別行首 inline math
+
+共修復 15+ 處，解法：全形標點換 ASCII 等效、重構句子順序、高風險行改 `$$...$$` display math。
+
+### 程式碼重構（Fix_Plan.md 13 項）
+
+**`pipeline/model_training/training_utils.py`（新增）**
+- 從兩個訓練腳本中抽出共用元件：`FGM`、`compute_metrics`、`CleanLogCallback`、`CustomEarlyStoppingCallback`，消除重複定義
+
+**`train_and_export_onnx.py` / `train_teacher.py`**
+- 版本字串修正：v2.5 → v2.9
+- `inputs.pop("sample_weight")` → `inputs.get()`，修正 FGM 對抗前向缺少樣本權重的訓練不一致問題
+- `_teacher_logits` 移除多餘的 `labels` 傳入
+- FGM `attack`/`restore` 包裹 `try/finally`，確保 embedding 異常時仍能還原
+- `torch.log(1 + torch.exp(...))` → `F.softplus(...)`，數值更穩定
+- 移除 `from_pretrained` 前多餘的 `model.config.attn_implementation = "eager"`
+- 從 `training_utils` 統一匯入，移除腳本內重複的類別與函式定義
+
+**`pipeline/model_training/evaluate_model.py`**
+- 合併兩個重複的 ranking loop，消除 2× 評估開銷
+- 移除重複的 `sys.path.append`
+- 移除空殼 `for i, query in enumerate(eval_queries): pass`
+
+**`frontend/js/app.js`**
+- Feedback 選擇器：`'recommendation-list'` → `'recommendationList'`（修正反饋完全失效的 Bug）
+- 查詢來源：統一改為 `'userRequirement'`
+- 移除永遠不會執行的 `const isRelevant = true` dead code
+
+**`frontend/js/inference.js`**
+- `prop.electricity_billing.match(...)` → 加 null 保護防止 TypeError
+- 修正 `wantsUtilityBilling` if/else 大括號結構錯誤
+- `expandQueryIntent` 對應表同步至 `inference-worker.js`
+
+**`frontend/js/inference-worker.js`**
+- 移除重複的 `"潔癖"` key
+- `"首選"` → `"首租"`（語意錯誤）
+- `"怕吵"` 展開：`"寧靜"` → `"靜巷"`，新增 `"安靜"`、`"自炊"` 擴充鍵
+
+**`pipeline/data_prep/generator.py`**
+- `_compute_relevance_score` 改為 DeprecationWarning 並委派至 `generate_dataset.compute_relevance_score`，防止標記品質靜默回退
+
+**`pipeline/data_prep/labeler.py`**
+- 警告訊息改為 `"GOOGLE_API_KEY not set. Silver labeling (Gemini) disabled."`，明確指出缺少的 key 名稱
+
+---
+
 ## [2026.05.15 v2.9] - Student 負樣本採樣修復，NDCG@5 突破歷史新高 0.833
 
 ### 核心發現
