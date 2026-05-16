@@ -132,9 +132,9 @@ graph TD
 
 階段二：train_and_export_onnx.py  — rbt3 student
   資料  : 同一份訓練資料 + 凍結的 rbt6 teacher
-  損失  : (1-α)·L_task + α·T²·KL + R-Drop + FGM
+  損失  : (1-α)·L_task + α·T²·KL + FGM  ← v3.0: R-Drop 已移除（消融研究）
   存檔  : metric_for_best_model = "f1"
-  結果  : F1=0.855，NDCG@5=0.833
+  結果  : v2.9 F1=0.855，NDCG@5=0.833 → v3.0 預期 NDCG@5 ≈ 0.879
   導出  : FP32 → INT8（38.6 MB）→ 同步至 frontend/
 ```
 
@@ -144,7 +144,7 @@ $$P_s = \sigma(z_s / T), \quad P_t = \sigma(z_t / T)$$
 
 完整損失為：
 
-$$\mathcal{L} = (1-\alpha)\,\mathcal{L}_{\text{task}} + \alpha \cdot T^2 \cdot D_{\mathrm{KL}}(P_s \| P_t) + \alpha_{\text{rdrop}}\,\mathcal{L}_{\text{R-Drop}}$$
+$$\mathcal{L} = (1-\alpha)\,\mathcal{L}_{\text{task}} + \alpha \cdot T^2 \cdot D_{\mathrm{KL}}(P_s \| P_t)$$
 
 - $z_s$: student logits, $z_t$: teacher logits（凍結，純推論）
 - $T = 4.0$：蒸餾溫度。原始 logits 差值 ≈ 6.4 → softmax ≈ [0.002, 0.998]（資訊量趨零）；縮放後差值 ≈ 1.6 → softmax ≈ [0.17, 0.83]（類別間序資訊可傳遞）
@@ -171,11 +171,13 @@ $$\alpha_{\min} = 0.12, \quad \alpha_{\max} = 0.38, \quad T_{\text{epoch}} = 10$
 
 $$\mathcal{L}_{\text{teacher}} = \mathcal{L}_{\text{CE}} + 1.5\,\mathcal{L}_{\text{RankNet}} + \mathcal{L}_{\text{ListNet}} + \alpha_{\text{rdrop}}\,\mathcal{L}_{\text{R-Drop}}$$
 
-**Student（train_and_export_onnx.py）**
+**Student（train_and_export_onnx.py，v3.0）**
 
-$$\mathcal{L}_{\text{student}} = (1-\alpha)\underbrace{\left(\mathcal{L}_{\text{CE}} + 1.5\,\mathcal{L}_{\text{RankNet}} + \mathcal{L}_{\text{ListNet}}\right)}_{\mathcal{L}_{\text{task}}} + \alpha\,T^2\,D_{\mathrm{KL}} + \alpha_{\text{rdrop}}\,\mathcal{L}_{\text{R-Drop}}$$
+$$\mathcal{L}_{\text{student}} = (1-\alpha)\underbrace{\left(\mathcal{L}_{\text{CE}} + 1.5\,\mathcal{L}_{\text{RankNet}} + \mathcal{L}_{\text{ListNet}}\right)}_{\mathcal{L}_{\text{task}}} + \alpha\,T^2\,D_{\mathrm{KL}}$$
 
-$$\mathcal{L}_{\text{CE}}:\text{ label smoothing},\quad \varepsilon=0.05,\quad \alpha_{\text{rdrop}}=0.05$$
+$$\mathcal{L}_{\text{CE}}:\text{ label smoothing},\quad \varepsilon=0.05$$
+
+> v3.0 起移除 R-Drop（$\alpha_{\text{rdrop}}$ 設為 0）。消融實驗（C3\_no\_RDrop）顯示移除後 NDCG@5 提升 +0.0068，詳見消融實驗章節。
 
 ### RankNet 排序損失
 
@@ -196,7 +198,7 @@ $$P_i = \text{softmax}\left(\frac{s}{T_{\text{task}}}\right)_i \quad \text{(pred
 | 技術 | 說明 |
 |:---|:---|
 | **FGM 對抗訓練** | embedding 注入梯度方向擾動，提升口語輸入泛化性 |
-| **R-Drop（$\alpha=0.05$）** | 雙前向強制 Dropout 一致性，減少預測方差 |
+| ~~R-Drop~~ | v3.0 已移除；消融顯示 NDCG@5 +0.0068（C3\_no\_RDrop 為所有 run 最高分）|
 | **metric = "loss"（teacher）** | 多任務損失在 F1 收斂後仍持續下降，loss metric 捕捉更好的排序校準點 |
 | **隨機負樣本採樣** | `random.sample(neg_all, n)` 自然混合 ~69% rel=0（硬衝突）+ ~31% rel=-1（輕度不符），維持軟邊界學習信號 |
 | **物件級切割** | Train/Dev/Test 按房源分割，測試集房源訓練期間完全未見 |
@@ -307,13 +309,17 @@ $$P_i = \text{softmax}\left(\frac{s}{T_{\text{task}}}\right)_i \quad \text{(pred
 
 ### R-Drop（正規化技術）
 
+> **v3.0 student 已移除 R-Drop。** 以下保留技術說明，供理解 v2.9 及 teacher 訓練使用。
+
 **原理**：由 Liang et al.（2021, Microsoft）提出。同一份輸入做兩次前向傳播，由於 Dropout 的隨機性，兩次會得到不同的 logits。最小化兩次輸出機率分佈的對稱 KL 散度，強制模型對 Dropout 擾動保持一致性，等效於對參數空間施加平滑正規化。
 
 $$\mathcal{L}_{\text{R-Drop}} = \frac{1}{2}\left[D_{\mathrm{KL}}(P_1 \| P_2) + D_{\mathrm{KL}}(P_2 \| P_1)\right]$$
 
 其中 $P_1 = \sigma(z^{(1)})$, $P_2 = \sigma(z^{(2)})$ 為同一輸入兩次 Dropout 前向的輸出機率。
 
-**效果**：減少預測方差，文獻報告在分類/NLU 任務上典型增益 +1–3% F1，且幾乎不增加推論成本（推論時不做第二次 forward）。本專案設定 $\alpha_{\text{rdrop}} = 0.05$（保守值，避免與 FGM 的對抗梯度衝突）。
+**文獻效果**：在分類/NLU 任務上典型增益 +1–3% F1，且幾乎不增加推論成本（推論時不做第二次 forward）。
+
+**本專案結論**：消融實驗（C3\_no\_RDrop）顯示，移除 R-Drop 後 NDCG@5 反而提升 +0.0068（0.8787 vs 0.8719）。推測原因：R-Drop 的對稱 KL 約束與 FGM 的對抗梯度方向衝突，在中文短文本租屋配對任務上造成干擾。v3.0 student 設定 $\alpha_{\text{rdrop}} = 0$；rbt6 teacher 訓練仍保留 R-Drop。
 
 ---
 

@@ -1,32 +1,23 @@
 """
-train_and_export_onnx.py - R-Drop + FGM + KD + Multi-Task Ranking  (v2.9)
+train_and_export_onnx.py - FGM + KD + Multi-Task Ranking  (v3.0)
 
 Architecture: hfl/rbt3 (3-layer Chinese RoBERTa) ← distilled from rbt6 teacher
 
 Loss = (1-α) × [CE(label_smoothing=0.05) + RankNet(T=2.0)×1.5 + ListNet(T=2.0)]
      + α × T² × KL(student/T ‖ teacher/T)    ← Knowledge Distillation
-     + 0.05 × SymKL(pass1 ‖ pass2)            ← R-Drop regularisation
      + FGM adversarial perturbation on word embeddings
 
-Improvements over v2.4 (no-KD baseline):
-  1. KD re-enabled (DISTILL_ALPHA_MAX=0.38) — teacher is the dedicated
-     rbt6_teacher model trained by train_teacher.py and stored at a
-     SEPARATE path (saved_models/rbt6_teacher/) that student training
-     NEVER overwrites.  Root cause of v2.4 KD failure:
-       - v2.3 teacher overwritten by v2.4α (same SAVED_MODEL_DIR path)
-       - pre-trained rbt6 has random classifier head → soft label noise
-     Both fixed: teacher path is now immutable.
-  2. Dynamic KD α: cosine annealing 0.38 → 0.12 (same as v2.3 plan).
-     Conservative upper bound (0.38 vs originally-planned 0.50) accounts
-     for rbt6 being a capacity-compressed teacher vs full rbt12.
-  3. All v2.4 fixes retained: metric_for_best_model="f1", T_task=2.0,
-     label smoothing, cosine LR, stratified negatives, rebalanced weights,
-     FGM, R-Drop.
+Change from v2.9:
+  - R-Drop removed (RDROP_ALPHA 0.05 → 0.0).
+    Ablation study (C3_no_RDrop, 11 runs) showed R-Drop hurts this task:
+    NDCG@5 improved +0.0068 without it (0.8787 vs 0.8719 REF).
+    Hypothesis: symmetric KL constraint on two dropout passes conflicts with
+    FGM adversarial gradients on Chinese short-text pairs.
 
-Design decisions (Focal Loss still disabled):
-  - Focal Loss (γ=2.0) remains disabled (γ=0.0): v2.4α experiment showed
-    Precision −10%, NDCG −0.044.  Chinese rental task has diverse positives
-    — no systematic "easy positive" class that Focal Loss is designed for.
+Design decisions unchanged from v2.9:
+  - KD cosine annealing 0.38→0.12, T=4.0 (rbt6 teacher)
+  - FGM confirmed beneficial (C2_no_FGM ablation: −0.0004 vs REF)
+  - Focal Loss still disabled (γ=0.0): v2.4α showed Precision −10%, NDCG −0.044
 """
 import sys
 import math
@@ -86,8 +77,7 @@ DISTILL_TEMPERATURE = 4.0
 DISTILL_ALPHA_MAX   = 0.38   # ← KD re-enabled: rbt6_teacher provides good
 DISTILL_ALPHA_MIN   = 0.12   #   soft labels; cosine anneal 0.38→0.12
 
-RDROP_ALPHA  = 0.05   # R-Drop symmetric KL weight — conservative to
-                      # avoid conflicting with FGM adversarial gradients
+RDROP_ALPHA  = 0.0    # Disabled in v3.0: ablation (C3_no_RDrop) showed +0.0068 NDCG@5
 FOCAL_GAMMA  = 0.0    # ← Disabled. Focal Loss hurt v2.4 (precision -10%).
                       # CE handles this task fine; kept as 0 (no-op).
 LABEL_SMOOTHING = 0.05   # Mild label smoothing for CE calibration
@@ -616,9 +606,9 @@ def export_to_onnx(model: PreTrainedModel, tokenizer: PreTrainedTokenizer):
 def main():
     kd_status = "disabled" if DISTILL_ALPHA_MAX == 0.0 else f"{DISTILL_ALPHA_MAX}→{DISTILL_ALPHA_MIN} (cosine)"
     print("=" * 60)
-    print(f"  v2.9: CE + RankNet + ListNet + KD + R-Drop + FGM")
+    print(f"  v3.0: CE + RankNet + ListNet + KD + FGM  (R-Drop removed per ablation)")
     print(f"  KD α: {kd_status},  T={DISTILL_TEMPERATURE}")
-    print(f"  R-Drop α={RDROP_ALPHA},  Focal γ={FOCAL_GAMMA}")
+    print(f"  R-Drop α={RDROP_ALPHA} (disabled),  Focal γ={FOCAL_GAMMA}")
     print(f"  Teacher: {TEACHER_MODEL_PATH}")
     print("=" * 60)
 
