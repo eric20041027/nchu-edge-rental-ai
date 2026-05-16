@@ -117,25 +117,25 @@ graph TD
 
 ## 知識蒸餾架構（Knowledge Distillation）
 
-本專案以餘弦退火動態蒸餾（α: 0.38→0.12，T=4.0）將 rbt6 的排序知識壓縮至 rbt3（38.6 MB）；v3.0 依消融實驗移除 R-Drop，保留 CE + RankNet + ListNet + KD + FGM 組合。詳細的 KL 散度公式、溫度縮放原理與蒸餾架構設計，請參考 📐 [模型架構與蒸餾設計](docs/MODEL_ARCHITECTURE.md)。
+本專案以餘弦退火動態蒸餾（α: 0.38→0.12，T=4.0）將 rbt6 的排序知識壓縮至 rbt3（38.6 MB）；v3.0 依消融實驗移除 R-Drop，保留 CE + RankNet + ListNet + KD + FGM 組合。詳細的 KL 散度公式、溫度縮放原理與蒸餾架構設計，請參考 [模型架構與蒸餾設計](docs/MODEL_ARCHITECTURE.md)。
 
 ---
 
 ## 訓練策略
 
-Student 損失函數結合 CE（label smoothing ε=0.05）+ RankNet×1.5 + ListNet + KD；FGM 對抗訓練（ε=1.0）強化口語輸入魯棒性，v3.0 移除 R-Drop（消融 +0.0068）。詳細的損失函數公式、超參數表與負樣本採樣策略，請參考 🏋️ [訓練策略與損失函數](docs/TRAINING_STRATEGY.md)。
+Student 損失函數結合 CE（label smoothing ε=0.05）+ RankNet×1.5 + ListNet + KD；FGM 對抗訓練（ε=1.0）強化口語輸入魯棒性，v3.0 移除 R-Drop（消融 +0.0068）。詳細的損失函數公式、超參數表與負樣本採樣策略，請參考 [訓練策略與損失函數](docs/TRAINING_STRATEGY.md)。
 
 ---
 
 ## 資料工程核心
 
-訓練資料採物件級切割（防洩漏），4 級相關性標記（0–3）結合 9 個評分維度；查詢多樣化涵蓋 7 類策略（單特徵/生活型態/角色情境/負向需求），Jaccard hard negative 挖掘強化邊界學習。詳細的相關性評分公式、查詢生成策略與 OSRM 通勤整合，請參考 🗃️ [資料管道與標記設計](docs/DATA_PIPELINE.md)。
+訓練資料採物件級切割（防洩漏），4 級相關性標記（0–3）結合 9 個評分維度；查詢多樣化涵蓋 7 類策略（單特徵/生活型態/角色情境/負向需求），Jaccard hard negative 挖掘強化邊界學習。詳細的相關性評分公式、查詢生成策略與 OSRM 通勤整合，請參考 [資料管道與標記設計](docs/DATA_PIPELINE.md)。
 
 ---
 
 ## 前端推論效能
 
-系統採雙 Web Worker 並行推論（NER + Cross-Encoder 獨立，主線程零阻塞），搭配 Cache API + Service Worker 實現離線可用。實測於 i5-11600KF，30 候選重排 P95 延遲 **2,219 ms**，heap 穩定 56.6 MB，無記憶體洩漏。詳細的 FLOPs 分析、各裝置延遲推算與前端架構，請參考 ⚡ [邊緣推論與前端效能](docs/EDGE_INFERENCE.md)。
+系統採雙 Web Worker 並行推論（NER + Cross-Encoder 獨立，主線程零阻塞），搭配 Cache API + Service Worker 實現離線可用。實測於 i5-11600KF，30 候選重排 P95 延遲 **2,219 ms**，heap 穩定 56.6 MB，無記憶體洩漏。詳細的 FLOPs 分析、各裝置延遲推算與前端架構，請參考 [邊緣推論與前端效能](docs/EDGE_INFERENCE.md)。
 
 ---
 
@@ -156,13 +156,13 @@ python -m pipeline.model_training.train_and_export_onnx
 cd frontend && python -m http.server 8000
 ```
 
-完整目錄結構、模型版本歷程與消融實驗執行指令，請參考 🛠️ [開發者指南](docs/DEVELOPMENT.md)。
+完整目錄結構、模型版本歷程與消融實驗執行指令，請參考 [開發者指南](docs/DEVELOPMENT.md)。
 
 ---
 
 ## 消融實驗 (Ablation Study)
 
-11-run 系統性消融（Groups A/B/C/D）揭示：**移除 R-Drop 後 NDCG@5 提升 +0.0068**（C3 為所有 run 最高分），固定 KD α=0.12 優於餘弦退火（+0.0050）；Group D 噪聲測試顯示所有 checkpoint 均崩潰至 NDCG@5 ≈ 0.307（−65%），根本原因為離散詞彙分佈偏移，非連續嵌入擾動可修復。完整結果、分析與各組件貢獻，請參考 🧪 [消融實驗完整報告](docs/ABLATION_STUDY.md)。
+11-run 系統性消融（Groups A/B/C/D）揭示：**移除 R-Drop 後 NDCG@5 提升 +0.0068**（C3 為所有 run 最高分），固定 KD α=0.12 優於餘弦退火（+0.0050）；Group D 噪聲測試顯示所有 checkpoint 均崩潰至 NDCG@5 ≈ 0.307（−65%），根本原因為離散詞彙分佈偏移，非連續嵌入擾動可修復。完整結果、分析與各組件貢獻，請參考 [消融實驗完整報告](docs/ABLATION_STUDY.md)。
 
 ---
 
