@@ -1,0 +1,12 @@
+{
+  "run_id": "B2_alpha_025",
+  "group": "B",
+  "description": "Fixed alpha=0.25",
+  "enable_ranknet": true,
+  "enable_listnet": true,
+  "enable_fgm": true,
+  "rdrop_alpha": 0.05,
+  "distill_alpha_max": 0.25,
+  "distill_alpha_min": 0.25,
+  "is_reference": false
+}

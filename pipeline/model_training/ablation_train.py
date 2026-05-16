@@ -229,8 +229,16 @@ class AblationDistillTrainer(Trainer):
 
 # ── Data loading ──────────────────────────────────────────────────────────────
 
-def _load_and_balance(train_path: str, dev_path: str) -> Tuple[Dataset, Dataset]:
-    """Same negative-sampling logic as train_and_export_onnx.py v2.9."""
+def _load_and_balance(
+    train_path: str,
+    dev_path: str,
+    noise_augment: bool = False,
+) -> Tuple[Dataset, Dataset]:
+    """Same negative-sampling logic as train_and_export_onnx.py v2.9.
+
+    If noise_augment=True, an additional 25% of the balanced set is duplicated
+    with noisy queries (1-2 noise types each, seed=42) and appended before shuffle.
+    """
     with open(train_path, "r", encoding="utf-8") as f:
         train_data = json.load(f)
 
@@ -252,6 +260,26 @@ def _load_and_balance(train_path: str, dev_path: str) -> Tuple[Dataset, Dataset]
     neg_samples = random.sample(neg_all, min(target_neg, len(neg_all)))
 
     combined = pos_samples + neg_samples + hard_examples
+
+    if noise_augment:
+        from ..data_prep.noise_generator import apply_noise, ALL_NOISE_TYPES
+        rng_aug = random.Random(42)
+        n_aug = max(1, round(len(combined) * 0.25))
+        aug_sources = rng_aug.sample(combined, min(n_aug, len(combined)))
+        augmented = []
+        for sample in aug_sources:
+            n_types = rng_aug.choice([1, 2])
+            chosen  = rng_aug.sample(ALL_NOISE_TYPES, n_types)
+            noisy_q = apply_noise(sample["query"], chosen, rng_aug)
+            if noisy_q != sample["query"]:
+                aug_copy = dict(sample)
+                aug_copy["query"] = noisy_q
+                augmented.append(aug_copy)
+        combined = combined + augmented
+        print(f"  [NoisyAug] +{len(augmented)} noisy copies "
+              f"({100*len(augmented)/len(combined):.1f}% of final train set, "
+              f"total={len(combined)})")
+
     random.shuffle(combined)
     return Dataset.from_list(combined), Dataset.from_list(dev_data)
 
@@ -370,7 +398,8 @@ def run_ablation(
     print(f"  Run: {cfg.run_id} | {cfg.description}")
     print(f"  RankNet={cfg.enable_ranknet}, ListNet={cfg.enable_listnet}, "
           f"FGM={cfg.enable_fgm}, RDrop={cfg.rdrop_alpha}, "
-          f"alpha=[{cfg.distill_alpha_min},{cfg.distill_alpha_max}]")
+          f"alpha=[{cfg.distill_alpha_min},{cfg.distill_alpha_max}], "
+          f"NoisyAug={cfg.enable_noise_augment}")
     print(f"{'='*70}")
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -413,6 +442,7 @@ def run_ablation(
     train_raw, dev_raw = _load_and_balance(
         os.path.join(data_dir, "recommendation_train.json"),
         os.path.join(data_dir, "recommendation_dev.json"),
+        noise_augment=cfg.enable_noise_augment,
     )
     train_ds, eval_ds = _tokenize(train_raw, dev_raw, tokenizer)
 

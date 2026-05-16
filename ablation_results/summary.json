@@ -1,0 +1,160 @@
+{
+  "generated_at": "2026-05-16T13:55:55.008384+00:00",
+  "reference_ndcg": 0.871888,
+  "runs": [
+    {
+      "run_id": "REF_v29",
+      "group": "REF",
+      "description": "v2.9 Reference (CE+RankNet+ListNet+KD+RDrop+FGM)",
+      "ndcg_at_5": 0.871888,
+      "f1": 0.841,
+      "precision": 0.744,
+      "recall": 0.968,
+      "accuracy": 0.892,
+      "delta_ndcg": 0.0
+    },
+    {
+      "run_id": "A0_CE_only",
+      "group": "A",
+      "description": "CE only (Baseline)",
+      "ndcg_at_5": 0.871916,
+      "f1": 0.839,
+      "precision": 0.736,
+      "recall": 0.974,
+      "accuracy": 0.89,
+      "delta_ndcg": 2.8e-05
+    },
+    {
+      "run_id": "A1_CE_RankNet",
+      "group": "A",
+      "description": "CE + RankNet",
+      "ndcg_at_5": 0.874916,
+      "f1": 0.838,
+      "precision": 0.737,
+      "recall": 0.973,
+      "accuracy": 0.89,
+      "delta_ndcg": 0.003028
+    },
+    {
+      "run_id": "A2_CE_ListNet",
+      "group": "A",
+      "description": "CE + ListNet",
+      "ndcg_at_5": 0.873901,
+      "f1": 0.84,
+      "precision": 0.741,
+      "recall": 0.969,
+      "accuracy": 0.891,
+      "delta_ndcg": 0.002013
+    },
+    {
+      "run_id": "B1_alpha_012",
+      "group": "B",
+      "description": "Fixed alpha=0.12",
+      "ndcg_at_5": 0.876862,
+      "f1": 0.848,
+      "precision": 0.759,
+      "recall": 0.962,
+      "accuracy": 0.899,
+      "delta_ndcg": 0.004974
+    },
+    {
+      "run_id": "B2_alpha_025",
+      "group": "B",
+      "description": "Fixed alpha=0.25",
+      "ndcg_at_5": 0.875255,
+      "f1": 0.841,
+      "precision": 0.745,
+      "recall": 0.965,
+      "accuracy": 0.892,
+      "delta_ndcg": 0.003367
+    },
+    {
+      "run_id": "B3_alpha_038",
+      "group": "B",
+      "description": "Fixed alpha=0.38",
+      "ndcg_at_5": 0.872828,
+      "f1": 0.84,
+      "precision": 0.745,
+      "recall": 0.961,
+      "accuracy": 0.892,
+      "delta_ndcg": 0.00094
+    },
+    {
+      "run_id": "C2_no_FGM",
+      "group": "C",
+      "description": "No FGM",
+      "ndcg_at_5": 0.871489,
+      "f1": 0.841,
+      "precision": 0.741,
+      "recall": 0.971,
+      "accuracy": 0.892,
+      "delta_ndcg": -0.000399
+    },
+    {
+      "run_id": "C3_no_RDrop",
+      "group": "C",
+      "description": "No R-Drop",
+      "ndcg_at_5": 0.878671,
+      "f1": 0.844,
+      "precision": 0.748,
+      "recall": 0.969,
+      "accuracy": 0.895,
+      "delta_ndcg": 0.006783
+    },
+    {
+      "run_id": "C4_no_FGM_no_RDrop",
+      "group": "C",
+      "description": "No FGM, No R-Drop",
+      "ndcg_at_5": 0.872239,
+      "f1": 0.834,
+      "precision": 0.745,
+      "recall": 0.946,
+      "accuracy": 0.889,
+      "delta_ndcg": 0.000351
+    },
+    {
+      "run_id": "V30_optimized",
+      "group": "V30",
+      "description": "Best combo: no RDrop, alpha=0.12, +25% noisy augment",
+      "ndcg_at_5": 0.8749,
+      "f1": 0.842,
+      "precision": 0.749,
+      "recall": 0.961,
+      "accuracy": 0.894,
+      "delta_ndcg": 0.003012
+    },
+    {
+      "run_id": "D_noisy_with_FGM",
+      "group": "D",
+      "description": "Noisy test on REF_v29 checkpoint",
+      "ndcg_at_5": 0.306542,
+      "f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "accuracy": 0.0,
+      "delta_ndcg": -0.565346
+    },
+    {
+      "run_id": "D_noisy_no_FGM",
+      "group": "D",
+      "description": "Noisy test on C2_no_FGM checkpoint",
+      "ndcg_at_5": 0.30699,
+      "f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "accuracy": 0.0,
+      "delta_ndcg": -0.564898
+    },
+    {
+      "run_id": "D_noisy_V30",
+      "group": "D",
+      "description": "Noisy test on V30_optimized checkpoint",
+      "ndcg_at_5": 0.307147,
+      "f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "accuracy": 0.0,
+      "delta_ndcg": -0.564741
+    }
+  ]
+}

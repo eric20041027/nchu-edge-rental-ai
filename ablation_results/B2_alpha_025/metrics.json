@@ -1,0 +1,8 @@
+{
+  "run_id": "B2_alpha_025",
+  "ndcg_at_5": 0.875255,
+  "f1": 0.841,
+  "precision": 0.745,
+  "recall": 0.965,
+  "accuracy": 0.892
+}

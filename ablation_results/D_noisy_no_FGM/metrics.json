@@ -1,0 +1,12 @@
+{
+  "run_id": "D_noisy_no_FGM",
+  "ndcg_at_5": 0.30699,
+  "f1": 0.0,
+  "precision": 0.0,
+  "recall": 0.0,
+  "accuracy": 0.0,
+  "source_run": "C2_no_FGM",
+  "test_set": "noisy_test.json",
+  "group": "D",
+  "description": "Noisy test on C2_no_FGM checkpoint"
+}

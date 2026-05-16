@@ -28,22 +28,26 @@ class AblationConfig:
     distill_alpha_max: float = 0.38
     distill_alpha_min: float = 0.12
 
+    # ── Data augmentation ─────────────────────────────────────────────────────
+    enable_noise_augment: bool = False   # mix noisy query copies into training set
+
     # ── Meta ──────────────────────────────────────────────────────────────────
     is_reference: bool = False   # True for the v2.9 baseline run
 
     def to_dict(self) -> dict:
         """Serialize all fields to a plain dict (JSON-serializable)."""
         return {
-            "run_id":             self.run_id,
-            "group":              self.group,
-            "description":        self.description,
-            "enable_ranknet":     self.enable_ranknet,
-            "enable_listnet":     self.enable_listnet,
-            "enable_fgm":         self.enable_fgm,
-            "rdrop_alpha":        self.rdrop_alpha,
-            "distill_alpha_max":  self.distill_alpha_max,
-            "distill_alpha_min":  self.distill_alpha_min,
-            "is_reference":       self.is_reference,
+            "run_id":                self.run_id,
+            "group":                 self.group,
+            "description":           self.description,
+            "enable_ranknet":        self.enable_ranknet,
+            "enable_listnet":        self.enable_listnet,
+            "enable_fgm":            self.enable_fgm,
+            "rdrop_alpha":           self.rdrop_alpha,
+            "distill_alpha_max":     self.distill_alpha_max,
+            "distill_alpha_min":     self.distill_alpha_min,
+            "enable_noise_augment":  self.enable_noise_augment,
+            "is_reference":          self.is_reference,
         }
 
 
@@ -118,7 +122,20 @@ ALL_ABLATION_RUNS = [
         rdrop_alpha=0.0,
     ),
 
+    # ── V3.0: Best combination from ablation + noise augmentation ────────────
+    AblationConfig(
+        "V30_optimized", "V30",
+        "Best combo: no RDrop, alpha=0.12, +25% noisy augment",
+        enable_ranknet=True,
+        enable_listnet=True,
+        enable_fgm=True,
+        rdrop_alpha=0.0,
+        distill_alpha_max=0.12,
+        distill_alpha_min=0.12,
+        enable_noise_augment=True,
+    ),
+
     # ── Group D: No separate training ─────────────────────────────────────────
-    # D evaluations use REF_v29 and C2_no_FGM checkpoints evaluated on noisy_test.json.
+    # D evaluations use REF_v29, C2_no_FGM, and V30_optimized checkpoints on noisy_test.json.
     # Handled in ablation_runner.py after all training runs complete.
 ]

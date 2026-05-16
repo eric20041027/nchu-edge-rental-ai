@@ -1,0 +1,8 @@
+{
+  "run_id": "C4_no_FGM_no_RDrop",
+  "ndcg_at_5": 0.872239,
+  "f1": 0.834,
+  "precision": 0.745,
+  "recall": 0.946,
+  "accuracy": 0.889
+}

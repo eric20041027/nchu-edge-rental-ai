@@ -1,0 +1,12 @@
+{
+  "run_id": "C4_no_FGM_no_RDrop",
+  "group": "C",
+  "description": "No FGM, No R-Drop",
+  "enable_ranknet": true,
+  "enable_listnet": true,
+  "enable_fgm": false,
+  "rdrop_alpha": 0.0,
+  "distill_alpha_max": 0.38,
+  "distill_alpha_min": 0.12,
+  "is_reference": false
+}
