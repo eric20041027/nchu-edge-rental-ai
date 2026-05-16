@@ -79,25 +79,38 @@ v2.4–v2.8 退步的根本原因：負樣本採樣 bug（見[知識蒸餾架構
 graph TD
     A1["租租通 Crawler\n(Playwright/JSON-LD)"] --> B("merge\n多源資料合併")
     A2["興大官網 Crawler\n(Request/HTML)"] --> B
+    B -->|"實體標注資料"| NER_T("ner_model 訓練\nbert-base-chinese → INT8")
+    NER_T --> NER_M["ner_model.onnx\n(INT8, 37 MB)"]
     B --> C("commute\nOSRM 路網時間計算")
-    C --> D("generate\n樣本合成 + 多級相關性標記 0-3")
+    C -->|"前端資料"| J["property_data.json\n(含預計算通勤時間)"]
+    C -->|"訓練資料"| D("generate\n樣本合成\n多級相關性標記 −1 / 0–3")
     D --> E("augment\nLLM 語意增強")
-    E --> F("mine\n困難樣本挖掘")
+    E --> F("mine\n困難樣本挖掘\nJaccard hard negatives")
     F --> G1("train_teacher.py\nrbt6 teacher 訓練")
-    G1 --> G2("train_and_export_onnx.py\nrbt6→rbt3 蒸餾 + ONNX + INT8")
-    G2 --> H["my_custom_model_quant.onnx\n(INT8, 38.6 MB)"]
-    C --> J["property_data.json\n(前端房源庫)"]
+    G1 --> G2("train_and_export_onnx.py\nrbt6 → rbt3 蒸餾 + ONNX + INT8")
+    G2 --> EVAL("evaluate_model.py\nNDCG@5 / Bootstrap CI")
+    EVAL --> H["my_custom_model_quant.onnx\n(INT8, 38.6 MB)"]
 ```
 
 ### 2. 推論流程
 
 ```mermaid
 graph TD
-    A["自然語言查詢"] --> B("Stage 1: NER 抽取\nLOC / BGT / FEAT")
-    B --> C("Stage 2: 粗篩\nJS Filter + 硬約束 + OSRM 距離")
-    C -- "Top 30 候選" --> D("Stage 3: AI 語意重排\nONNX Runtime Web")
-    D --> E("rbt3 Cross-Encoder")
-    E --> F["最終推薦清單"]
+    PD["property_data.json\n(含預計算 OSRM 通勤時間)"] --> C
+    Q["自然語言查詢"] --> W1
+
+    subgraph WK1["Web Worker 1（非阻塞）"]
+        NM["ner_model.onnx\n(INT8, 37 MB)"] --> W1("Stage 1: NER 抽取\nLOC / BGT / FEAT")
+    end
+
+    W1 --> C("Stage 2: 粗篩\nJS Filter + 硬約束 + 通勤時間查表")
+    C -- "Top 30 候選" --> W2
+
+    subgraph WK2["Web Worker 2（非阻塞）"]
+        CE["my_custom_model_quant.onnx\n(rbt3 INT8, 38.6 MB)"] --> W2("Stage 3: AI 語意重排\nONNX Runtime Web")
+    end
+
+    W2 --> F["最終推薦清單"]
 ```
 
 ---
