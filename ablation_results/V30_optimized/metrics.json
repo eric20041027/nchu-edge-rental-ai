@@ -1,0 +1,8 @@
+{
+  "run_id": "V30_optimized",
+  "ndcg_at_5": 0.8749,
+  "f1": 0.842,
+  "precision": 0.749,
+  "recall": 0.961,
+  "accuracy": 0.894
+}

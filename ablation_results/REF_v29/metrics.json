@@ -1,0 +1,8 @@
+{
+  "run_id": "REF_v29",
+  "ndcg_at_5": 0.871888,
+  "f1": 0.841,
+  "precision": 0.744,
+  "recall": 0.968,
+  "accuracy": 0.892
+}

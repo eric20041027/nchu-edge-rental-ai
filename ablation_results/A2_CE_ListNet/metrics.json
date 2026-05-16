@@ -1,0 +1,8 @@
+{
+  "run_id": "A2_CE_ListNet",
+  "ndcg_at_5": 0.873901,
+  "f1": 0.84,
+  "precision": 0.741,
+  "recall": 0.969,
+  "accuracy": 0.891
+}

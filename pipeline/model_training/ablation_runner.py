@@ -130,11 +130,17 @@ def _run_group_d(device: str):
     with open(noisy_path, "r", encoding="utf-8") as f:
         noisy_data = json.load(f)
     print(f"\n[Group D] noisy_test.json loaded: {len(noisy_data)} samples")
+    print("  Evaluating: REF_v29 (D_noisy_with_FGM), C2_no_FGM (D_noisy_no_FGM), "
+          "V30_optimized (D_noisy_V30)")
 
     tokenizer = BertTokenizerFast.from_pretrained(STUDENT_CHECKPOINT)
 
     d_results = []
-    for run_id, d_run_id in [("REF_v29", "D_noisy_with_FGM"), ("C2_no_FGM", "D_noisy_no_FGM")]:
+    for run_id, d_run_id in [
+        ("REF_v29",       "D_noisy_with_FGM"),
+        ("C2_no_FGM",     "D_noisy_no_FGM"),
+        ("V30_optimized", "D_noisy_V30"),
+    ]:
         out_dir  = os.path.join(RESULTS_ROOT, d_run_id)
         d_metrics_path = os.path.join(out_dir, "metrics.json")
 
