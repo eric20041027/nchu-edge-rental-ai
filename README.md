@@ -432,9 +432,9 @@ rbt3 每次 forward pass 的主要計算（64 tokens）：
 
 INT8 WASM SIMD 在現代 x86 CPU 上吞吐量約 100–400 GOPS，理論下限 ~2.5ms/pass；實際加上 JS 開銷、tensor 分配與 WASM 呼叫邊界約 **10–60ms/pass**，視裝置而定。
 
-### 實測延遲（Windows 10 x64，HW concurrency 12，4 WASM threads）
+### 實測延遲（Windows 11，Intel Core i5-11600KF，HW concurrency 12，4 WASM threads）
 
-> 測試環境：高階開發機（推測 i7/Ryzen 7 等級）；5 組 × 30-pass，warmup 3 組已排除
+> 測試環境：i5-11600KF（6C12T，Rocket Lake）；5 組 × 30-pass，warmup 3 組已排除
 
 **Per-pass latency（單次 tokenize + forward）：**
 
