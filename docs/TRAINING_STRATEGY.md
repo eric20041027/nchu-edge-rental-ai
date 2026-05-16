@@ -24,7 +24,7 @@ $$\text{adversarial backward: } \mathcal{L}(\theta,\ \text{emb} + \delta)$$
 
 **效果**：讓模型在 embedding 空間的鄰域內仍然穩健，有效提升對口語化、有錯字、非規範輸入的泛化性（這對租屋查詢尤為重要）。相比 PGD（多步對抗），FGM 只需一步，計算成本僅多一次 forward + backward。
 
-**本專案**：$\varepsilon = 1.0$，作用於 `word_embeddings` 層；使用 `try/finally` 確保即使對抗 backward 拋出例外，embedding 仍會被還原。
+**本專案**：ε = 1.0，作用於 `word_embeddings` 層；使用 `try/finally` 確保即使對抗 backward 拋出例外，embedding 仍會被還原。
 
 ---
 

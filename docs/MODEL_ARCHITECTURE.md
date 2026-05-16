@@ -62,7 +62,7 @@ $$\alpha_{\min} = 0.12, \quad \alpha_{\max} = 0.38, \quad T_{\text{epoch}} = 10$
 
 ### KL 散度（Kullback-Leibler Divergence）
 
-**原理**：$D_{\mathrm{KL}}(P \| Q)$ 衡量兩個機率分佈之間的差異，表示「用 Q 描述 P 時，相較於用 P 自身描述所多出的資訊量」。
+**原理**：KL 散度衡量兩個機率分佈之間的差異，表示「用 Q 描述 P 時，相較於用 P 自身描述所多出的資訊量」。
 
 $$D_{\mathrm{KL}}(P \| Q) = \sum_i P_i \log \frac{P_i}{Q_i}$$
 
