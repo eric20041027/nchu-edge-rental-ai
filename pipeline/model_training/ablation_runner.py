@@ -27,7 +27,11 @@ _SCRIPT_DIR   = os.path.dirname(os.path.abspath(__file__))
 _PROJECT_ROOT = os.path.normpath(os.path.join(_SCRIPT_DIR, "..", ".."))
 
 RESULTS_ROOT = os.path.join(_PROJECT_ROOT, "ablation_results")
-MODELS_ROOT  = os.path.join(_PROJECT_ROOT, "saved_models", "ablation")
+
+# Use D: drive for model checkpoints if available (same logic as config.py)
+_D_ABLATION = os.path.join("D:", os.sep, "renting_models", "ablation")
+MODELS_ROOT  = _D_ABLATION if os.path.isdir(os.path.join("D:", os.sep, "renting_models")) \
+               else os.path.join(_PROJECT_ROOT, "saved_models", "ablation")
 
 from .ablation_config import AblationConfig, ALL_ABLATION_RUNS
 from .ablation_train  import run_ablation, compute_flat_ndcg5, STUDENT_CHECKPOINT, MAX_LENGTH

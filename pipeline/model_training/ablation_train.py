@@ -484,6 +484,13 @@ def run_ablation(
     tokenizer.save_pretrained(run_models_dir)
     print(f"  Model saved to: {run_models_dir}")
 
+    # ── Clean up _tmp_checkpoints (optimizer states, RNG, ~880 MB per run) ───
+    import shutil
+    tmp_ckpt_dir = os.path.join(run_models_dir, "_tmp_checkpoints")
+    if os.path.isdir(tmp_ckpt_dir):
+        shutil.rmtree(tmp_ckpt_dir)
+        print(f"  Cleaned up: {tmp_ckpt_dir}")
+
     # ── Evaluate on test set ──────────────────────────────────────────────────
     with open(os.path.join(data_dir, "recommendation_test.json"), "r", encoding="utf-8") as f:
         test_data_raw = json.load(f)
