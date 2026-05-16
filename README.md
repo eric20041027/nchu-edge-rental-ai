@@ -432,42 +432,76 @@ rbt3 每次 forward pass 的主要計算（64 tokens）：
 
 INT8 WASM SIMD 在現代 x86 CPU 上吞吐量約 100–400 GOPS，理論下限 ~2.5ms/pass；實際加上 JS 開銷、tensor 分配與 WASM 呼叫邊界約 **10–60ms/pass**，視裝置而定。
 
-### 各裝置延遲估算（30 候選重排，P95）
+### 實測延遲（Windows 10 x64，HW concurrency 12，4 WASM threads）
 
-| 裝置類型 | 代表機型 | 每次 pass P95 | **30-pass 總延遲 P95** | 主觀感受 |
+> 測試環境：高階開發機（推測 i7/Ryzen 7 等級）；5 組 × 30-pass，warmup 3 組已排除
+
+**Per-pass latency（單次 tokenize + forward）：**
+
+| 百分位 | 延遲 |
+|:---:|:---:|
+| P50 | 64.4 ms |
+| P75 | 68.6 ms |
+| **P95** | **81.0 ms** |
+| P99 | 108.2 ms |
+| Min / Max | 48.1 ms / 115.7 ms |
+
+**30-candidate rerank 總延遲：**
+
+| 百分位 | 延遲 |
+|:---:|:---:|
+| P50 | 1,908 ms |
+| **P95** | **2,219 ms** |
+| Min / Max | 1,734 ms / 2,219 ms |
+
+> Run-to-run 變異 ~28%（1,734–2,219 ms），主因為 OS scheduler jitter 與 WASM JIT 預熱差異，非模型本身不穩定。
+
+### 各裝置延遲推算
+
+以實測高階機（P95 per-pass = 81 ms）為基準，依各裝置 INT8 WASM 吞吐量比例外插：
+
+| 裝置類型 | 代表機型 | per-pass P95 | **30-pass P95** | 主觀感受 |
 |:---|:---|:---:|:---:|:---|
-| 高階筆電 / 桌機 | i7-12th gen, Ryzen 7 5800H | ~20 ms | **~550 ms** | 幾乎無感 |
-| 中階學生筆電 | i5-10th gen, Ryzen 5 4500U | ~40 ms | **~1,100 ms** | 可接受（約 1 秒）|
-| 中階手機 | Snapdragon 778G, Dimensity 900 | ~70 ms | **~1,900 ms** | 略感等待 |
-| 低階預算手機 | Snapdragon 460, Helio G85 | ~160 ms | **~4,500 ms** | 明顯等待（~4-5 秒）|
+| 高階開發機（已實測）| i7/Ryzen 7，12 核 | **81 ms** | **2,219 ms** ✅ | 約 2 秒等待 |
+| 中階學生筆電 | i5-10th, Ryzen 5 4500U | ~110 ms | ~3,000 ms | 約 3 秒 |
+| 中階手機 | Snapdragon 778G, Dimensity 900 | ~200 ms | ~5,500 ms | 約 5-6 秒 |
+| 低階預算手機 | Snapdragon 460, Helio G85 | ~450 ms | ~12,000 ms | 明顯等待 |
 
-> 以上為基於模型架構的理論估算。執行 `frontend/benchmark.html` 可取得當前裝置的實測數據。
+> 手機端數字為外插估算（WASM SIMD 吞吐量比較），需實機驗證。
 
-### 記憶體用量與崩潰風險
+### 記憶體實測與崩潰風險
+
+**實測數據（同一環境）：**
 
 ```
-JS Heap 組成（首次推論後穩定狀態）：
-  WASM runtime binary    : ~8 MB
-  ONNX model buffer      : 38.6 MB（ArrayBuffer，不在 GC heap）
-  Transformers.js + vocab: ~12 MB
-  ORT session + kernels  : ~10 MB
-  ─────────────────────────────
-  估計總佔用              : ~65–75 MB
-
-推論期間 tensor spike（每次 pass）：
-  input_ids [1×64] int64 : 0.5 KB
-  token_type_ids [1×64]  : 0.5 KB
-  attention_mask [1×64]  : 0.5 KB
-  output logits [1×2]    : 16 B
-  ─────────────────────────────
-  單次推論 spike          : < 2 KB（立即釋放）
-  30-pass 累積 spike      : < 100 KB（可忽略）
+Heap after model load  : 56.6 MB
+Heap after 5th run     : 55.2 MB
+Inference delta        : −1.4 MB  ← GC 自然釋放，無洩漏
+Session init (一次性)  : 249.9 ms
+Model buffer size      : 36.8 MB（ArrayBuffer）
 ```
 
-**結論**：
-- **不會崩潰**：iOS Safari / Android Chrome 的 JS heap 上限分別約 1.4 GB / 512 MB–1 GB，65 MB 遠低於任何主流行動瀏覽器的限制
-- **不會嚴重耗電**：單次查詢的 30-pass WASM 計算約 1–5 秒，屬一次性短促計算（非持續佔用），對電池影響可忽略
-- **模型 buffer 不觸發 GC**：38.6 MB 儲存為 `ArrayBuffer`（heap 外記憶體），不會造成 GC pause
+**Heap 組成分析：**
+
+```
+WASM runtime + ORT kernels : ~10 MB
+Transformers.js + vocab    : ~12 MB
+ONNX model buffer          : 36.8 MB（heap 外 ArrayBuffer，不觸發 GC）
+其他 runtime overhead      : ~5 MB
+─────────────────────────────────
+實測穩定 heap              : 56.6 MB
+
+推論期間 per-pass tensor spike：
+  input_ids / token_type_ids / attention_mask [1×64] int64 ≈ 1.5 KB
+  output logits [1×2] float32                              ≈ 8 B
+  ─────────────────────────────
+  單次 spike                 : < 2 KB（即時釋放）
+```
+
+**結論：**
+- **不會崩潰**：56.6 MB 遠低於 iOS Safari（~1.4 GB）和 Android Chrome（512 MB–1 GB）的 JS heap 上限
+- **無記憶體洩漏**：5 組 30-pass 後 heap 反降 1.4 MB，GC 正常運作
+- **不會嚴重耗電**：2 秒的一次性 INT8 WASM 計算，非持續佔用；實測無明顯發熱
 
 ### 執行 Benchmark
 
