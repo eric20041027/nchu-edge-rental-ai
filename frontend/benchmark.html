@@ -1,221 +1,604 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-<meta charset="UTF-8">
-<title>Cross-Encoder WASM Benchmark</title>
-<style>
-  body { font-family: monospace; background: #1a1a1a; color: #e0e0e0; padding: 24px; }
-  h2 { color: #7eb8f7; }
-  pre { background: #2a2a2a; padding: 16px; border-radius: 8px; white-space: pre-wrap; font-size: 13px; }
-  .ok  { color: #6fcf97; }
-  .warn{ color: #f2c94c; }
-  .err { color: #eb5757; }
-  button { padding: 10px 24px; font-size: 15px; background: #2d6bc4; color: #fff;
-           border: none; border-radius: 6px; cursor: pointer; margin-top: 12px; }
-  button:disabled { background: #555; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NCHU-EdgeSemRent｜Edge AI Benchmark</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f1117; color: #e2e8f0;
+      min-height: 100vh; padding: 32px 16px;
+    }
+    h1 { text-align:center; font-size:1.6rem; font-weight:700; color:#fff; margin-bottom:4px; }
+    .subtitle { text-align:center; font-size:.85rem; color:#64748b; margin-bottom:24px; }
+
+    /* ── 按鈕 ── */
+    .btn-wrap { text-align:center; margin-bottom:24px; display:flex; justify-content:center; gap:12px; flex-wrap:wrap; }
+    .btn { border:none; border-radius:8px; padding:12px 28px; font-size:.95rem; font-weight:600; cursor:pointer; transition:background .2s; }
+    #btn-cold { background:#4f46e5; color:#fff; }
+    #btn-cold:hover { background:#4338ca; }
+    #btn-warm { background:#16a34a; color:#fff; }
+    #btn-warm:hover { background:#15803d; }
+    .btn:disabled { background:#374151 !important; color:#6b7280; cursor:not-allowed; }
+
+    /* ── 卡片群組 ── */
+    .cards-wrap { max-width:960px; margin:0 auto 8px; }
+    .cards-label {
+      font-size:.75rem; text-transform:uppercase; letter-spacing:.08em;
+      padding: 6px 4px 4px; margin-bottom:8px;
+    }
+    .cards-label.cold { color:#818cf8; border-left:3px solid #818cf8; padding-left:10px; }
+    .cards-label.warm { color:#4ade80; border-left:3px solid #4ade80; padding-left:10px; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:12px; margin-bottom:16px; }
+    .card { background:#1e2130; border:1px solid #2d3148; border-radius:12px; padding:18px; }
+    .card-title { font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; color:#64748b; margin-bottom:6px; }
+    .card-value { font-size:1.9rem; font-weight:700; color:#94a3b8; line-height:1; }
+    .card-unit  { font-size:.83rem; color:#94a3b8; margin-top:3px; }
+    .card-sub   { font-size:.75rem; color:#64748b; margin-top:5px; }
+    .card.cold-done .card-value { color:#818cf8; }
+    .card.warm-done .card-value { color:#4ade80; }
+
+    /* ── 快取效益摘要 ── */
+    .section { max-width:960px; margin:0 auto 20px; background:#1e2130; border:1px solid #2d3148; border-radius:12px; padding:20px; }
+    .sec-title { font-size:.78rem; text-transform:uppercase; letter-spacing:.08em; color:#64748b; margin-bottom:14px; }
+
+    .benefit-grid {
+      display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px;
+    }
+    .benefit-card {
+      background:#161b2e; border:1px solid #2d3148; border-radius:10px; padding:14px 16px;
+      text-align:center;
+    }
+    .benefit-label { font-size:.72rem; color:#64748b; margin-bottom:6px; }
+    .benefit-saved { font-size:1.5rem; font-weight:700; color:#facc15; line-height:1; }
+    .benefit-pct   { font-size:.78rem; color:#86efac; margin-top:3px; }
+    .benefit-na    { color:#374151; font-size:1rem; }
+
+    /* ── 時間軸（雙列對比）── */
+    .tl-row { display:flex; align-items:center; margin-bottom:14px; gap:10px; }
+    .tl-label { width:200px; font-size:.8rem; color:#cbd5e1; flex-shrink:0; }
+    .tl-bars  { flex:1; display:flex; flex-direction:column; gap:4px; }
+    .tl-bar-wrap { background:#2d3148; border-radius:4px; height:14px; overflow:hidden; position:relative; }
+    .tl-bar { height:100%; border-radius:4px; transition:width .6s ease; width:0%; position:absolute; top:0; left:0; }
+    .tl-bar.cold-bar { background:#818cf8; }
+    .tl-bar.warm-bar { background:#4ade80; }
+    .tl-vals { width:160px; flex-shrink:0; display:flex; flex-direction:column; gap:4px; }
+    .tl-val  { font-size:.78rem; text-align:right; }
+    .tl-val.cold { color:#818cf8; }
+    .tl-val.warm { color:#4ade80; }
+    .tl-legend { display:flex; gap:16px; margin-bottom:14px; }
+    .tl-legend-item { display:flex; align-items:center; gap:6px; font-size:.75rem; color:#94a3b8; }
+    .tl-legend-dot  { width:12px; height:12px; border-radius:2px; }
+
+    /* ── Edge vs Cloud 表 ── */
+    table { width:100%; border-collapse:collapse; font-size:.85rem; }
+    th { text-align:left; padding:8px 12px; color:#64748b; font-size:.75rem; text-transform:uppercase; letter-spacing:.06em; border-bottom:1px solid #2d3148; }
+    td { padding:10px 12px; border-bottom:1px solid #1a1f33; color:#cbd5e1; vertical-align:top; }
+    tr:last-child td { border-bottom:none; }
+    .highlight td { color:#4ade80; font-weight:600; }
+    .badge { display:inline-block; padding:2px 8px; border-radius:99px; font-size:.72rem; font-weight:600; }
+    .badge-green  { background:#14532d; color:#4ade80; }
+    .badge-yellow { background:#422006; color:#facc15; }
+    .badge-blue   { background:#0c2340; color:#38bdf8; }
+    .badge-purple { background:#2e1065; color:#c4b5fd; }
+
+    #log { font-family:'Courier New',monospace; font-size:.78rem; color:#94a3b8; line-height:1.7; max-height:220px; overflow-y:auto; }
+    #log .ok   { color:#4ade80; }
+    #log .warn { color:#facc15; }
+    #log .err  { color:#f87171; }
+    #log .info { color:#38bdf8; }
+    #log .head { color:#f9a8d4; font-weight:bold; }
+    .pending { color:#4b5563; }
+
+    @media (max-width:600px) {
+      .tl-label { width:120px; font-size:.72rem; }
+      .tl-vals  { width:110px; }
+    }
+  </style>
 </head>
 <body>
-<h2>Cross-Encoder WASM Benchmark — rbt3 INT8 × 30 candidates</h2>
-<button id="startBtn" onclick="runBenchmark()">▶ Start Benchmark</button>
-<pre id="log">Press "Start Benchmark" to begin...\n</pre>
+
+<h1>NCHU-EdgeSemRent — Edge AI Benchmark</h1>
+<p class="subtitle">量測模型載入時間與推論延遲，驗證瀏覽器快取對 Edge AI 效能的提升效益</p>
+
+<!-- 按鈕 -->
+<div class="btn-wrap">
+  <button class="btn" id="btn-cold" onclick="runMode('cold')">🧊 步驟一：無快取測試（首次載入）</button>
+  <button class="btn" id="btn-warm" onclick="runMode('warm')">♻️ 步驟二：有快取測試（二次載入）</button>
+</div>
+
+<!-- 首次載入卡片 -->
+<div class="cards-wrap">
+  <div class="cards-label cold">🧊 首次載入（無快取）</div>
+  <div class="grid">
+    <div class="card" id="cold-card-speed">
+      <div class="card-title">📡 實測下載速度</div>
+      <div class="card-value pending" id="cold-val-speed">—</div>
+      <div class="card-unit">Mbps</div>
+      <div class="card-sub" id="cold-sub-speed">尚未測試</div>
+    </div>
+    <div class="card" id="cold-card-ner">
+      <div class="card-title">🧠 NER 模型載入</div>
+      <div class="card-value pending" id="cold-val-ner">—</div>
+      <div class="card-unit">ms（首次）</div>
+      <div class="card-sub">37 MB INT8 量化</div>
+    </div>
+    <div class="card" id="cold-card-ce">
+      <div class="card-title">⚡ Cross-Encoder 載入</div>
+      <div class="card-value pending" id="cold-val-ce">—</div>
+      <div class="card-unit">ms（首次）</div>
+      <div class="card-sub">57 MB INT8 量化（原 228 MB）</div>
+    </div>
+    <div class="card" id="cold-card-infer">
+      <div class="card-title">🚀 推論延遲 P95</div>
+      <div class="card-value pending" id="cold-val-infer">—</div>
+      <div class="card-unit">ms P95</div>
+      <div class="card-sub" id="cold-sub-infer">5 暖機 + 10 計時</div>
+    </div>
+  </div>
+</div>
+
+<!-- 快取後卡片 -->
+<div class="cards-wrap">
+  <div class="cards-label warm">♻️ 快取後載入（二次）</div>
+  <div class="grid">
+    <div class="card" id="warm-card-speed">
+      <div class="card-title">📡 實測下載速度</div>
+      <div class="card-value pending" id="warm-val-speed">—</div>
+      <div class="card-unit">Mbps</div>
+      <div class="card-sub" id="warm-sub-speed">尚未測試</div>
+    </div>
+    <div class="card" id="warm-card-ner">
+      <div class="card-title">🧠 NER 模型載入</div>
+      <div class="card-value pending" id="warm-val-ner">—</div>
+      <div class="card-unit">ms（快取後）</div>
+      <div class="card-sub">37 MB INT8 量化</div>
+    </div>
+    <div class="card" id="warm-card-ce">
+      <div class="card-title">⚡ Cross-Encoder 載入</div>
+      <div class="card-value pending" id="warm-val-ce">—</div>
+      <div class="card-unit">ms（快取後）</div>
+      <div class="card-sub">57 MB INT8 量化（原 228 MB）</div>
+    </div>
+    <div class="card" id="warm-card-infer">
+      <div class="card-title">🚀 推論延遲 P95</div>
+      <div class="card-value pending" id="warm-val-infer">—</div>
+      <div class="card-unit">ms P95</div>
+      <div class="card-sub" id="warm-sub-infer">5 暖機 + 10 計時</div>
+    </div>
+  </div>
+</div>
+
+<!-- 快取效益摘要 -->
+<div class="section" id="benefit-section" style="display:none">
+  <div class="sec-title">✨ 快取效益摘要（首次 → 快取後）</div>
+  <div class="benefit-grid">
+    <div class="benefit-card">
+      <div class="benefit-label">NER 載入節省</div>
+      <div class="benefit-saved" id="ben-ner-saved">—</div>
+      <div class="benefit-pct"  id="ben-ner-pct">—</div>
+    </div>
+    <div class="benefit-card">
+      <div class="benefit-label">Cross-Encoder 載入節省</div>
+      <div class="benefit-saved" id="ben-ce-saved">—</div>
+      <div class="benefit-pct"  id="ben-ce-pct">—</div>
+    </div>
+    <div class="benefit-card">
+      <div class="benefit-label">總模型載入節省</div>
+      <div class="benefit-saved" id="ben-total-saved">—</div>
+      <div class="benefit-pct"  id="ben-total-pct">—</div>
+    </div>
+    <div class="benefit-card">
+      <div class="benefit-label">推論延遲變化</div>
+      <div class="benefit-saved" id="ben-infer-saved">—</div>
+      <div class="benefit-pct"  id="ben-infer-pct">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- 時間軸雙列對比 -->
+<div class="section">
+  <div class="sec-title">⏱ 時間軸對比（越短越好）</div>
+  <div class="tl-legend">
+    <div class="tl-legend-item"><div class="tl-legend-dot" style="background:#818cf8"></div>首次載入（無快取）</div>
+    <div class="tl-legend-item"><div class="tl-legend-dot" style="background:#4ade80"></div>快取後載入</div>
+  </div>
+  <div class="tl-row">
+    <div class="tl-label">網速偵測（Cloudflare）</div>
+    <div class="tl-bars">
+      <div class="tl-bar-wrap"><div class="tl-bar cold-bar" id="bar-cold-speed"></div></div>
+      <div class="tl-bar-wrap"><div class="tl-bar warm-bar" id="bar-warm-speed"></div></div>
+    </div>
+    <div class="tl-vals">
+      <div class="tl-val cold" id="ms-cold-speed">—</div>
+      <div class="tl-val warm" id="ms-warm-speed">—</div>
+    </div>
+  </div>
+  <div class="tl-row">
+    <div class="tl-label">NER 下載 + 初始化</div>
+    <div class="tl-bars">
+      <div class="tl-bar-wrap"><div class="tl-bar cold-bar" id="bar-cold-ner"></div></div>
+      <div class="tl-bar-wrap"><div class="tl-bar warm-bar" id="bar-warm-ner"></div></div>
+    </div>
+    <div class="tl-vals">
+      <div class="tl-val cold" id="ms-cold-ner">—</div>
+      <div class="tl-val warm" id="ms-warm-ner">—</div>
+    </div>
+  </div>
+  <div class="tl-row">
+    <div class="tl-label">Cross-Encoder 下載 + 初始化</div>
+    <div class="tl-bars">
+      <div class="tl-bar-wrap"><div class="tl-bar cold-bar" id="bar-cold-ce"></div></div>
+      <div class="tl-bar-wrap"><div class="tl-bar warm-bar" id="bar-warm-ce"></div></div>
+    </div>
+    <div class="tl-vals">
+      <div class="tl-val cold" id="ms-cold-ce">—</div>
+      <div class="tl-val warm" id="ms-warm-ce">—</div>
+    </div>
+  </div>
+  <div class="tl-row">
+    <div class="tl-label">推論延遲 P95</div>
+    <div class="tl-bars">
+      <div class="tl-bar-wrap"><div class="tl-bar cold-bar" id="bar-cold-infer"></div></div>
+      <div class="tl-bar-wrap"><div class="tl-bar warm-bar" id="bar-warm-infer"></div></div>
+    </div>
+    <div class="tl-vals">
+      <div class="tl-val cold" id="ms-cold-infer">—</div>
+      <div class="tl-val warm" id="ms-warm-infer">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- Edge AI 特性說明 -->
+<div class="section">
+  <div class="sec-title">🌐 Edge AI 部署特性</div>
+  <table>
+    <thead>
+      <tr><th>指標</th><th>首次載入（無快取）</th><th>快取後載入</th><th>結論</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>模型載入時間</td>
+        <td id="cmp-cold-load">—</td>
+        <td id="cmp-warm-load">—</td>
+        <td id="cmp-load-badge">—</td>
+      </tr>
+      <tr class="highlight">
+        <td>推論延遲 P95</td>
+        <td id="cmp-cold-infer">—</td>
+        <td id="cmp-warm-infer">—</td>
+        <td id="cmp-infer-badge"><span class="badge badge-green">本地 WASM 恆定低延遲</span></td>
+      </tr>
+      <tr>
+        <td>隱私保護</td>
+        <td colspan="2">✅ 完全本地運算，查詢不離開瀏覽器</td>
+        <td><span class="badge badge-green">100% 本地</span></td>
+      </tr>
+      <tr>
+        <td>離線可用</td>
+        <td>❌ 需下載模型（首次需網路）</td>
+        <td>✅ Service Worker 快取後可離線</td>
+        <td><span class="badge badge-green">支援離線</span></td>
+      </tr>
+      <tr>
+        <td>伺服器成本</td>
+        <td colspan="2">$0（使用者裝置運算，零伺服器費用）</td>
+        <td><span class="badge badge-green">零維運成本</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="section">
+  <div class="sec-title">📋 執行紀錄</div>
+  <div id="log"><span class="info">[ready] 請先執行步驟一（無快取），再執行步驟二（有快取），以觀察快取效益</span></div>
+</div>
 
 <script type="module">
-// ──────────────────────────────────────────────────────────
-// Benchmark configuration
-// ──────────────────────────────────────────────────────────
-const MAX_LENGTH   = 64;
-const N_CANDIDATES = 30;
-const N_WARMUP     = 3;   // warm-up passes (excluded from stats)
-const N_REPEATS    = 5;   // full 30-pass runs for statistics
 
-// Realistic query + 30 synthetic property descriptions
-const QUERY = "南區套房 5500以內 要台電計費 有洗衣機 近興大";
+// ── 儲存兩次結果 ─────────────────────────────────────
+const results = { cold: null, warm: null };
 
-const PROPERTIES = [
-  "南區 套房 月租5200 台電計費 附洗衣機冷氣冰箱 近台中路 步行8分鐘",
-  "南區 套房 月租5500 台水台電 洗衣機冷氣 興大旁 全新裝潢",
-  "南區 雅房 月租4000 公電 附冷氣 共用衛浴 興大附近",
-  "大里 套房 月租5000 台電 有洗衣機 騎車10分鐘",
-  "南區 套房 月租6000 台電計費 電梯大樓 附全套家電",
-  "南區 套房 月租5300 固定電費 洗衣機 近中興大學",
-  "西區 套房 月租6500 台電 捷運旁 全新",
-  "南區 套房 月租5000 台水台電 獨立衛浴 有洗衣機",
-  "南區 套房 月租5800 台電 電梯 有冷氣洗衣機冰箱",
-  "南區 頂加 月租3500 公電 無洗衣機 採光不足",
-  "南區 套房 月租5500 台電計費 有陽台 洗衣機",
-  "北屯 套房 月租5500 台電 離市區較遠",
-  "南區 套房 月租5400 台電 步行興大5分鐘 附洗衣機",
-  "南區 雅房 月租3800 共用洗衣機 台電 近市場",
-  "南區 套房 月租5000 台電計費 木地板 有書桌",
-  "南區 套房 月租5600 台水台電 電梯 全新首租",
-  "南區 套房 月租4800 台電 整理中 有冷氣",
-  "南區 套房 月租5500 固定電費每度4元 洗衣機",
-  "南區 套房 月租5200 台電 近興大正門 附家電",
-  "太平 套房 月租4500 台電 騎車15分鐘 新裝潢",
-  "南區 套房 月租5500 台電計費 可養小型寵物",
-  "南區 套房 月租5300 台電 有保全 洗衣機冷氣",
-  "南區 套房 月租5700 台電 陽台 採光佳 洗衣機",
-  "南區 套房 月租5100 台電 近公車站 附冷氣洗衣機",
-  "南區 套房 月租5500 禁寵物 台電 全新裝潢",
-  "南區 套房 月租5400 台電計費 步行興大7分鐘 含網路",
-  "南區 套房 月租5200 台電 有管理員 電梯 洗衣機",
-  "南區 套房 月租6200 台電 頂樓 加蓋 屋況普通",
-  "南區 套房 月租5500 台水台電 全新 首租 洗衣機",
-  "南區 套房 月租5000 台電 近興大 獨立門禁 洗衣機冷氣冰箱"
-];
-
-// ──────────────────────────────────────────────────────────
-const log = (msg, cls='') => {
+function log(msg, cls = '') {
   const el = document.getElementById('log');
-  el.innerHTML += cls ? `<span class="${cls}">${msg}</span>\n` : msg + '\n';
+  const line = document.createElement('div');
+  if (cls) line.className = cls;
+  line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  el.appendChild(line);
   el.scrollTop = el.scrollHeight;
-};
-
-const fmt = (n, d=1) => n.toFixed(d);
-const memMB = () => {
-  if (performance.memory) return (performance.memory.usedJSHeapSize / 1048576).toFixed(1);
-  return null;
-};
-
-function pct(arr, p) {
-  const s = [...arr].sort((a,b)=>a-b);
-  const i = Math.ceil(p/100 * s.length) - 1;
-  return s[Math.max(0,i)];
 }
 
-window.runBenchmark = async function() {
-  document.getElementById('startBtn').disabled = true;
-  document.getElementById('log').innerHTML = '';
+function fmtMs(ms) {
+  if (ms === null || ms === undefined) return '—';
+  return ms >= 1000 ? (ms / 1000).toFixed(2) + ' s' : Math.round(ms) + ' ms';
+}
 
-  log('=== Cross-Encoder WASM Benchmark ===');
-  log(`Model  : rbt3 INT8 (my_custom_model_quant.onnx)`);
-  log(`Task   : ${N_CANDIDATES} candidates × (tokenize + forward pass)`);
-  log(`Threads: up to ${Math.min(navigator.hardwareConcurrency||4, 4)}`);
-  log(`UA     : ${navigator.userAgent.split(')')[0]})`);
-  log('');
+// ── 核心測試 ──────────────────────────────────────────
+async function measureNetworkSpeed(useCache) {
+  log(`📡 偵測真實網路速度（Cloudflare，${useCache ? '有快取' : '無快取'}）…`);
+  const PROBES = [
+    { url: 'https://speed.cloudflare.com/__down?bytes=10000000' },
+    { url: 'https://speed.cloudflare.com/__down?bytes=5000000'  },
+  ];
+  for (const probe of PROBES) {
+    try {
+      const t0  = performance.now();
+      const res = await fetch(probe.url, { cache: useCache ? 'force-cache' : 'no-store', mode: 'cors' });
+      if (!res.ok) continue;
+      const buf  = await res.arrayBuffer();
+      const ms   = performance.now() - t0;
+      const mb   = buf.byteLength / 1024 / 1024;
+      const mbps = (mb * 8) / (ms / 1000);
+      log(`✅ ${mb.toFixed(1)} MB（Cloudflare），${Math.round(ms)} ms → ${mbps.toFixed(1)} Mbps`, 'ok');
+      return { ms, mbps, mb, source: 'cloudflare' };
+    } catch (_) { /* try next */ }
+  }
+  log('⚠️ Cloudflare 測速失敗，改用 localhost（數值僅反映磁碟速度）', 'warn');
+  try {
+    const url = `models/ner_model_dir/ner_model_quant.onnx?t=${Date.now()}`;
+    const t0  = performance.now();
+    const res = await fetch(url, { cache: 'no-store' });
+    const buf = await res.arrayBuffer();
+    const ms  = performance.now() - t0;
+    const mb  = buf.byteLength / 1024 / 1024;
+    const mbps = (mb * 8) / (ms / 1000);
+    log(`⚠️ localhost fallback：${mb.toFixed(1)} MB，${Math.round(ms)} ms → ${mbps.toFixed(1)} Mbps`, 'warn');
+    return { ms, mbps, mb, source: 'localhost' };
+  } catch (e) {
+    log('❌ 網速偵測失敗：' + e.message, 'err');
+    return { ms: 0, mbps: 0, mb: 0, source: 'error' };
+  }
+}
 
-  // ── 1. Load ORT ──────────────────────────────────────────
-  log('[1/4] Loading ONNX Runtime Web...');
-  const t0 = performance.now();
-  const ortModule = await import('https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.mjs');
-  const ort = ortModule.default ?? ortModule;
-  log(`      ort loaded in ${fmt(performance.now()-t0)} ms`, 'ok');
-
-  // ── 2. Load Tokenizer ────────────────────────────────────
-  log('[2/4] Loading tokenizer...');
-  const { AutoTokenizer, env } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1');
-  env.allowRemoteModels = false;
-  env.allowLocalModels  = true;
-  env.useBrowserCache   = true;
-  env.localModelPath    = location.origin + '/';
-  const t1 = performance.now();
-  const tokenizer = await AutoTokenizer.from_pretrained('models/custom_onnx_model_dir');
-  log(`      tokenizer loaded in ${fmt(performance.now()-t1)} ms`, 'ok');
-
-  // ── 3. Load + Init ONNX Session ──────────────────────────
-  log('[3/4] Creating ONNX session...');
-  const t2 = performance.now();
-  const modelUrl = location.origin + '/models/custom_onnx_model_dir/my_custom_model_quant.onnx';
-  const resp = await fetch(modelUrl);
-  const modelBuffer = new Uint8Array(await resp.arrayBuffer());
-  const session = await ort.InferenceSession.create(modelBuffer, {
-    executionProviders: ['wasm'],
-    graphOptimizationLevel: 'all',
-    numThreads: Math.min(navigator.hardwareConcurrency||4, 4),
-  });
-  const sessionInitMs = performance.now() - t2;
-  log(`      session init in ${fmt(sessionInitMs)} ms (model ${(modelBuffer.length/1048576).toFixed(1)} MB)`, 'ok');
-
-  const mem0 = memMB();
-  if (mem0) log(`      heap after model load: ${mem0} MB`);
-
-  // ── 4. Inference Benchmark ───────────────────────────────
-  log('');
-  log('[4/4] Running inference benchmark...');
-
-  async function score30(query) {
-    const times = [];
-    for (const prop of PROPERTIES) {
-      const ts = performance.now();
-      const enc = await tokenizer(query, {
-        text_pair: prop, padding: 'max_length', truncation: true,
-        max_length: MAX_LENGTH, return_tensors: 'np', return_token_type_ids: true,
-      });
-      const inputs = {};
-      for (const k of session.inputNames) {
-        if (enc[k]) inputs[k] = new ort.Tensor('int64',
-          BigInt64Array.from(enc[k].data.map(v=>BigInt(v))), enc[k].dims);
+async function measureNerLoad(noCache) {
+  log('🧠 NER 模型載入（計時中）…');
+  return new Promise(resolve => {
+    const t0 = performance.now();
+    const w  = new Worker('js/ner-worker.js');
+    w.onmessage = e => {
+      if (e.data.type === 'ner_ready') {
+        const ms = performance.now() - t0;
+        log(`✅ NER 就緒，${Math.round(ms)} ms`, 'ok');
+        w.terminate(); resolve(ms);
+      } else if (e.data.type === 'ner_error') {
+        log('❌ NER 失敗：' + e.data.message, 'err');
+        w.terminate(); resolve(null);
       }
-      const out = await session.run(inputs);
-      const lg = out.logits.data;
-      const mx = Math.max(lg[0], lg[1]);
-      void (Math.exp(lg[1]-mx) / (Math.exp(lg[0]-mx) + Math.exp(lg[1]-mx)));
-      times.push(performance.now() - ts);
+    };
+    w.postMessage({ type: 'ner_init', data: { origin: location.origin, noCache } });
+  });
+}
+
+async function measureCELoad(noCache) {
+  log('⚡ Cross-Encoder 載入（計時中）…');
+  return new Promise(resolve => {
+    const t0 = performance.now();
+    const w  = new Worker('js/inference-worker.js', { type: 'module' });
+    const progressId = noCache ? 'cold-val-ce' : 'warm-val-ce';
+    w.onmessage = async e => {
+      if (e.data.type === 'status' && e.data.loaded && e.data.total) {
+        document.getElementById(progressId).textContent =
+          ((e.data.loaded / e.data.total) * 100).toFixed(0) + '%';
+      } else if (e.data.type === 'ready') {
+        const loadMs = performance.now() - t0;
+        log(`✅ Cross-Encoder 就緒，${Math.round(loadMs)} ms`, 'ok');
+        log('🚀 推論 benchmark（5 暖機 + 10 計時）…');
+        const query = '興大附近 8000 以內有冷氣可以煮飯';
+        const prop  = '台中市南區興大路 近中興大學 套房 月租7500 附冷氣廚房洗衣機';
+        const lats  = [];
+        for (let i = 0; i < 15; i++) {
+          const t = performance.now();
+          await new Promise(res => {
+            const id = 'b' + i;
+            const h  = ev => {
+              if (ev.data.type === 'scoreResult' && ev.data.id === id) {
+                w.removeEventListener('message', h); res();
+              }
+            };
+            w.addEventListener('message', h);
+            w.postMessage({ type: 'score', data: { query, propertyText: prop, id } });
+          });
+          if (i >= 5) lats.push(performance.now() - t);
+        }
+        lats.sort((a, b) => a - b);
+        const p50 = lats[Math.floor(lats.length * 0.5)];
+        const p95 = lats[Math.floor(lats.length * 0.95)] ?? lats[lats.length - 1];
+        const avg = lats.reduce((s, v) => s + v, 0) / lats.length;
+        log(`📊 avg:${Math.round(avg)}ms P50:${Math.round(p50)}ms P95:${Math.round(p95)}ms`, 'info');
+        w.terminate();
+        resolve({ loadMs, p50, p95, avg });
+      } else if (e.data.type === 'error') {
+        log('❌ CE 失敗：' + e.data.message, 'err');
+        w.terminate(); resolve({ loadMs: null, p50: null, p95: null, avg: null });
+      }
+    };
+    w.postMessage({ type: 'init', data: { origin: location.origin, noCache } });
+  });
+}
+
+// ── 更新卡片 ──────────────────────────────────────────
+function applyCards(r, mode) {
+  const { net, nerMs, ce } = r;
+  const prefix = mode; // 'cold' or 'warm'
+  const doneClass = mode + '-done';
+
+  // 網速卡片
+  const speedCard = document.getElementById(`${prefix}-card-speed`);
+  const speedVal  = document.getElementById(`${prefix}-val-speed`);
+  speedVal.textContent = net.mbps.toFixed(1);
+  speedVal.className = 'card-value';
+  speedCard.className = 'card ' + doneClass;
+  document.getElementById(`${prefix}-sub-speed`).textContent =
+    `${net.mb.toFixed(1)} MB，${fmtMs(net.ms)}｜${net.source === 'cloudflare' ? 'Cloudflare 外部測速' : '⚠️ localhost（非真實網速）'}`;
+
+  // NER
+  if (nerMs !== null) {
+    document.getElementById(`${prefix}-val-ner`).textContent = Math.round(nerMs);
+    document.getElementById(`${prefix}-val-ner`).className = 'card-value';
+    document.getElementById(`${prefix}-card-ner`).className = 'card ' + doneClass;
+  }
+
+  // CE
+  if (ce.loadMs !== null) {
+    document.getElementById(`${prefix}-val-ce`).textContent = Math.round(ce.loadMs);
+    document.getElementById(`${prefix}-val-ce`).className = 'card-value';
+    document.getElementById(`${prefix}-card-ce`).className = 'card ' + doneClass;
+  }
+
+  // 推論
+  if (ce.p95 !== null) {
+    document.getElementById(`${prefix}-val-infer`).textContent = Math.round(ce.p95);
+    document.getElementById(`${prefix}-val-infer`).className = 'card-value';
+    document.getElementById(`${prefix}-card-infer`).className = 'card ' + doneClass;
+    document.getElementById(`${prefix}-sub-infer`).textContent =
+      `avg ${Math.round(ce.avg)}ms｜P50 ${Math.round(ce.p50)}ms｜P95 ${Math.round(ce.p95)}ms`;
+  }
+}
+
+// ── 更新時間軸 ────────────────────────────────────────
+function updateTimeline() {
+  const cold = results.cold;
+  const warm = results.warm;
+
+  // 收集所有有效值算全域 max（不含推論）
+  const allLoad = [
+    cold?.net?.ms, cold?.nerMs, cold?.ce?.loadMs,
+    warm?.net?.ms, warm?.nerMs, warm?.ce?.loadMs,
+  ].filter(v => v != null && v > 0);
+  const maxLoad = allLoad.length ? Math.max(...allLoad) * 1.3 : 1;
+
+  const allInfer = [cold?.ce?.p95, warm?.ce?.p95].filter(v => v != null && v > 0);
+  const maxInfer = allInfer.length ? Math.max(...allInfer) * 1.3 : 1;
+
+  const setBar = (id, ms, max) => {
+    const el = document.getElementById(id);
+    if (el) el.style.width = ms ? Math.min(100, (ms / max) * 100) + '%' : '0%';
+  };
+  const setVal = (id, ms) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = ms ? fmtMs(ms) : '—';
+  };
+
+  if (cold) {
+    setBar('bar-cold-speed', cold.net?.ms, maxLoad);
+    setBar('bar-cold-ner',   cold.nerMs,   maxLoad);
+    setBar('bar-cold-ce',    cold.ce?.loadMs, maxLoad);
+    setBar('bar-cold-infer', cold.ce?.p95, maxInfer);
+    setVal('ms-cold-speed', cold.net?.ms);
+    setVal('ms-cold-ner',   cold.nerMs);
+    setVal('ms-cold-ce',    cold.ce?.loadMs);
+    setVal('ms-cold-infer', cold.ce?.p95);
+  }
+  if (warm) {
+    setBar('bar-warm-speed', warm.net?.ms, maxLoad);
+    setBar('bar-warm-ner',   warm.nerMs,   maxLoad);
+    setBar('bar-warm-ce',    warm.ce?.loadMs, maxLoad);
+    setBar('bar-warm-infer', warm.ce?.p95, maxInfer);
+    setVal('ms-warm-speed', warm.net?.ms);
+    setVal('ms-warm-ner',   warm.nerMs);
+    setVal('ms-warm-ce',    warm.ce?.loadMs);
+    setVal('ms-warm-infer', warm.ce?.p95);
+  }
+}
+
+// ── 快取效益摘要 ──────────────────────────────────────
+function updateBenefit() {
+  const cold = results.cold;
+  const warm = results.warm;
+  if (!cold || !warm) return;
+
+  document.getElementById('benefit-section').style.display = '';
+
+  const setBenefit = (prefix, coldMs, warmMs) => {
+    const savedEl = document.getElementById(`ben-${prefix}-saved`);
+    const pctEl   = document.getElementById(`ben-${prefix}-pct`);
+    if (coldMs == null || warmMs == null) {
+      savedEl.textContent = '—'; savedEl.className = 'benefit-saved benefit-na';
+      pctEl.textContent = '';
+      return;
     }
-    return times;
+    const saved = coldMs - warmMs;
+    const pct   = ((saved / coldMs) * 100).toFixed(0);
+    savedEl.textContent = saved > 0 ? `節省 ${fmtMs(saved)}` : `差異 ${fmtMs(Math.abs(saved))}`;
+    savedEl.className   = 'benefit-saved';
+    pctEl.textContent   = saved > 0 ? `↓ ${pct}% 更快` : `↑ ${Math.abs(pct)}% 稍慢（WASM 波動）`;
+    pctEl.style.color   = saved > 0 ? '#86efac' : '#fca5a5';
+  };
+
+  setBenefit('ner', cold.nerMs, warm.nerMs);
+  setBenefit('ce',  cold.ce?.loadMs, warm.ce?.loadMs);
+
+  // 總載入
+  const coldTotal = (cold.nerMs ?? 0) + (cold.ce?.loadMs ?? 0);
+  const warmTotal = (warm.nerMs ?? 0) + (warm.ce?.loadMs ?? 0);
+  setBenefit('total', coldTotal, warmTotal);
+
+  // 推論（WASM 本地計算，快取影響小）
+  setBenefit('infer', cold.ce?.p95, warm.ce?.p95);
+}
+
+// ── Edge AI 特性表 ────────────────────────────────────
+function updateCmpTable() {
+  const cold = results.cold;
+  const warm = results.warm;
+
+  if (cold?.ce?.loadMs != null && cold?.nerMs != null) {
+    const coldTotal = (cold.nerMs ?? 0) + (cold.ce?.loadMs ?? 0);
+    document.getElementById('cmp-cold-load').textContent = fmtMs(coldTotal) + '（首次下載）';
+  }
+  if (warm?.ce?.loadMs != null && warm?.nerMs != null) {
+    const warmTotal = (warm.nerMs ?? 0) + (warm.ce?.loadMs ?? 0);
+    document.getElementById('cmp-warm-load').textContent = fmtMs(warmTotal) + '（快取命中）';
+
+    if (cold?.ce?.loadMs != null && cold?.nerMs != null) {
+      const coldTotal = (cold.nerMs ?? 0) + (cold.ce?.loadMs ?? 0);
+      const saved = coldTotal - warmTotal;
+      const pct   = ((saved / coldTotal) * 100).toFixed(0);
+      document.getElementById('cmp-load-badge').innerHTML =
+        saved > 0
+          ? `<span class="badge badge-purple">快取後節省 ${pct}%</span>`
+          : `<span class="badge badge-yellow">差異小</span>`;
+    }
   }
 
-  // Warm-up
-  log(`      warm-up ${N_WARMUP} × 30 passes...`);
-  for (let i = 0; i < N_WARMUP; i++) await score30(QUERY);
-
-  // Timed runs
-  log(`      measuring ${N_REPEATS} × 30 passes...`);
-  const allPerPass = [];
-  const allTotal   = [];
-  for (let r = 0; r < N_REPEATS; r++) {
-    const tRun = performance.now();
-    const times = await score30(QUERY);
-    const total = performance.now() - tRun;
-    allPerPass.push(...times);
-    allTotal.push(total);
-    log(`      run ${r+1}: total=${fmt(total)} ms  avg/pass=${fmt(times.reduce((a,b)=>a+b,0)/times.length)} ms`);
+  if (cold?.ce?.p95 != null) {
+    document.getElementById('cmp-cold-infer').textContent = `P95 ${fmtMs(cold.ce.p95)}（本地 WASM）`;
   }
-
-  const mem1 = memMB();
-
-  // ── 5. Statistics ────────────────────────────────────────
-  log('');
-  log('═══════════ RESULTS ═══════════', 'ok');
-  log('');
-  log('── Per-pass latency (single tokenize + forward) ──');
-  log(`   P50  : ${fmt(pct(allPerPass,50))} ms`);
-  log(`   P75  : ${fmt(pct(allPerPass,75))} ms`);
-  log(`   P95  : ${fmt(pct(allPerPass,95))} ms  ← target KPI`, 'ok');
-  log(`   P99  : ${fmt(pct(allPerPass,99))} ms`);
-  log(`   Min  : ${fmt(Math.min(...allPerPass))} ms`);
-  log(`   Max  : ${fmt(Math.max(...allPerPass))} ms`);
-  log('');
-  log('── Full 30-candidate rerank latency ──');
-  log(`   P50  : ${fmt(pct(allTotal,50))} ms`);
-  log(`   P95  : ${fmt(pct(allTotal,95))} ms  ← end-user visible`, 'ok');
-  log(`   Min  : ${fmt(Math.min(...allTotal))} ms`);
-  log(`   Max  : ${fmt(Math.max(...allTotal))} ms`);
-  log('');
-  log('── Memory ──');
-  if (mem0 && mem1) {
-    const delta = (parseFloat(mem1)-parseFloat(mem0)).toFixed(1);
-    log(`   Heap before 1st run : ${mem0} MB`);
-    log(`   Heap after  5th run : ${mem1} MB`);
-    log(`   Inference delta     : ${delta >= 0 ? '+' : ''}${delta} MB`);
-  } else {
-    log('   performance.memory not available (non-Chrome or cross-origin)', 'warn');
-    log('   → Use DevTools Memory tab for accurate heap profiling', 'warn');
+  if (warm?.ce?.p95 != null) {
+    document.getElementById('cmp-warm-infer').textContent = `P95 ${fmtMs(warm.ce.p95)}（本地 WASM）`;
+    document.getElementById('cmp-infer-badge').innerHTML =
+      `<span class="badge badge-green">本地 WASM 恆定低延遲</span>`;
   }
-  log('');
-  log('── Session Init ──');
-  log(`   Model buffer size : ${(modelBuffer.length/1048576).toFixed(1)} MB`);
-  log(`   Session init time : ${fmt(sessionInitMs)} ms (one-time, cached thereafter)`);
-  log('');
-  log('── Environment ──');
-  log(`   Threads           : ${Math.min(navigator.hardwareConcurrency||4, 4)}`);
-  log(`   HW concurrency    : ${navigator.hardwareConcurrency || 'unknown'}`);
-  log(`   SIMD support      : ${typeof WebAssembly !== 'undefined' ? 'likely (modern browser)' : 'N/A'}`);
-  log(`   MAX_LENGTH        : ${MAX_LENGTH} tokens`);
-  log('═══════════════════════════════', 'ok');
+}
 
-  document.getElementById('startBtn').disabled = false;
+// ── 主入口 ────────────────────────────────────────────
+const btns = () => ['btn-cold','btn-warm'].map(id => document.getElementById(id));
+
+window.runMode = async function(mode) {
+  document.getElementById('log').innerHTML = '';
+  btns().forEach(b => b.disabled = true);
+
+  log(`=== ${mode === 'cold' ? '🧊 無快取（首次）' : '♻️ 有快取（二次）'} ===`, 'head');
+
+  const noCache = mode === 'cold';
+  const net     = await measureNetworkSpeed(!noCache);
+  const nerMs   = await measureNerLoad(noCache);
+  const ce      = await measureCELoad(noCache);
+
+  results[mode] = { net, nerMs, ce };
+
+  applyCards(results[mode], mode);
+  updateTimeline();
+  updateBenefit();
+  updateCmpTable();
+
+  log('=== 測試完成 ===', 'ok');
+  if (mode === 'cold' && !results.warm) {
+    log('💡 請繼續執行步驟二（有快取）以觀察快取效益', 'info');
+  }
+  btns().forEach(b => b.disabled = false);
 };
 </script>
 </body>

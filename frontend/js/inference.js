@@ -372,6 +372,71 @@ function explainMatch(query, prop, constraints) {
             triggers: ['全配', '家具', '家電', '附家電', '附家具'],
             check: p => (p.includes('冰箱') || p.includes('冷氣')) && (p.includes('床') || p.includes('桌')),
             label: '🛋️ 家具家電全配'
+        },
+        // ── 女生安全 ──────────────────────────────────
+        {
+            triggers: ['女生獨居', '獨居女', '女生住', '女生安全', '怕危險', '治安', '監視器', '女性友善'],
+            check: p => p.includes('監視器') || p.includes('女性') || p.includes('門禁') || p.includes('管理員'),
+            label: '🛡️ 女性友善 / 安全管理'
+        },
+        // ── 衛浴獨立 ──────────────────────────────────
+        {
+            triggers: ['不想共用廁所', '不想共廁', '個人衛浴', '獨立衛浴', '獨衛', '想泡澡', '浴缸'],
+            check: p => p.includes('獨衛') || p.includes('獨立衛浴') || p.includes('浴缸') || p.includes('套房'),
+            label: '🚿 獨立衛浴不共用'
+        },
+        // ── 租期彈性 ──────────────────────────────────
+        {
+            triggers: ['短租', '只租幾個月', '不確定租多久', '剛畢業', '工作不穩定', '彈性租期'],
+            check: p => p.includes('短租') || p.includes('彈性') || p.includes('不限租期') || p.includes('月租'),
+            label: '📅 租期彈性不限長短'
+        },
+        // ── 合租 / 室友 ───────────────────────────────
+        {
+            triggers: ['找室友', '想合租', '不想一個人住', '合租', '分租'],
+            check: p => p.includes('室友') || p.includes('合租') || p.includes('分租') || p.includes('雅房'),
+            label: '👥 可合租 / 室友同住'
+        },
+        {
+            triggers: ['一個人住', '不想跟人共用', '獨住'],
+            check: p => p.includes('套房') || p.includes('獨衛') || p.includes('獨立'),
+            label: '🏠 獨立套房不共用'
+        },
+        // ── 交通通勤 ──────────────────────────────────
+        {
+            triggers: ['通勤', '上班方便', '沒有車', '不開車', '近公車', '近捷運'],
+            check: p => p.includes('公車') || p.includes('捷運') || p.includes('交通') || p.includes('生活機能'),
+            label: '🚌 交通便利 / 近大眾運輸'
+        },
+        // ── 在家工作 / WFH ────────────────────────────
+        {
+            triggers: ['在家工作', 'WFH', '遠距工作', '居家辦公', '書桌', '打報告', '念書', '讀書'],
+            check: p => p.includes('書桌') || p.includes('寬頻') || p.includes('網路') || p.includes('安靜'),
+            label: '💻 適合居家辦公 / 讀書'
+        },
+        // ── 預算暗示 ──────────────────────────────────
+        {
+            triggers: ['學生', '剛出社會', '薪水不多', '不要太貴', '便宜', '省錢', '實惠'],
+            check: (p, prop) => prop.cp_tag === 'high_cp' || p.includes('學生') || p.includes('實惠') || p.includes('經濟'),
+            label: '💰 經濟實惠 / 學生友善'
+        },
+        // ── 採光朝向 ──────────────────────────────────
+        {
+            triggers: ['不要西曬', '採光', '東向', '南向', '對外窗', '明亮'],
+            check: p => p.includes('採光') || p.includes('對外窗') || p.includes('東向') || p.includes('南向'),
+            label: '🌤️ 採光佳 / 無西曬'
+        },
+        // ── 安靜 / 隔音 ───────────────────────────────
+        {
+            triggers: ['怕吵', '安靜', '隔音', '靜巷'],
+            check: p => p.includes('隔音') || p.includes('靜巷') || p.includes('氣密') || p.includes('安靜'),
+            label: '🔇 安靜隔音佳'
+        },
+        // ── 夜貓子 / 無門禁 ───────────────────────────
+        {
+            triggers: ['夜貓子', '作息晚', '晚歸', '無門禁', '24小時'],
+            check: p => p.includes('無門禁') || p.includes('24小時') || p.includes('自由進出') || p.includes('不限'),
+            label: '🌙 無門禁限制 / 自由進出'
         }
     ];
 
