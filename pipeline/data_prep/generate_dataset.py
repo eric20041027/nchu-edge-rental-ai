@@ -563,6 +563,37 @@ def compute_relevance_score(query: str, prop: Dict[str, Any]) -> int:
         "一定要", "絕對", "必須", "絕對不要", "謝絕", "禁止", "急尋", "求租", "【", "#", "＃"
     ])
 
+    # --- 必要條件硬性衝突（優先於所有其他評分，直接返回 0）---
+    # 當查詢含明確「必要條件」關鍵字，且 property 明確違反時，不給任何分數
+    _MANDATORY_CHECKS = [
+        # (query 觸發詞列表, property 違反判斷函式)
+        (
+            ["一定要電梯", "必須有電梯", "不爬樓梯", "要有電梯", "腿不好"],
+            lambda p: "電梯" not in " ".join(p.get("furniture", [])) and p.get("building_type", "") not in ("大樓", "華廈"),
+        ),
+        (
+            ["獨洗", "獨立洗衣", "一定要獨洗", "不共用洗衣機"],
+            lambda p: not any(kw in " ".join(p.get("furniture", [])) for kw in ["洗衣機", "獨洗", "個人洗衣"]),
+        ),
+        (
+            ["一定要開伙", "必須能煮飯", "要有廚房", "自炊族", "想在家煮飯"],
+            lambda p: not any(kw in " ".join(p.get("notes", [])) + " ".join(p.get("furniture", [])) for kw in ["開伙", "瓦斯", "廚房", "自炊"]),
+        ),
+        (
+            ["禁菸", "不接受抽菸", "怕菸味"],
+            lambda p: any("可菸" in n or "允許抽菸" in n for n in p.get("notes", [])),
+        ),
+        (
+            ["走路就到", "不騎車", "步行可達", "走路五分鐘以內"],
+            lambda p: (p.get("walk_mins", 99) or 99) > 20,
+        ),
+    ]
+    # 注意：只在查詢包含強制性語氣時才觸發（避免過度懲罰普通提及）
+    if is_strict or any(kw in query for kw in ["一定要", "必須", "謝絕", "禁"]):
+        for trigger_kws, violation_fn in _MANDATORY_CHECKS:
+            if any(kw in query for kw in trigger_kws) and violation_fn(prop):
+                return 0
+
     adv = FeatureEngine.extract_all(prop)
 
     # 1. Budget — direction-aware
@@ -794,21 +825,71 @@ def main():
     # 這強迫模型學習「禁/不/謝絕」等否定語意的語義權重
     # ============================================================
     CONFLICT_DIMENSIONS = [
+        # --- 原有四個維度 ---
         {
-            "query_keywords": ["可養寵", "可寵", "可以養貓", "可以養狗", "帶貓", "帶狗", "有寵物", "2隻貓", "3隻貓"],
+            "query_keywords": ["可養寵", "可寵", "可以養貓", "可以養狗", "帶貓", "帶狗", "有寵物", "2隻貓", "3隻貓", "毛孩子", "主子"],
             "prop_conflict":  lambda p: any("禁寵" in n or "禁止寵物" in n or "不可養寵" in n for n in p.get("notes", [])),
+            "conflict_type": "pet",
         },
         {
-            "query_keywords": ["謝絕頂加", "不要頂加", "禁頂加", "非頂加", "不接受頂加"],
+            "query_keywords": ["謝絕頂加", "不要頂加", "禁頂加", "非頂加", "不接受頂加", "不找頂加"],
             "prop_conflict":  lambda p: "頂加" in p.get("building_type", "") or "加蓋" in p.get("floor", ""),
+            "conflict_type": "rooftop",
         },
         {
-            "query_keywords": ["限女", "女生專用", "女學生", "僅限女"],
+            "query_keywords": ["限女", "女生專用", "女學生", "僅限女", "女性優先"],
             "prop_conflict":  lambda p: any("限男" in n for n in p.get("notes", [])),
+            "conflict_type": "gender_female",
         },
         {
-            "query_keywords": ["限男", "男生", "僅限男"],
+            "query_keywords": ["限男", "男生", "僅限男", "男性優先"],
             "prop_conflict":  lambda p: any("限女" in n for n in p.get("notes", [])),
+            "conflict_type": "gender_male",
+        },
+        # --- 新增：台電計費衝突（查詢要求台電帳單，房源為自訂電費）---
+        {
+            "query_keywords": ["台電", "台水台電", "自繳電費", "照台電收", "台電帳單", "電費依台電"],
+            "prop_conflict":  lambda p: any(
+                re.search(r"一度[456789]", n) or "電費另計" in n or "代收電費" in n
+                for n in p.get("notes", [])
+            ),
+            "conflict_type": "electricity_billing",
+        },
+        # --- 新增：禁菸衝突（查詢禁菸，房源允許抽菸）---
+        {
+            "query_keywords": ["禁菸", "不抽菸", "不接受抽菸", "怕菸味", "無菸"],
+            "prop_conflict":  lambda p: any("可菸" in n or "允許抽菸" in n for n in p.get("notes", [])),
+            "conflict_type": "smoking",
+        },
+        # --- 新增：電梯必要衝突（查詢明確要電梯，房源無電梯）---
+        {
+            "query_keywords": ["一定要電梯", "必須有電梯", "不爬樓梯", "要有電梯", "腿不好"],
+            "prop_conflict":  lambda p: "電梯" not in " ".join(p.get("furniture", [])) and p.get("building_type", "") not in ("大樓", "華廈"),
+            "conflict_type": "elevator_required",
+        },
+        # --- 新增：開伙必要衝突（查詢明確要能煮飯，房源禁止開伙）---
+        {
+            "query_keywords": ["一定要開伙", "必須能煮飯", "要有廚房", "喜歡自己煮", "自炊族", "想在家煮飯"],
+            "prop_conflict":  lambda p: not any(
+                kw in " ".join(p.get("notes", [])) + " ".join(p.get("furniture", []))
+                for kw in ["開伙", "瓦斯", "廚房", "自炊"]
+            ),
+            "conflict_type": "cooking_required",
+        },
+        # --- 新增：距離衝突（查詢要求走路可達，房源距離太遠）---
+        {
+            "query_keywords": ["走路就到", "不騎車", "走路上學", "步行可達", "不想騎車", "走路五分鐘"],
+            "prop_conflict":  lambda p: (p.get("walk_mins", 99) or 99) > 20,
+            "conflict_type": "distance_walking",
+        },
+        # --- 新增：獨立洗衣衝突（查詢明確要獨洗，房源無獨洗）---
+        {
+            "query_keywords": ["獨洗", "獨立洗衣", "不共用洗衣", "不想共用洗衣機", "一定要獨洗"],
+            "prop_conflict":  lambda p: not any(
+                kw in " ".join(p.get("furniture", []))
+                for kw in ["洗衣機", "獨洗", "個人洗衣"]
+            ),
+            "conflict_type": "laundry_private",
         },
     ]
     # Precompute property character sets for faster Jaccard sorting
@@ -856,10 +937,27 @@ def main():
                         if semantic_neg_cands:
                             # 優先挑租金較低（看起來更吸引人）的語意陷阱
                             semantic_neg_cands.sort(key=lambda i: properties[i].get("rent", 9999))
-                            # 增加語意衝突負樣本數量至 2 個（保留核心干擾，精簡數量）
+                            ctype = dim.get("conflict_type", "semantic")
                             for chosen in semantic_neg_cands[:2]:
-                                samples.append({"query": query, "property": prop_texts[chosen], "label": 0, "relevance": 0, "property_idx": chosen})
+                                samples.append({"query": query, "property": prop_texts[chosen], "label": 0, "relevance": 0, "property_idx": chosen, "conflict_type": ctype})
                         break  # 每個查詢只加一類語意衝突負樣本，但該類生成2個
+
+                # --- 策略三：必要條件預算上限負樣本 ---
+                # 當查詢明確設定預算上限，強制配對租金超出上限的房源
+                # 這類樣本表面上相似（同區域/設施），但模型必須學會拒絕超預算房源
+                budget_ceil_match = re.search(r"(\d{4,5})\s*元?\s*(以下|以內|內)", query)
+                if budget_ceil_match:
+                    budget_ceil = int(budget_ceil_match.group(1))
+                    # 找出租金明顯超出上限（>10%）的房源，優先選租金與上限接近的（最難的）
+                    over_budget = [
+                        i for i in other_in_split
+                        if properties[i].get("rent", 0) > budget_ceil * 1.1
+                    ]
+                    if over_budget:
+                        # 按租金升序排列：選最接近預算上限的（最難的負樣本）
+                        over_budget.sort(key=lambda i: properties[i].get("rent", 9999))
+                        for chosen in over_budget[:2]:
+                            samples.append({"query": query, "property": prop_texts[chosen], "label": 0, "relevance": 0, "property_idx": chosen, "conflict_type": "budget_ceiling"})
 
         random.shuffle(samples)
         return samples
@@ -932,16 +1030,20 @@ def main():
     print(f"  Test:  {len(test_data)} samples")
 
     print(f"\nStep 3: Saving datasets...")
-    def clean(samples): 
-        return [
-            {
-                "query": s["query"], 
-                "property": s["property"], 
-                "label": s["label"], 
+    def clean(samples):
+        out = []
+        for s in samples:
+            record = {
+                "query": s["query"],
+                "property": s["property"],
+                "label": s["label"],
                 "relevance": s.get("relevance", s["label"]),
-                "is_hard": s.get("is_hard", False)
-            } for s in samples
-        ]
+                "is_hard": s.get("is_hard", False),
+            }
+            if "conflict_type" in s:
+                record["conflict_type"] = s["conflict_type"]
+            out.append(record)
+        return out
 
     for filename, subset in zip(
         ["../../data/processed/recommendation_train.json", "../../data/processed/recommendation_dev.json", "../../data/processed/recommendation_test.json"],

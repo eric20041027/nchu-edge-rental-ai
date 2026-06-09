@@ -53,8 +53,12 @@ class FGMTrainer(Trainer):
     """
 
     @staticmethod
-    def _compute_combined_loss(outputs, inputs_with_labels, soft_labels):
-        """Compute 0.5 * CE(hard) + 0.5 * BCE(soft) combined loss."""
+    def _compute_combined_loss(outputs, inputs_with_labels, soft_labels, sample_weights=None):
+        """Compute 0.5 * CE(hard) + 0.5 * weighted_BCE(soft) combined loss.
+
+        sample_weights: per-sample multiplier (2.0 for mandatory-condition violations,
+        1.0 otherwise) that up-weights errors on hard mandatory negatives.
+        """
         import torch.nn.functional as F
 
         ce_loss = outputs.loss  # cross-entropy from model's own computation
@@ -62,26 +66,35 @@ class FGMTrainer(Trainer):
             return ce_loss
 
         logits = outputs.logits
-        # Log-odds score for the positive class
         pos_logit = logits[:, 1] - logits[:, 0]
-        ranking_loss = F.binary_cross_entropy_with_logits(pos_logit, soft_labels.float())
+
+        if sample_weights is not None:
+            # Per-sample weighted BCE: mandatory-condition negatives penalised 2x
+            bce_per_sample = F.binary_cross_entropy_with_logits(
+                pos_logit, soft_labels.float(), reduction="none"
+            )
+            ranking_loss = (bce_per_sample * sample_weights).mean()
+        else:
+            ranking_loss = F.binary_cross_entropy_with_logits(pos_logit, soft_labels.float())
+
         return 0.5 * ce_loss + 0.5 * ranking_loss
 
     def training_step(self, model, inputs, num_items_in_batch=None) -> torch.Tensor:
         model.train()
         inputs = self._prepare_inputs(inputs)
 
-        # Extract soft relevance labels — pop so the model never sees them
+        # Pop auxiliary tensors so the model never sees them
         soft_labels = inputs.pop("soft_labels", None)
+        sample_weights = inputs.pop("sample_weights", None)
 
         outputs = model(**inputs)
-        loss = self._compute_combined_loss(outputs, inputs, soft_labels)
+        loss = self._compute_combined_loss(outputs, inputs, soft_labels, sample_weights)
         loss.backward()
 
         fgm = FGM(model)
         fgm.attack()
         outputs_adv = model(**inputs)
-        loss_adv = self._compute_combined_loss(outputs_adv, inputs, soft_labels)
+        loss_adv = self._compute_combined_loss(outputs_adv, inputs, soft_labels, sample_weights)
         loss_adv.backward()
         fgm.restore()
 
@@ -227,17 +240,25 @@ class ModelTrainer(BaseTrainer):
                 dataloader_num_workers=0,  # Windows compatibility
             )
 
-            # Graded relevance → soft label: -1/0→0.0, 1→0.4, 2→0.7, 3→1.0
+            # Graded relevance → soft label: -1→0.0, 0→0.0, 1→0.4, 2→0.7, 3→1.0
             # label=1 with relevance=0 gets 0.15 (minimum positive)
             _REL_SOFT = {-1: 0.0, 0: 0.0, 1: 0.4, 2: 0.7, 3: 1.0}
             _LABEL1_REL0_SOFT = 0.15  # positive but zero-graded relevance
+
+            # Conflict types that represent hard mandatory violations — these get a
+            # sample weight multiplier so the loss penalises them more strongly.
+            _MANDATORY_CONFLICT_TYPES = {
+                "pet", "rooftop", "gender_female", "gender_male",
+                "electricity_billing", "smoking", "elevator_required",
+                "cooking_required", "distance_walking", "laundry_private",
+                "budget_ceiling",
+            }
 
             def tokenize_function(examples):
                 # Use property text field (cross-encoder needs actual text, not URLs)
                 if "property" in examples:
                     property_text = examples["property"]
                 else:
-                    # Fallback: empty string is better than a URL
                     property_text = [""] * len(examples["query"])
 
                 result = self.tokenizer(
@@ -251,22 +272,32 @@ class ModelTrainer(BaseTrainer):
                 if "label" in examples:
                     result["labels"] = [int(bool(l)) for l in examples["label"]]
 
-                # Soft labels encode graded relevance for ranking-aware loss
+                # Soft labels encode graded relevance for ranking-aware loss.
+                # Mandatory-condition conflict negatives get soft=0.0 but their
+                # sample_weight is boosted to 2.0 so the BCE loss penalises these
+                # prediction errors more strongly than ordinary negatives.
                 labels = examples.get("label", [0] * len(examples["query"]))
                 relevances = examples.get("relevance", [0] * len(examples["query"]))
+                conflict_types = examples.get("conflict_type", [None] * len(examples["query"]))
                 soft = []
-                for lbl, rel in zip(labels, relevances):
+                weights = []
+                for lbl, rel, ctype in zip(labels, relevances, conflict_types):
                     try:
                         rel_int = int(rel) if rel is not None else 0
                     except (ValueError, TypeError):
                         rel_int = 0
                     if int(bool(lbl)) == 0:
                         soft.append(0.0)
+                        is_mandatory = ctype in _MANDATORY_CONFLICT_TYPES if ctype else False
+                        weights.append(2.0 if is_mandatory else 1.0)
                     elif rel_int == 0:
                         soft.append(_LABEL1_REL0_SOFT)
+                        weights.append(1.0)
                     else:
                         soft.append(_REL_SOFT.get(rel_int, 0.15))
+                        weights.append(1.0)
                 result["soft_labels"] = soft
+                result["sample_weights"] = weights
                 return result
 
             # Tokenize datasets
