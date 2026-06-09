@@ -25,94 +25,29 @@ let ort   = null;
 let vocab = null;  // Map<token_str, id>
 let session = null;
 
-// Cache API key — bump version string when NER model weights change
-const NER_CACHE_NAME  = 'rental-models-v20260514';
-const NER_MODEL_KEY   = 'ner-quant-v20260514';
-const NER_VOCAB_KEY   = 'ner-tokenizer-v20260514';
-
-/**
- * Loads a resource from Cache API, or fetches + streams it from network.
- * Reports download progress via onProgress(loaded, total) when downloading.
- */
-async function cachedFetch(url, cacheKey, cacheName, onProgress = null) {
-    try {
-        const cache = await caches.open(cacheName);
-        const cached = await cache.match(cacheKey);
-        if (cached) return await cached.arrayBuffer();
-    } catch (_) { /* caches unavailable */ }
-
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`Fetch failed: ${response.status} ${url}`);
-
-    if (onProgress && response.body) {
-        const contentLength = +response.headers.get('Content-Length') || 38000000;
-        const reader = response.body.getReader();
-        const chunks = [];
-        let received = 0, lastReport = 0;
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            chunks.push(value);
-            received += value.length;
-            if (received - lastReport > 512 * 1024) {
-                onProgress(received, contentLength);
-                lastReport = received;
-            }
-        }
-        const buf = new Uint8Array(received);
-        let pos = 0;
-        for (const c of chunks) { buf.set(c, pos); pos += c.length; }
-
-        try {
-            const cache = await caches.open(cacheName);
-            await cache.put(cacheKey, new Response(buf.buffer, {
-                headers: { 'Content-Type': 'application/octet-stream' }
-            }));
-        } catch (_) { /* quota exceeded — non-fatal */ }
-
-        return buf.buffer;
-    }
-
-    const buf = await response.arrayBuffer();
-    try {
-        const cache = await caches.open(cacheName);
-        await cache.put(cacheKey, new Response(buf.slice(0), {
-            headers: { 'Content-Type': 'application/octet-stream' }
-        }));
-    } catch (_) {}
-    return buf;
-}
-
 // ── Initialization ──────────────────────────────────────────────────────────
 
-async function init(origin) {
+async function init(origin, noCache = false) {
     try {
+        const cacheMode = noCache ? 'no-store' : 'default';
         postMessage({ type: 'ner_status', message: '載入 NER 模組...' });
 
         const ortModule = await import('https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.mjs');
         ort = ortModule.default ?? ortModule;
 
-        // Load vocab and model in parallel (both may be cached)
-        postMessage({ type: 'ner_status', message: '載入 NER 詞表與模型...' });
-
-        const [vocabBuf, modelBuf] = await Promise.all([
-            cachedFetch(
-                origin + '/models/ner_model_dir/tokenizer.json',
-                NER_VOCAB_KEY,
-                NER_CACHE_NAME
-            ),
-            cachedFetch(
-                origin + '/models/ner_model_dir/ner_model_quant.onnx',
-                NER_MODEL_KEY,
-                NER_CACHE_NAME,
-                (loaded, total) => postMessage({ type: 'ner_progress', loaded, total })
-            )
-        ]);
-
-        const tokenizerJson = JSON.parse(new TextDecoder().decode(vocabBuf));
+        // Fetch vocab from tokenizer.json
+        postMessage({ type: 'ner_status', message: '載入 NER 詞表...' });
+        const tokenizerRes = await fetch(origin + '/models/ner_model_dir/tokenizer.json', { cache: cacheMode });
+        const tokenizerJson = await tokenizerRes.json();
         vocab = new Map(Object.entries(tokenizerJson.model.vocab));
 
-        session = await ort.InferenceSession.create(modelBuf, {
+        // Fetch + load the quantized NER model
+        postMessage({ type: 'ner_status', message: '載入 NER 模型...' });
+        const modelRes = await fetch(origin + '/models/ner_model_dir/ner_model_quant.onnx', { cache: cacheMode });
+        if (!modelRes.ok) throw new Error(`NER model fetch failed: ${modelRes.status}`);
+        const modelBuffer = await modelRes.arrayBuffer();
+
+        session = await ort.InferenceSession.create(modelBuffer, {
             executionProviders: ['wasm'],
             graphOptimizationLevel: 'all',
         });
@@ -239,7 +174,7 @@ onmessage = async (e) => {
     const { type, data } = e.data;
 
     if (type === 'ner_init') {
-        await init(data.origin);
+        await init(data.origin, data.noCache ?? false);
     } else if (type === 'ner_extract') {
         const { query, id } = data;
         try {
