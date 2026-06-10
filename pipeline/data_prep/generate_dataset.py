@@ -991,13 +991,30 @@ def main():
                     # Support both "property" (text) and "property_text" fields
                     p_text = item.get("property") or item.get("property_text")
                     if p_text:
-                        external_samples.append({
-                            "query": item["query"], 
-                            "property": p_text, 
-                            "label": item.get("label", 0), 
+                        record = {
+                            "query": item["query"],
+                            "property": p_text,
+                            "label": item.get("label", 0),
                             "relevance": item.get("relevance", 0),
-                            "is_hard": item.get("is_hard", True) # Default to True for external
-                        })
+                            "is_hard": item.get("is_hard", True),
+                        }
+                        # Propagate conflict_type so trainer applies 2x loss weight
+                        if "conflict_type" in item:
+                            record["conflict_type"] = item["conflict_type"]
+                        elif item.get("category"):
+                            _CAT_TO_CTYPE = {
+                                "自炊衝突": "cooking_required",
+                                "女生安全衝突": "gender_female",
+                                "衛浴獨立衝突": "laundry_private",
+                                "寵物衝突": "pet",
+                                "停車衝突": "distance_walking",
+                                "費用衝突": "electricity_billing",
+                                "設備衝突": "elevator_required",
+                            }
+                            ctype = _CAT_TO_CTYPE.get(item["category"])
+                            if ctype:
+                                record["conflict_type"] = ctype
+                        external_samples.append(record)
                 # [Legacy Logic] Handle list of query strings
                 elif isinstance(item, str):
                     query = item
