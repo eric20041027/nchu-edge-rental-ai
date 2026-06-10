@@ -2,6 +2,48 @@
 
 ---
 
+## [2026.06.11] - 量化策略升級、git 歷史清理、指標與文件全面更新
+
+### 量化策略升級（Cross-Encoder）
+
+- **per_channel 動態 INT8**：將 `quantize_model.py` 從 `per_channel=False` 升級為 `per_channel=True`
+- 對 4,386 筆測試樣本（batch=1，模擬 Web Worker 逐筆推論）實測對比：
+
+  | 策略 | Acc | F1 | P50 延遲 | P95 延遲 |
+  |---|---|---|---|---|
+  | per_tensor（舊）| 0.7832 | 0.6335 | 18.7 ms | 41.0 ms |
+  | **per_channel（現）** | **0.8568** | **0.7191** | **14.2 ms** | **24.8 ms** |
+
+- **靜態量化（QDQ）評估**：activation 校準因 dev set 正負比例不均導致 scale 偏移（F1=0），加上 ONNX Runtime Web 對 QDQ 支援有限，已棄用
+- 量化腳本加入自動 fallback：校準資料不可用時退回 dynamic quantization
+
+### README 與文件更新（v3.0 數字同步）
+
+- **README.md**：NDCG@5 0.833→**0.877**、NER F1 0.997→**0.9779**、模型大小 38.6 MB→**94 MB**（NER 37 MB + CE 57 MB）、訓練樣本 41,485→**45,503**（37,508/4,002/3,993）、損失函數 RankNet+ListNet→**Soft-Label BCE**、困難負樣本比例 6.5%→**3.2%**、版本表更新至 v3.0
+- **docs/EDGE_INFERENCE.md**：新增「量化策略評估」對比表，說明 per_channel 優勢與 QDQ 棄用原因，修正模型大小標示
+- **docs/MODEL_ARCHITECTURE.md**：修正舊的 38.6 MB 數字，標注現用 Dynamic per_channel 方法，NDCG@5 更新至 0.877
+
+### 簡報更新（EdgeAI slide）
+
+- EdgeAI slide 量化成果區塊改為雙欄：左側保留壓縮率數字，右側新增「量化策略對比實驗」表（per_tensor vs per_channel，Acc / F1 / P95 三指標對比）
+
+### git 歷史清理
+
+- `git filter-repo --path my-slide --invert-paths`：徹底移除 my-slide 所有歷史 blob（含 remote）
+- `git filter-repo --strip-blobs-bigger-than 10M`：清除歷史中舊版大型 ONNX blob，pack 從 1.4 GB 降至 185 MB
+- `.gitignore` 修正：移除意外排除 quant 模型的殘留規則（garbled wildcard 行 + 明確排除行），恢復 quant 模型追蹤
+
+### Vercel 部署修復（404）
+
+- **根本原因**：`.gitignore` 殘留規則意外排除 `my_custom_model_quant.onnx`，Vercel 部署後模型不存在 → `Worker error: HTTP error! status: 404`
+- **修復**：重新加入 `my_custom_model_quant.onnx`（57 MB）與 `ner_model_quant.onnx`（36 MB）並推送
+
+### 通勤意圖擴充
+
+- `inference.js` expandQueryIntent 新增 16 個學校通勤短語（「走路到學校」、「騎車去學校」等）→ 自動映射為 `走路10分` / `騎車10分`，觸發既有正則捕抓 `maxWalkMins=10`
+
+---
+
 ## [2026.05.15] - 程式碼品質全面審查、文件重構與 README LaTeX 修復
 
 ### README.md 重構
