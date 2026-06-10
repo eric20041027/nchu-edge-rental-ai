@@ -16,7 +16,7 @@
 
 | 項目 | 數值 |
 |:---|:---|
-| 模型 | rbt3 INT8（`my_custom_model_quant.onnx`，38.6 MB）|
+| 模型 | rbt3 Dynamic INT8 per_channel（`my_custom_model_quant.onnx`，57 MB）|
 | 每次查詢 | 30 個候選房源，30 次獨立 forward pass |
 | 輸入長度 | `MAX_LENGTH = 64` tokens（query + property text pair）|
 | 執行環境 | ONNX Runtime Web + WASM SIMD，最多 4 執行緒 |
@@ -35,6 +35,22 @@ rbt3 每次 forward pass 的主要計算（64 tokens）：
 | 合計（INT8 等效）| **~980M INT8 ops / pass** |
 
 INT8 WASM SIMD 在現代 x86 CPU 上吞吐量約 100–400 GOPS，理論下限 ~2.5ms/pass；實際加上 JS 開銷、tensor 分配與 WASM 呼叫邊界約 **10–60ms/pass**，視裝置而定。
+
+---
+
+## 量化策略評估（Cross-Encoder）
+
+三種量化方案對 4,386 筆測試樣本的對比（batch=1，模擬瀏覽器逐筆推論）：
+
+| 策略 | 大小 | Accuracy | F1 | P50 延遲 | P95 延遲 |
+|:---|:---:|:---:|:---:|:---:|:---:|
+| Dynamic INT8 per_tensor（舊）| 57.2 MB | 0.7832 | 0.6335 | 18.7 ms | 41.0 ms |
+| **Dynamic INT8 per_channel（現用）** | **57.4 MB** | **0.8568** | **0.7191** | **14.2 ms** | **24.8 ms** |
+| Static INT8 QDQ（已棄用）| 228 MB | 0.7563 | 0.0000 | — | — |
+
+**per_channel 說明**：對每個輸出 channel 獨立計算量化 scale，比全局 per_tensor scale 精度更高，避免不同 channel 動態範圍差異過大導致截斷誤差。batch=1 時 ORT kernel 也跑得比 per_tensor 更快（P95 −40%）。
+
+**Static QDQ 棄用原因**：activation 校準需要代表性樣本，現有 dev set 正負比例不均，導致 activation scale 偏移，所有輸出預測為 negative（F1=0）。ONNX Runtime Web 對 QDQ 格式支援也有限制。
 
 ---
 

@@ -4,7 +4,7 @@
 
 ### 為什麼使用蒸餾？
 
-直接訓練 rbt3（3 層，38.6 MB）排序上限約 NDCG@5 ≈ 0.72–0.75。由 rbt6（6 層）作 teacher 教導 rbt3，可讓小模型學到超越其容量限制的排序知識。
+直接訓練 rbt3（3 層，57 MB INT8）排序上限約 NDCG@5 ≈ 0.72–0.75。由 rbt6（6 層）作 teacher 教導 rbt3，可讓小模型學到超越其容量限制的排序知識。
 
 ### 兩階段訓練
 
@@ -20,7 +20,7 @@
   損失  : (1-α)·L_task + α·T²·KL + FGM  ← v3.0: R-Drop 已移除（消融研究）
   存檔  : metric_for_best_model = "f1"
   結果  : v3.0 Dev F1=85.4%，預期 NDCG@5 ≈ 0.879
-  導出  : FP32 → INT8（38.6 MB）→ 同步至 frontend/
+  導出  : FP32 → Dynamic INT8 per_channel（57 MB）→ 同步至 frontend/
 ```
 
 ### 蒸餾損失
@@ -56,7 +56,7 @@ $$\alpha_{\min} = 0.12, \quad \alpha_{\max} = 0.38, \quad T_{\text{epoch}} = 10$
 
 **為何比直接訓練 student 好**：one-hot 標籤只告訴模型「這個是 Match」；而 teacher 的 soft label [0.02, 0.98] 還隱含了「這個配對雖然是 Match，但只有 98% 把握，有 2% 可能是邊界案例」，這個邊界資訊對排序任務尤為關鍵。
 
-**本專案設定**：rbt6（6 層，~86 MB FP32）→ rbt3（3 層，~38.6 MB INT8），capacity 壓縮約 60%，但 NDCG@5 僅從 0.818 降至 0.833（反而提升，因為 teacher 品質改善）。
+**本專案設定**：rbt6（6 層，228 MB FP32）→ rbt3（3 層，57 MB INT8，Dynamic per_channel），capacity 壓縮約 75%，NDCG@5 從 0.818 提升至 0.877（student 超越 teacher，歸因於 v3.0 移除 R-Drop 與困難負樣本訓練）。
 
 ---
 
