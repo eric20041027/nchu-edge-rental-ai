@@ -568,7 +568,7 @@ def compute_relevance_score(query: str, prop: Dict[str, Any]) -> int:
     _MANDATORY_CHECKS = [
         # (query 觸發詞列表, property 違反判斷函式)
         (
-            ["一定要電梯", "必須有電梯", "不爬樓梯", "要有電梯", "腿不好"],
+            ["一定要電梯", "必須有電梯", "不爬樓梯", "不想爬樓梯", "不要爬樓梯", "要有電梯", "腿不好", "膝蓋不好"],
             lambda p: "電梯" not in " ".join(p.get("furniture", [])) and p.get("building_type", "") not in ("大樓", "華廈"),
         ),
         (
@@ -863,7 +863,7 @@ def main():
         },
         # --- 新增：電梯必要衝突（查詢明確要電梯，房源無電梯）---
         {
-            "query_keywords": ["一定要電梯", "必須有電梯", "不爬樓梯", "要有電梯", "腿不好"],
+            "query_keywords": ["一定要電梯", "必須有電梯", "不爬樓梯", "不想爬樓梯", "不要爬樓梯", "要有電梯", "腿不好", "膝蓋不好"],
             "prop_conflict":  lambda p: "電梯" not in " ".join(p.get("furniture", [])) and p.get("building_type", "") not in ("大樓", "華廈"),
             "conflict_type": "elevator_required",
         },
