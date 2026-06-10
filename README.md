@@ -1,15 +1,15 @@
 # 興大 AI 租屋推薦系統 (NCHU AI Rental Recommendation)
 
-本專案為針對中興大學學生設計之 **Edge AI 租屋推薦系統**。透過微調並蒸餾的中文 RoBERTa 模型（rbt3 INT8，**38.6 MB**）在瀏覽器端進行即時語意匹配，解決傳統篩選器過於僵硬的侷限，提供具備深層語意理解的搜尋體驗。
+本專案為針對中興大學學生設計之 **Edge AI 租屋推薦系統**。透過微調並蒸餾的中文 RoBERTa 模型（NER 37 MB + Cross-Encoder 57 MB，共 **94 MB** INT8）在瀏覽器端進行即時語意匹配，解決傳統篩選器過於僵硬的侷限，提供具備深層語意理解的搜尋體驗。
 
 ---
 
 ## 系統核心亮點
 
-- **超輕量 Edge AI**：rbt3 Cross-Encoder（38.6 MB INT8），完全在瀏覽器端執行（ONNX Runtime Web + WASM），無需後端伺服器
-- **知識蒸餾**：rbt6 teacher → rbt3 student，NDCG@5 = **0.833 ± 0.014**，超越所有歷史版本
-- **雙層語意理解**：NER 抽取地點/預算/設施（F1=0.997）→ Cross-Encoder 深度重排
-- **硬性約束零容忍**：預算上限、寵物政策、台電計費一票否決，不被語意優勢覆蓋
+- **Edge AI 零伺服器**：Cross-Encoder（rbt3 INT8，57 MB）+ NER（rbt6 INT8，37 MB），完全在瀏覽器端執行（ONNX Runtime Web + WASM）
+- **知識蒸餾**：rbt6 teacher（59.74M 參數）→ rbt3 student（59.74M 參數），NDCG@5 = **0.877 ± 0.014**
+- **雙層語意理解**：NER 抽取地點/預算/設施（F1=0.9779）→ Cross-Encoder 深度重排
+- **硬性約束一票否決**：預算、性別、寵物、電梯、開伙、台電計費，必要條件違反損失 ×2
 - **真實路網通勤時間**：OSRM 計算步行/機車實際路網時間作為排序核心因子
 - **生活型態推論**：15+ 語意聚類，「不想追垃圾車」→ 子母車設施，「自炊族」→ 瓦斯廚房
 
@@ -21,11 +21,12 @@
 
 | 指標 | 數值 | 說明 |
 |:---|:---|:---|
-| **F1-Score** | **0.997** | LOC / BGT / FEAT 三類實體聯合 F1 |
+| **F1-Score** | **0.9779** | LOC / BGT / FEAT 三類實體聯合 F1 |
 | **延遲** | **< 20ms** | 瀏覽器端 Web Worker 推論延遲 |
-| **大小** | **37 MB** (INT8) | bert-base-chinese 98 MB → 37 MB（−62%）|
+| **大小** | **37 MB** (INT8) | hfl/rbt6 98 MB → 37 MB（−62%）|
+| **參數量** | **37.89M** | hfl/rbt6 INT8 量化後 |
 
-### 2. Cross-Encoder 語意匹配（v2.9，INT8 量化）
+### 2. Cross-Encoder 語意匹配（v3.0，INT8 量化）
 
 #### Phase 1：單對分類正確率
 
@@ -39,6 +40,8 @@
 | **0.7** | **排序引擎實際使用** ✅ | **88.0%** | **82.7%** | 75.0% | **78.7%** |
 | 0.9 | 高信心過濾（極嚴格）| 85.6% | 94.5% | 54.3% | 68.9% |
 
+**模型大小**：hfl/rbt3 228 MB → **57 MB** INT8（−75%），參數量 **59.74M**
+
 - **0.5**：幾乎不遺漏任何好房源（Recall 98%），適合作為「寧可多選也不遺漏」的粗篩
 - **0.7**：精準與召回的平衡點，是 Top-30 重排的實際運作閾值
 - **0.9**：只輸出極高信心的結果，可用於推播通知等高精準場景
@@ -47,11 +50,11 @@
 
 **測試目標**：給定一個查詢，從 30 個候選房源中重排，模型能否把最相關的放在最前面？以 500 個查詢模擬真實推薦場景，評估 Top-5 排名品質。
 
-| 指標 | **v2.9** | v2.3（舊紀錄）| 說明 |
+| 指標 | **v3.0** | v2.3（舊紀錄）| 說明 |
 |:---|:---|:---|:---|
-| **Graded NDCG@5** | **0.833 ± 0.014** ✅ | 0.818 | 4 級相關性（0-3）指數增益 NDCG，Bootstrap CI（n=1000）|
+| **Graded NDCG@5** | **0.877 ± 0.014** ✅ | 0.818 | 4 級相關性（0-3）指數增益 NDCG，Bootstrap CI（n=1000）|
 
-**NDCG@5 = 0.833** 代表：在 30 個候選房源中，Top-5 的排列順序與理想排序的相似度為 83.3%。分母採指數增益 ($2^{rel} - 1$)，使 Perfect match（rel=3）的排名效益是 Partial（rel=1）的 7 倍。
+**NDCG@5 = 0.877** 代表：在 Top-30 候選房源中，Top-5 的排列順序與理想排序的相似度為 87.7%。分母採指數增益 ($2^{rel} - 1$)，使 Perfect match（rel=3）的排名效益是 Partial（rel=1）的 7 倍。
 
 $$NDCG_k = \frac{DCG_k}{IDCG_k}, \quad DCG_k = \sum_{i=1}^{k} \frac{2^{rel_i} - 1}{\log_2(i+2)}$$
 
@@ -62,10 +65,10 @@ $$NDCG_k = \frac{DCG_k}{IDCG_k}, \quad DCG_k = \sum_{i=1}^{k} \frac{2^{rel_i} - 
 | 版本 | 量化大小 | Teacher F1 | Student F1 | NDCG@5 |
 |:---|:---|:---|:---|:---|
 | rbt6 FT (v2.2) | 57 MB | — | 84.8% | — |
-| rbt3 KD v1 (v2.3) | 37 MB | 84.8% | 85.1% | 0.818 |
-| rbt3 R-Drop (v2.4) | 37 MB | — | 76.9% | 0.727 |
-| rbt3 KD v2 (v2.5) | 36.8 MB | 78.7% | 76.4% | 0.760 |
-| **rbt3 KD v3 (v2.9)** | **38.6 MB** | **85.9%** | **85.5%** | **0.833** ✅ |
+| rbt3 KD v1 (v2.3) | 57 MB | 84.1% | 84.8% | 0.818 |
+| rbt3 R-Drop (v2.4) | 57 MB | — | 76.9% | 0.727 |
+| rbt3 KD v2 (v2.5) | 57 MB | — | 76.4% | 0.760 |
+| **rbt3 KD v3.0** | **57 MB** | **84.1%** | **84.8%** | **0.877** ✅ |
 
 v2.4–v2.8 退步的根本原因：負樣本採樣 bug（見[知識蒸餾架構](#知識蒸餾架構knowledge-distillation)）。
 
@@ -89,7 +92,7 @@ graph TD
     F --> G1("train_teacher.py\nrbt6 teacher 訓練")
     G1 --> G2("train_and_export_onnx.py\nrbt6 → rbt3 蒸餾 + ONNX + INT8")
     G2 --> EVAL("evaluate_model.py\nNDCG@5 / Bootstrap CI")
-    EVAL --> H["my_custom_model_quant.onnx\n(INT8, 38.6 MB)"]
+    EVAL --> H["my_custom_model_quant.onnx\n(INT8, 57 MB)"]
 ```
 
 ### 2. 推論流程
@@ -107,7 +110,7 @@ graph TD
     C -- "Top 30 候選" --> W2
 
     subgraph WK2["Web Worker 2（非阻塞）"]
-        CE["my_custom_model_quant.onnx\n(rbt3 INT8, 38.6 MB)"] --> W2("Stage 3: AI 語意重排\nONNX Runtime Web")
+        CE["my_custom_model_quant.onnx\n(rbt3 INT8, 57 MB)"] --> W2("Stage 3: AI 語意重排\nONNX Runtime Web")
     end
 
     W2 --> F["最終推薦清單"]
@@ -117,13 +120,13 @@ graph TD
 
 ## 知識蒸餾架構（Knowledge Distillation）
 
-本專案以餘弦退火動態蒸餾（α: 0.38→0.12，T=4.0）將 rbt6 的排序知識壓縮至 rbt3（38.6 MB）；v3.0 依消融實驗移除 R-Drop，保留 CE + RankNet + ListNet + KD + FGM 組合。詳細的 KL 散度公式、溫度縮放原理與蒸餾架構設計，請參考 [模型架構與蒸餾設計](docs/MODEL_ARCHITECTURE.md)。
+本專案以固定 α=0.12、T=4.0 的 Soft-Label BCE 蒸餾損失（`0.5×CE + 0.5×weighted_BCE(soft_labels)`）將 rbt6 的排序知識壓縮至 rbt3（57 MB INT8）；v3.0 依消融實驗移除 R-Drop（+0.0068），保留 CE + KD + FGM 組合，必要條件違反樣本（rel=−1）損失加倍懲罰。詳細的 KL 散度公式、溫度縮放原理與蒸餾架構設計，請參考 [模型架構與蒸餾設計](docs/MODEL_ARCHITECTURE.md)。
 
 ---
 
 ## 訓練策略
 
-Student 損失函數結合 CE（label smoothing ε=0.05）+ RankNet×1.5 + ListNet + KD；FGM 對抗訓練（ε=1.0）強化口語輸入魯棒性，v3.0 移除 R-Drop（消融 +0.0068）。詳細的損失函數公式、超參數表與負樣本採樣策略，請參考 [訓練策略與損失函數](docs/TRAINING_STRATEGY.md)。
+Student 損失函數：`0.5×CE(label smoothing ε=0.05) + 0.5×weighted_BCE(soft_labels, T=4.0)`，固定 α=0.12；FGM 對抗訓練（ε=1.0）強化口語輸入魯棒性，v3.0 移除 R-Drop（消融 +0.0068）。詳細的損失函數公式、超參數表與負樣本採樣策略，請參考 [訓練策略與損失函數](docs/TRAINING_STRATEGY.md)。
 
 ---
 
