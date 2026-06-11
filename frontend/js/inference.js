@@ -476,10 +476,13 @@ function checkConflicts(prop, constraints) {
 
     // 3. Gender Conflict
     if (constraints.hasGenderMention && constraints.originalText) {
-        if (constraints.genderUnrestricted === false) {
-            if (pText.includes('限女性') && constraints.originalText.includes('男')) return "此房源僅限女性";
-            if (pText.includes('限男性') && constraints.originalText.includes('女')) return "此房源僅限男性";
-        }
+        const orig = constraints.originalText;
+        const isMale = orig.includes('男生') || orig.includes('男士') || orig.includes('男性');
+        const isFemale = orig.includes('女生') || orig.includes('女士') || orig.includes('女性');
+        const isFemaleOnly = pText.includes('限女');
+        const isMaleOnly = pText.includes('限男');
+        if (isMale && isFemaleOnly) return "此房源僅限女性";
+        if (isFemale && isMaleOnly) return "此房源僅限男性";
     }
 
     // 4. Smoking
