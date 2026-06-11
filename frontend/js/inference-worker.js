@@ -27,22 +27,26 @@ async function init(localOrigin, noCache = false) {
         env.localModelPath = localOrigin + '/';
 
         // 2. Start Tokenizer and Model download in parallel
+        // Progress mapping: tokenizer = 0–5%, model download = 5–100%
+        const MODEL_SIZE = 59_000_000; // ~57 MB, used when Content-Length missing
         const tokenizerPromise = AutoTokenizer.from_pretrained('models/custom_onnx_model_dir', {
             progress_callback: (p) => {
                 if (p.status === 'progress') {
-                    postMessage({ type: 'status', message: '正在加載分詞器...', loaded: p.loaded, total: p.total });
+                    // Map tokenizer progress to 0–5% of the total bar
+                    const pct = p.total > 0 ? (p.loaded / p.total) : 0;
+                    postMessage({ type: 'status', message: '正在加載分詞器...', loaded: Math.round(pct * 0.05 * MODEL_SIZE), total: MODEL_SIZE });
                 }
             }
         });
 
-        const modelUrl = localOrigin + '/models/custom_onnx_model_dir/my_custom_model_quant.onnx?v=' + Date.now();
+        const modelUrl = localOrigin + '/models/custom_onnx_model_dir/my_custom_model_quant.onnx';
         const modelFetchPromise = (async () => {
             const response = await fetch(modelUrl, { cache: noCache ? 'no-store' : 'force-cache' });
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            
+
             const reader = response.body.getReader();
-            const contentLength = +response.headers.get('Content-Length');
-            
+            const contentLength = +response.headers.get('Content-Length') || MODEL_SIZE;
+
             let receivedLength = 0;
             let chunks = [];
             let lastUpdate = 0;
@@ -52,14 +56,17 @@ async function init(localOrigin, noCache = false) {
                 if (done) break;
                 chunks.push(value);
                 receivedLength += value.length;
-                
+
                 // Throttled UI update (every 512KB) to save CPU
+                // Map model download to 5–100% of the total bar
                 if (receivedLength - lastUpdate > 512 * 1024) {
-                    postMessage({ 
-                        type: 'status', 
-                        message: '正在下載 AI 模型...', 
-                        loaded: receivedLength, 
-                        total: contentLength || 88000000 
+                    const modelPct = Math.min(receivedLength / contentLength, 1);
+                    const mappedLoaded = Math.round((0.05 + modelPct * 0.95) * contentLength);
+                    postMessage({
+                        type: 'status',
+                        message: '正在下載 AI 模型...',
+                        loaded: mappedLoaded,
+                        total: contentLength
                     });
                     lastUpdate = receivedLength;
                 }
