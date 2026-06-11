@@ -892,6 +892,22 @@ export async function recommend(text, top_k = 20, onPartialResult = null) {
         // 1. Data Parsing & Filtering
         const constraints = parseConstraintsFromText(text);
 
+        // Re-parse walk/scooter limits from expanded text (e.g. "走路可以到" → "走路10分")
+        if (constraints.maxWalkMins === null || constraints.maxScooterMins === null) {
+            const expandedForConstraints = expandQueryIntent(text);
+            const rtExp = expandedForConstraints.replace(/一/g,'1').replace(/二/g,'2').replace(/兩/g,'2').replace(/三/g,'3')
+                .replace(/四/g,'4').replace(/五/g,'5').replace(/六/g,'6').replace(/七/g,'7')
+                .replace(/八/g,'8').replace(/九/g,'9').replace(/十/g,'10').replace(/半/g,'30');
+            if (constraints.maxWalkMins === null) {
+                const wm = rtExp.match(/(?:走路|步行)[^\d]*(\d+)[^\d]*(?:分鐘|分)/);
+                if (wm) constraints.maxWalkMins = parseInt(wm[1]);
+            }
+            if (constraints.maxScooterMins === null) {
+                const sm = rtExp.match(/(?:機車|騎車)[^\d]*(\d+)[^\d]*(?:分鐘|分)/);
+                if (sm) constraints.maxScooterMins = parseInt(sm[1]);
+            }
+        }
+
         // 1.5 NER entity extraction — runs in parallel with hard filtering
         const nerEntities = await nerExtract(text);
         if (nerEntities.locations.length > 0) {

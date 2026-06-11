@@ -1,5 +1,32 @@
 import { initData, initNLP, initNER, recommend } from './inference.js';
 
+// --- NCHU furniture/feature normalisation ---
+const FURNITURE_NORM = {
+    '（電）熱水器': '熱水器', '冷氣機': '冷氣', '書桌椅': '書桌',
+    '寬頻網路': '網路', '有線電視': '第四台', '機車停車位': '機車位',
+    '汽車停車位': '汽車位', '穿衣鏡': '鏡子', '其它': '',
+};
+const FEATURE_NORM = {
+    '獨立電錶': '台電計費', '無菸宿舍': '無菸環境',
+    '與房東同住': '與房東同住', '限學生': '限學生',
+    '限女性': '限女生', '限男性': '限男生', '禁養寵物': '禁養寵物',
+};
+
+function normFurniture(raw) {
+    return raw.split('/').map(f => {
+        f = f.trim();
+        return FURNITURE_NORM.hasOwnProperty(f) ? FURNITURE_NORM[f] : f;
+    }).filter(Boolean).join('/');
+}
+
+function normFeatures(raw) {
+    // handle both ' / ' (NCHU) and '/' (DDRoom) separators
+    return raw.split(/\s*\/\s*/).map(f => {
+        f = f.trim();
+        return FEATURE_NORM.hasOwnProperty(f) ? FEATURE_NORM[f] : f;
+    }).filter(Boolean).join('/');
+}
+
 // --- Constants & State ---
 const PAGE_SIZE = 5;
 let allRecommendedHouses = [];
@@ -362,7 +389,7 @@ function createPropertyCardHTML(house, badgeClass) {
             <details style="font-size: 0.8rem; color: #ccc; margin-bottom: 10px; cursor: pointer; background: rgba(255,255,255,0.03); padding: 5px 8px; border-radius: 6px;">
                 <summary style="outline: none; font-weight: 500;"><i class="fa-solid fa-couch"></i> 查看附屬家具設施</summary>
                 <div style="margin-top: 5px; line-height: 1.4; padding-left: 18px;">
-                    ${house.furniture.split('/').join(', ')}
+                    ${normFurniture(house.furniture).split('/').join(', ')}
                 </div>
             </details>
             
@@ -371,15 +398,20 @@ function createPropertyCardHTML(house, badgeClass) {
             </div>
 
             <div class="features-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 15px; font-size: 0.8rem; color: #eee;">
-                ${(house.features || house.特色 || "").split('/').map(f => {
+                ${normFeatures(house.features || house.特色 || "").split('/').map(f => {
                     f = f.trim();
                     if (!f) return '';
                     let icon = "fa-check";
                     let label = f;
                     
-                    if (f.includes("台電")) { icon = "fa-bolt"; label = "電費照台電"; }
+                    if (f.includes("台電") || f.includes("台電計費")) { icon = "fa-bolt"; label = "台電計費"; }
                     else if (f.includes("台水")) { icon = "fa-droplet"; label = "水費照台水"; }
                     else if (f.includes("補助") || f.includes("租補")) { icon = "fa-hand-holding-dollar"; label = "可申請補助"; }
+                    else if (f.includes("無菸")) { icon = "fa-ban-smoking"; }
+                    else if (f.includes("限女")) { icon = "fa-venus"; }
+                    else if (f.includes("限男")) { icon = "fa-mars"; }
+                    else if (f.includes("限學生")) { icon = "fa-graduation-cap"; }
+                    else if (f.includes("禁養寵物")) { icon = "fa-paw"; label = "禁養寵物"; }
                     else if (f.includes("窗")) icon = "fa-window-maximize";
                     else if (f.includes("陽台")) icon = "fa-house-chimney-window";
                     else if (f.includes("電梯")) icon = "fa-elevator";

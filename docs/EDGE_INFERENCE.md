@@ -54,6 +54,29 @@ INT8 WASM SIMD 在現代 x86 CPU 上吞吐量約 100–400 GOPS，理論下限 ~
 
 ---
 
+## 量化指標評估（NER）
+
+NER 模型（rbt6 INT8 per_channel，`ner_model_quant.onnx`，37 MB）在 dev set 160 筆樣本上的實測結果：
+
+| 指標 | FP32（訓練後）| INT8（部署版）|
+|:---|:---:|:---:|
+| Precision | — | 0.9985 |
+| Recall | — | 0.9897 |
+| **F1** | **0.9779** | **0.9941** |
+
+INT8 per_channel 量化後 F1 微幅提升（+0.0162），在 dev set 樣本數較小（160 筆）的條件下屬正常統計波動，無精度退化。
+
+**NER INT8 Latency（batch=1，本機 Mac）：**
+
+| 百分位 | 延遲 |
+|:---:|:---:|
+| P50 | 5.82 ms |
+| P75 | 6.53 ms |
+| **P95** | **6.97 ms** |
+| P99 | 8.05 ms |
+
+---
+
 ## 實測延遲（Windows 11，Intel Core i5-11600KF，HW concurrency 12，4 WASM threads）
 
 > 測試環境：i5-11600KF（6C12T，Rocket Lake）；5 組 × 30-pass，warmup 3 組已排除
