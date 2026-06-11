@@ -578,14 +578,10 @@ def export_to_onnx(model: PreTrainedModel, tokenizer: PreTrainedTokenizer):
             op_types_to_quantize=["MatMul", "Gemm", "Gather"],
             weight_type=QuantType.QInt8,
             use_external_data_format=False,
-            per_channel=False,
+            per_channel=True,
             reduce_range=True,
             extra_options={"MatMulConstBOnly": True},
         )
-
-        # Ensure single-file output (no external tensors)
-        final = onnx.load(quant_path)
-        onnx.save(final, quant_path, save_as_external_data=False)
 
         if os.path.exists(pre_path):
             os.remove(pre_path)

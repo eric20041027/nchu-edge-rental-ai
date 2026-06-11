@@ -56,7 +56,7 @@ $$\alpha_{\min} = 0.12, \quad \alpha_{\max} = 0.38, \quad T_{\text{epoch}} = 10$
 
 **為何比直接訓練 student 好**：one-hot 標籤只告訴模型「這個是 Match」；而 teacher 的 soft label [0.02, 0.98] 還隱含了「這個配對雖然是 Match，但只有 98% 把握，有 2% 可能是邊界案例」，這個邊界資訊對排序任務尤為關鍵。
 
-**本專案設定**：rbt6（6 層，228 MB FP32）→ rbt3（3 層，57 MB INT8，Dynamic per_channel），capacity 壓縮約 75%，NDCG@5 從 0.818 提升至 0.877（student 超越 teacher，歸因於 v3.0 移除 R-Drop 與困難負樣本訓練）。
+**本專案設定**：rbt6（6 層，228 MB FP32）→ rbt3（3 層，57 MB INT8，Dynamic per_channel），capacity 壓縮約 75%，NDCG@5 從 0.818 提升至 0.877（FP32）/ 0.809（INT8 部署）（student 超越 teacher，歸因於 v3.0 移除 R-Drop 與困難負樣本訓練）。
 
 ---
 
