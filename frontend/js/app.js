@@ -95,33 +95,10 @@ async function setupApplication() {
     userRequirement.placeholder = "請稍候，資料庫與 AI 模型準備中...";
 
     try {
-        await Promise.all([
-            initData(),
-            initNLP((progress) => {
-                if (progress.status === 'progress') {
-                    // Detect cached load (loaded === total === 1 means instant from cache)
-                    if (progress.message && progress.message.includes('快取')) {
-                        setBar(ceBar, 100, '⚡ 快取', cePct);
-                    } else if (progress.total > 0) {
-                        const pct = Math.round((progress.loaded / progress.total) * 100);
-                        setBar(ceBar, pct, pct + '%', cePct);
-                    } else {
-                        cePct.textContent = Math.round((progress.loaded || 0) / 1024) + ' KB';
-                    }
-                }
-            })
-        ]);
-        setBar(ceBar, 100, '完成 ✓', cePct);
-        ceBar.style.background = '#4ade80';
-
-        userRequirement.disabled = false;
-        userRequirement.placeholder = "輸入租屋需求，例如：預算 6000 以內、有冷氣...";
-
-        // NER loads in background — update its bar via worker messages
-        initNER(
+        // Start NER download immediately in parallel — don't wait for CE to finish first
+        const nerPromise = initNER(
             (nerProgress) => {
                 if (nerProgress.loaded && nerProgress.total > 0) {
-                    // loaded=1,total=1 → instant cache hit
                     if (nerProgress.loaded === nerProgress.total && nerProgress.total === 1) {
                         setBar(nerBar, 100, '⚡ 快取', nerPct);
                     } else {
@@ -141,6 +118,31 @@ async function setupApplication() {
             nerBar.style.background = '#f87171';
             setTimeout(() => { loadStatus.style.display = 'none'; }, 2000);
         });
+
+        // CE + data load in parallel with NER; open input box as soon as CE is ready
+        await Promise.all([
+            initData(),
+            initNLP((progress) => {
+                if (progress.status === 'progress') {
+                    if (progress.message && progress.message.includes('快取')) {
+                        setBar(ceBar, 100, '⚡ 快取', cePct);
+                    } else if (progress.total > 0) {
+                        const pct = Math.round((progress.loaded / progress.total) * 100);
+                        setBar(ceBar, pct, pct + '%', cePct);
+                    } else {
+                        cePct.textContent = Math.round((progress.loaded || 0) / 1024) + ' KB';
+                    }
+                }
+            })
+        ]);
+        setBar(ceBar, 100, '完成 ✓', cePct);
+        ceBar.style.background = '#4ade80';
+
+        userRequirement.disabled = false;
+        userRequirement.placeholder = "輸入租屋需求，例如：預算 6000 以內、有冷氣...";
+
+        // NER continues in background if not yet done
+        await nerPromise;
 
     } catch (e) {
         console.error("Initialization error:", e);
