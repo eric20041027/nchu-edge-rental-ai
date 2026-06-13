@@ -352,9 +352,16 @@ async function measureNetworkSpeed(useCache) {
   }
 }
 
-// ── 通用 worker 載入量測（cold: noCache=true / warm: noCache=false）──
-async function measureNerLoad(noCache) {
-  log(`🧠 NER 模型載入（計時中，${noCache ? '無快取' : 'SW 快取'}）…`);
+// ── 清除 SW Cache Storage（cold 前呼叫，模擬首次訪問）──
+async function clearModelCaches() {
+  const keys = await caches.keys();
+  await Promise.all(keys.map(k => caches.delete(k)));
+  log(`🗑️ 已清除 ${keys.length} 個 SW Cache（${keys.join(', ') || '無'}）`, 'info');
+}
+
+// ── Worker 載入量測（cold/warm 皆用正常 fetch，讓 SW 決定快取）──
+async function measureNerLoad(label) {
+  log(`🧠 NER 模型載入（計時中，${label}）…`);
   return new Promise(resolve => {
     const t0 = performance.now();
     const w  = new Worker('js/ner-worker.js');
@@ -368,12 +375,13 @@ async function measureNerLoad(noCache) {
         w.terminate(); resolve(null);
       }
     };
-    w.postMessage({ type: 'ner_init', data: { origin: location.origin, noCache } });
+    // noCache: false — let SW handle caching (cold: cache miss → download; warm: cache hit)
+    w.postMessage({ type: 'ner_init', data: { origin: location.origin, noCache: false } });
   });
 }
 
-async function measureCELoad(noCache, progressId) {
-  log(`⚡ Cross-Encoder 載入（計時中，${noCache ? '無快取' : 'SW 快取'}）…`);
+async function measureCELoad(label, progressId) {
+  log(`⚡ Cross-Encoder 載入（計時中，${label}）…`);
   return new Promise(resolve => {
     const t0 = performance.now();
     const w  = new Worker('js/inference-worker.js', { type: 'module' });
@@ -392,7 +400,8 @@ async function measureCELoad(noCache, progressId) {
         w.terminate(); resolve({ loadMs: null, p50: null, p95: null, avg: null });
       }
     };
-    w.postMessage({ type: 'init', data: { origin: location.origin, noCache } });
+    // noCache: false — let SW handle caching
+    w.postMessage({ type: 'init', data: { origin: location.origin, noCache: false } });
   });
 }
 
@@ -586,12 +595,19 @@ window.runMode = async function(mode) {
   document.getElementById('log').innerHTML = '';
   btns().forEach(b => b.disabled = true);
 
-  const noCache = mode === 'cold';
-  log(`=== ${noCache ? '🧊 無快取（首次）' : '♻️ 有快取（二次）'} ===`, 'head');
+  const isCold = mode === 'cold';
+  log(`=== ${isCold ? '🧊 無快取（首次）' : '♻️ 有快取（二次）'} ===`, 'head');
 
-  const net   = await measureNetworkSpeed(!noCache);
-  const nerMs = await measureNerLoad(noCache);
-  const ce    = await measureCELoad(noCache, `${mode}-val-ce`);
+  if (isCold) {
+    await clearModelCaches();
+    log('💡 SW Cache 已清除，模擬首次訪問（從網路下載）', 'info');
+  } else {
+    log('💡 SW Cache 保留，模擬二次訪問（快取命中）', 'info');
+  }
+
+  const net   = await measureNetworkSpeed(!isCold);
+  const nerMs = await measureNerLoad(isCold ? '無快取，從網路下載' : 'SW 快取命中');
+  const ce    = await measureCELoad(isCold ? '無快取，從網路下載' : 'SW 快取命中', `${mode}-val-ce`);
 
   results[mode] = { net, nerMs, ce };
 
