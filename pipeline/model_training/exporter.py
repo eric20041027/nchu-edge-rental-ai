@@ -148,11 +148,14 @@ class Exporter(BaseTrainer):
             dummy_inputs_cpu = {k: v.to("cpu") if isinstance(v, torch.Tensor) else v
                                for k, v in dummy_inputs.items()}
 
-            # Use torch.onnx.export (TorchScript) to guarantee weights are embedded
-            # in a single .onnx file. optimum export is avoided because it produces
-            # shape annotations that conflict with onnxruntime shape inference
-            # during quantization (ShapeInferenceError dim 0: 768 vs 2).
-            self.log_step("Exporting via torch.onnx.export (TorchScript)")
+            # Use torch.onnx.export with the legacy TorchScript tracer
+            # (dynamo=False) to guarantee weights are embedded in a single
+            # .onnx file. On torch 2.x the default dynamo exporter externalizes
+            # weights into a separate .data file, producing a ~0.5 MB shell that
+            # breaks downstream quantization (ShapeInferenceError dim 0: 768 vs 2).
+            # This mirrors pipeline/ner_model/ner_trainer.py which already pins
+            # dynamo=False for the same reason.
+            self.log_step("Exporting via torch.onnx.export (TorchScript, dynamo=False)")
             with torch.no_grad():
                 torch.onnx.export(
                     self.model,
@@ -169,6 +172,7 @@ class Exporter(BaseTrainer):
                     opset_version=self.config.onnx_opset_version,
                     do_constant_folding=True,
                     export_params=True,
+                    dynamo=False,
                 )
 
             self.log_result("ONNX export", f"saved to {self.config.onnx_output_path}")
