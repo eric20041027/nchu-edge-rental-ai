@@ -31,10 +31,11 @@
                 <h2>告訴 AI 你的找房需求</h2>
                 <p>簡單輸入幾個條件，AI 將即時為你配對中興最佳租屋</p>
 
+                <p class="chips-hint"><i class="fa-solid fa-hand-pointer"></i> 點擊範例快速搜尋</p>
                 <div class="suggestion-chips">
-                    <span class="chip">預算 6000 以下</span>
-                    <span class="chip">位於學府路</span>
-                    <span class="chip">有冰箱陽台的套房</span>
+                    <span class="chip" title="點擊直接搜尋">預算 6000 以下</span>
+                    <span class="chip" title="點擊直接搜尋">位於學府路</span>
+                    <span class="chip" title="點擊直接搜尋">有冰箱陽台的套房</span>
                 </div>
             </div>
 
@@ -52,8 +53,13 @@
         </main>
 
         <footer class="input-footer">
+            <!-- 模型載入進度條（移至輸入區上方） -->
+            <div id="load-status-wrapper" style="max-width:900px; margin:0 auto 10px;"></div>
             <div class="input-container">
                 <div class="ai-prompt-box">
+                    <button class="btn-reset" id="btnReset" aria-label="清除重搜" style="display:none;" title="清除，重新搜尋">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
                     <textarea id="userRequirement" placeholder="輸入租屋需求，例如：預算 6000 以內、有冷氣..."></textarea>
                     <button class="btn-send" id="btnAnalyze" aria-label="傳送"><i
                             class="fa-solid fa-arrow-up"></i></button>
