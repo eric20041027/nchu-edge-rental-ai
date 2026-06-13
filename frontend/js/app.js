@@ -59,14 +59,14 @@ async function setupApplication() {
     // ── Progress bar UI ──────────────────────────────────────────────────────
     const loadStatus = document.createElement('div');
     loadStatus.id = 'load-status-panel';
-    loadStatus.style.cssText = 'padding:12px 16px;color:var(--primary-color,#00FFD1);font-size:0.85rem;';
+    loadStatus.style.cssText = 'padding:10px 0;color:var(--primary-color,#00FFD1);font-size:0.82rem;';
     loadStatus.innerHTML = `
         <div id="ls-ce" style="margin-bottom:6px;">
             <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
                 <span><i class="fa-solid fa-brain"></i> 推薦模型</span>
                 <span id="ls-ce-pct">等待中…</span>
             </div>
-            <div style="background:rgba(255,255,255,0.1);border-radius:4px;height:6px;overflow:hidden;">
+            <div style="background:rgba(255,255,255,0.1);border-radius:4px;height:5px;overflow:hidden;">
                 <div id="ls-ce-bar" style="height:100%;width:0%;background:var(--primary-color,#00FFD1);transition:width 0.3s;border-radius:4px;"></div>
             </div>
         </div>
@@ -75,11 +75,14 @@ async function setupApplication() {
                 <span><i class="fa-solid fa-tag"></i> 語意模型</span>
                 <span id="ls-ner-pct">等待中…</span>
             </div>
-            <div style="background:rgba(255,255,255,0.1);border-radius:4px;height:6px;overflow:hidden;">
+            <div style="background:rgba(255,255,255,0.1);border-radius:4px;height:5px;overflow:hidden;">
                 <div id="ls-ner-bar" style="height:100%;width:0%;background:#a78bfa;transition:width 0.3s;border-radius:4px;"></div>
             </div>
         </div>`;
-    welcomeScreen.insertBefore(loadStatus, welcomeScreen.children[2]);
+    // 插入到 input footer 上方的 wrapper，而非歡迎畫面中間
+    const wrapper = document.getElementById('load-status-wrapper');
+    if (wrapper) wrapper.appendChild(loadStatus);
+    else welcomeScreen.insertBefore(loadStatus, welcomeScreen.children[2]);
 
     const ceBar  = document.getElementById('ls-ce-bar');
     const cePct  = document.getElementById('ls-ce-pct');
@@ -196,26 +199,59 @@ function setupEventListeners() {
             if (text) fetchRecommendations(text);
         });
     }
+
+    // Reset Button Click
+    const btnReset = document.getElementById('btnReset');
+    if (btnReset) {
+        btnReset.addEventListener('click', () => {
+            userRequirement.value = '';
+            userRequirement.style.height = '48px';
+            resultsScreen.style.display = 'none';
+            welcomeScreen.style.display = 'flex';
+            allRecommendedHouses = [];
+            visibleCount = 0;
+            btnReset.style.display = 'none';
+            userRequirement.focus();
+        });
+    }
+
+    // Lazy-load map iframes when <details> is opened
+    document.addEventListener('toggle', (e) => {
+        if (!e.target.classList.contains('map-toggle')) return;
+        if (e.target.open) {
+            const iframe = e.target.querySelector('iframe[data-src]');
+            if (iframe) {
+                iframe.src = iframe.dataset.src;
+                iframe.removeAttribute('data-src');
+            }
+        }
+    }, true);
 }
 
 // --- Recommendation Core Logic ---
 async function fetchRecommendations(inputText) {
     console.log("fetchRecommendations triggered with:", inputText);
+
+    const isFirstSearch = resultsScreen.style.display === 'none';
     welcomeScreen.style.display = 'none';
     resultsScreen.style.display = 'block';
     processingStatus.style.display = 'flex';
     recommendationList.style.opacity = '0.4';
     mainContent.scrollTop = 0;
-    
-    // Show premium loading overlay
-    if (aiLoadingOverlay) {
+
+    // Show reset button
+    const btnReset = document.getElementById('btnReset');
+    if (btnReset) btnReset.style.display = 'flex';
+
+    // Only show full overlay on first search; subsequent searches use inline spinner
+    if (aiLoadingOverlay && isFirstSearch) {
         aiLoadingOverlay.style.display = 'flex';
         document.getElementById('loadingText').innerText = "AI 正在尋找最適合的房源...";
         document.getElementById('loadingSubtext').innerText = "正在進行深度語意匹配";
         if (loadingProgressFill) loadingProgressFill.style.width = '10%';
     }
 
-    // Yield to browser to paint the overlay before heavy computation starts
+    // Yield to browser to paint before heavy computation starts
     await new Promise(resolve => setTimeout(resolve, 100));
 
     try {
@@ -442,12 +478,18 @@ function createPropertyCardHTML(house, badgeClass) {
                 </div>
             </div>
 
-            <div class="map-container" style="margin-bottom: 15px; border-radius: 8px; overflow: hidden; height: 120px;">
-                <iframe width="100%" height="100%" frameborder="0" style="border:0" 
-                    src="https://maps.google.com/maps?q=${encodeURIComponent(house.address)}&output=embed" 
-                    allowfullscreen>
-                </iframe>
-            </div>
+            <details class="map-toggle" style="margin-bottom: 15px;">
+                <summary style="cursor:pointer; font-size:0.85rem; color:var(--text-muted); padding:6px 8px; background:rgba(255,255,255,0.03); border-radius:6px; border:1px solid var(--border-glass); outline:none; list-style:none; display:flex; align-items:center; gap:6px; user-select:none;">
+                    <i class="fa-solid fa-map-location-dot" style="color:var(--primary-color);"></i> 查看地圖位置
+                    <i class="fa-solid fa-chevron-down" style="margin-left:auto; font-size:0.7rem; transition:transform 0.2s;"></i>
+                </summary>
+                <div style="margin-top:6px; border-radius:8px; overflow:hidden; height:150px;">
+                    <iframe width="100%" height="100%" frameborder="0" style="border:0"
+                        data-src="https://maps.google.com/maps?q=${encodeURIComponent(house.address)}&output=embed"
+                        allowfullscreen loading="lazy">
+                    </iframe>
+                </div>
+            </details>
             <div class="card-link">
                 <a href="${house.url}" target="_blank" style="color: var(--primary-color); text-decoration: none; font-size: 0.9rem; display: inline-block;">
                     <i class="fa-solid fa-link"></i> 前往查看物件

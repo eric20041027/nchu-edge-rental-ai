@@ -302,12 +302,47 @@ body, html {
     border-color: var(--primary-color);
 }
 
+/* ===== Chips hint ===== */
+.chips-hint {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+    opacity: 0.6;
+    letter-spacing: 0.5px;
+}
+
+.chip:hover::after {
+    content: '';
+}
+
 /* ===== Input Area ===== */
 .input-footer {
-    padding: 2.5rem 2rem;
+    padding: 1rem 2rem 1.5rem;
     background: var(--bg-deep);
     border-top: 1px solid var(--border-glass);
     z-index: 10;
+}
+
+/* ===== Reset Button ===== */
+.btn-reset {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+    transition: var(--transition-smooth);
+}
+
+.btn-reset:hover {
+    color: #f87171;
+    background: rgba(248, 113, 113, 0.1);
 }
 
 .ai-prompt-box {
@@ -539,10 +574,11 @@ body, html {
     .card-details { gap: 0.75rem; font-size: 0.8rem; }
     
     /* Input Area - Full Width & Modern */
-    .input-footer { padding: 1.25rem 1rem; }
-    .ai-prompt-box { gap: 0.75rem; padding: 0.6rem 1rem; border-radius: 12px; }
+    .input-footer { padding: 0.75rem 1rem 1rem; }
+    .ai-prompt-box { gap: 0.5rem; padding: 0.6rem 1rem; border-radius: 12px; }
     .ai-prompt-box textarea { font-size: 1rem; height: 42px; }
     .btn-send { width: 42px; height: 42px; border-radius: 8px; }
+    .btn-reset { width: 32px; height: 32px; font-size: 0.9rem; }
 
     /* AI Loading Overlay - Mobile Typography */
     .overlay-content { padding: 1.5rem; }

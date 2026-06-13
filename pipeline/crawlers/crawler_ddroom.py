@@ -170,95 +170,110 @@ async def get_detail_info_ultimate(page, url: str) -> dict:
 
     return res
 
+CONCURRENCY = 3   # parallel detail pages
+
+async def fetch_one(context, url: str, csv_lock: asyncio.Lock) -> None:
+    dp = await context.new_page()
+    try:
+        res = await get_detail_info_ultimate(dp, url)
+        if res and (res.get("地址") or res.get("租金")):
+            addr = res.get("地址", "")
+            district_bc = res.get("區域", "")
+            m = re.search(r"(南區|西區|東區|大里區|太平區|西屯區|北屯區|南屯區|北區|中區|豐原區|潭子區|龍井區|沙鹿區|清水區|大雅區|神岡區|烏日區|霧峰區)", addr)
+            addr_dist = m.group(1) if m else ""
+            is_target = (addr_dist in TARGET_AREAS) or (district_bc in TARGET_AREAS)
+            if is_target:
+                async with csv_lock:
+                    append_to_csv([res], TARGET_CSV)
+            else:
+                log(f"  Skipping (Not target area): {addr_dist or 'Unknown'} in {addr}")
+    finally:
+        await dp.close()
+
+
 async def main():
     if os.path.exists(LOCK_FILE):
         log("Crawler already running. Exiting.")
         return
     with open(LOCK_FILE, "w") as f: f.write("locked")
-    
+
     try:
         log("=" * 60)
-        log("DD-Room Scraper (v11 - CLEAN PRICES)")
+        log("DD-Room Scraper (v12 - FAST, 3x parallel)")
         log("=" * 60)
         async with async_playwright() as p:
             processed_urls = set()
             if os.path.exists(TARGET_CSV):
                 with open(TARGET_CSV, "r", encoding="utf-8-sig") as f:
                     reader = csv.reader(f)
-                    next(reader, None) # Skip header
+                    next(reader, None)
                     for row in reader:
                         if row: processed_urls.add(row[0])
             log(f"Resuming crawler: {len(processed_urls)} already processed.")
+
             MAX_PROPERTIES = 1000
-            # Expanding target areas to include more high-density rental zones
             SEARCH_AREAS = TARGET_AREAS + ["西屯區", "北屯區", "南屯區", "北區"]
             browser = await p.chromium.launch(headless=True)
-            context = await browser.new_context(user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-            page = await context.new_page()
+            context = await browser.new_context(
+                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            )
+            csv_lock = asyncio.Lock()
+            list_page = await context.new_page()
+
             for area in SEARCH_AREAS:
                 for page_num in range(MAX_PAGES):
                     search_url = f"https://dd-room.com/search?city=臺中市&area={area}&page={page_num + 1}"
                     log(f"District {area} Page {page_num + 1}")
                     try:
-                        await page.goto(search_url, wait_until='networkidle', timeout=60000)
-                        await page.wait_for_selector('a[href^="/object/"]', timeout=35000)
-                        elements = await page.query_selector_all('a[href^="/object/"]')
+                        await list_page.goto(search_url, wait_until='networkidle', timeout=60000)
+                        await list_page.wait_for_selector('a[href^="/object/"]', timeout=35000)
+                        elements = await list_page.query_selector_all('a[href^="/object/"]')
                         links = []
                         for el in elements:
                             href = await el.get_attribute("href")
                             if href: links.append(f"https://dd-room.com{href}")
-                        urls = sorted(list(set(links)))
-                        # Filter out already processed URLs
-                        urls = [u for u in urls if u not in processed_urls]
+                        urls = [u for u in sorted(set(links)) if u not in processed_urls]
+
                         if not urls and links:
                             log(f"  All properties on this page already processed. Moving on.")
                             break
-                        
+
+                        quota = MAX_PROPERTIES - len(processed_urls)
+                        urls = urls[:quota]
                         log(f"  New Properties: {len(urls)}")
+
                         for u in urls:
-                            if len(processed_urls) >= MAX_PROPERTIES:
-                                break
                             processed_urls.add(u)
-                            dp = await context.new_page()
-                            res = await get_detail_info_ultimate(dp, u)
-                            if res and (res.get("地址") or res.get("租金")):
-                                addr = res.get("地址", "")
-                                district_bc = res.get("區域", "")
-                                
-                                # Extract district from address: e.g., "台中市南區..." -> "南區"
-                                m = re.search(r"(南區|西區|東區|大里區|太平區|西屯區|北屯區|南屯區|北區|中區|豐原區|潭子區|龍井區|沙鹿區|清水區|大雅區|神岡區|烏日區|霧峰區)", addr)
-                                addr_dist = m.group(1) if m else ""
-                                
-                                is_target = (addr_dist in TARGET_AREAS) or (district_bc in TARGET_AREAS)
-                                
-                                if is_target:
-                                    append_to_csv([res], TARGET_CSV)
-                                else:
-                                    log(f"  Skipping (Not target area): {addr_dist or 'Unknown'} in {addr}")
-                            await dp.close()
-                            await asyncio.sleep(random.uniform(1.0, 2.0))
-                        
+
+                        # Process in parallel batches of CONCURRENCY
+                        for i in range(0, len(urls), CONCURRENCY):
+                            batch = urls[i:i + CONCURRENCY]
+                            await asyncio.gather(*[
+                                fetch_one(context, u, csv_lock) for u in batch
+                            ])
+                            await asyncio.sleep(random.uniform(0.3, 0.6))
+
                         if len(processed_urls) >= MAX_PROPERTIES:
                             log(f"Reached {MAX_PROPERTIES} properties. Stopping.")
                             break
-                        
-                        await asyncio.sleep(2.0)
+
+                        await asyncio.sleep(0.5)
                     except Exception as e:
                         log(f"  ERROR: {e}")
                         break
+
                 if len(processed_urls) >= MAX_PROPERTIES:
                     break
+
     finally:
         if os.path.exists(LOCK_FILE): os.remove(LOCK_FILE)
-        # Cleanup scratch and temporary files
         scratch_dir = os.path.join(os.path.dirname(__file__), "../../scratch")
         if os.path.exists(scratch_dir):
             import shutil
             try:
                 shutil.rmtree(scratch_dir)
-                log(f"Cleaned up scratch directory.")
-            except Exception as e:
-                log(f"Error cleaning scratch: {e}")
+            except Exception:
+                pass
     log(f"Done. Total unique properties: {len(processed_urls)}")
 
 if __name__ == "__main__":
