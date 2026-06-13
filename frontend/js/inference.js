@@ -232,6 +232,8 @@ function parseConstraintsFromText(text) {
         requireSubsidy, isSocialHousing,
         excludeRooftop, excludeWooden, excludeHaunted, maxWalkMins, maxScooterMins,
         wantsPet: (text.includes('養貓') || text.includes('養狗') || text.includes('寵物')),
+        requireElevator: (text.includes('電梯') || text.includes('升降梯') || text.includes('不爬樓') || text.includes('不用爬') || text.includes('不想爬') || text.includes('不要爬') || text.includes('腿不好') || text.includes('膝蓋不好')),
+        requireCooking: (text.includes('開伙') || text.includes('開火') || text.includes('自炊') || text.includes('煮飯') || text.includes('炒菜') || text.includes('在家煮') || text.includes('自己煮')),
         requireWaterDispenser: (text.includes('飲水機')),
         requirePrivateWasher: (text.includes('獨洗') || text.includes('個人洗衣機')),
         requireGuard: (text.includes('代收') || text.includes('包裹') || text.includes('管理員') || text.includes('警衛')),
@@ -499,16 +501,25 @@ function filterHardExclusions(properties, constraints) {
         budget, minBudget, maxBudget, limit, genderUnrestricted, hasGenderMention, hasBudgetMention,
         excludeRooftop, excludeWooden, maxElectricityPrice, wantsUtilityBilling,
         maxWalkMins, maxScooterMins,
-        requireSubsidy, isSocialHousing, requireBalcony, requireWindow, requireParking, requireWaste
+        requireSubsidy, isSocialHousing, requireBalcony, requireWindow, requireParking, requireWaste,
+        wantsPet, requireElevator, requireCooking
     } = constraints;
     const candidates = [];
-    
+
     for (const prop of properties) {
         // 1. Core Policy Exclusions (Keep these hard)
         if (excludeRooftop && (prop.is_rooftop || prop.text.includes('頂加'))) continue;
         if (excludeWooden && prop.is_wooden_partition) continue;
         if (requireSubsidy && (prop.text.includes('不可補助') || prop.text.includes('不可報稅') || prop.text.includes('不可入籍'))) continue;
         if (isSocialHousing && !prop.text.includes('社會住宅') && !prop.text.includes('社宅')) continue;
+
+        // 1b. Documented hard constraints (一票否決): exclude only EXPLICIT conflicts,
+        // leave unstated properties for AI to judge so the candidate pool isn't over-pruned.
+        if (wantsPet && (prop.text.includes('禁養') || prop.text.includes('不可養') || prop.text.includes('不可寵') || prop.text.includes('謝絕寵物'))) continue;
+        // 電梯：只信「文字明確寫無電梯」。has_elevator===false 在興大來源不可靠（爬蟲常未抓到，
+        // false 可能代表「未知」而非「真的沒有」），不可作為硬篩依據，否則誤殺興大房源。
+        if (requireElevator && (prop.text.includes('無電梯') || prop.text.includes('沒有電梯') || prop.text.includes('沒電梯'))) continue;
+        if (requireCooking && (prop.text.includes('禁開伙') || prop.text.includes('不可開伙') || prop.text.includes('不可開火') || prop.text.includes('禁炊'))) continue;
 
         // 2. Soft Amenities (REMOVED HARD CONTINUES)
         // We no longer 'continue' here. We let these be handled by Rule-Based and AI scoring.
