@@ -298,10 +298,8 @@
 
 <script type="module">
 
-// ── 儲存兩次結果 & 保留 cold worker 供 warm 複用 ─────
+// ── 儲存兩次結果 ─────────────────────────────────────
 const results = { cold: null, warm: null };
-let coldNerWorker = null;  // kept alive after cold run for warm reuse
-let coldCEWorker  = null;  // kept alive after cold run for warm reuse
 
 function log(msg, cls = '') {
   const el = document.getElementById('log');
@@ -354,10 +352,9 @@ async function measureNetworkSpeed(useCache) {
   }
 }
 
-// ── Cold：完整初始化（下載 + 建立 session），保留 worker ──
-async function measureNerLoad() {
-  log('🧠 NER 模型載入（計時中）…');
-  if (coldNerWorker) { coldNerWorker.terminate(); coldNerWorker = null; }
+// ── 通用 worker 載入量測（cold: noCache=true / warm: noCache=false）──
+async function measureNerLoad(noCache) {
+  log(`🧠 NER 模型載入（計時中，${noCache ? '無快取' : 'SW 快取'}）…`);
   return new Promise(resolve => {
     const t0 = performance.now();
     const w  = new Worker('js/ner-worker.js');
@@ -365,60 +362,38 @@ async function measureNerLoad() {
       if (e.data.type === 'ner_ready') {
         const ms = performance.now() - t0;
         log(`✅ NER 就緒，${Math.round(ms)} ms`, 'ok');
-        coldNerWorker = w;  // keep alive for warm reuse
-        resolve(ms);
+        w.terminate(); resolve(ms);
       } else if (e.data.type === 'ner_error') {
         log('❌ NER 失敗：' + e.data.message, 'err');
         w.terminate(); resolve(null);
       }
     };
-    w.postMessage({ type: 'ner_init', data: { origin: location.origin, noCache: true } });
+    w.postMessage({ type: 'ner_init', data: { origin: location.origin, noCache } });
   });
 }
 
-async function measureCELoad() {
-  log('⚡ Cross-Encoder 載入（計時中）…');
-  if (coldCEWorker) { coldCEWorker.terminate(); coldCEWorker = null; }
+async function measureCELoad(noCache, progressId) {
+  log(`⚡ Cross-Encoder 載入（計時中，${noCache ? '無快取' : 'SW 快取'}）…`);
   return new Promise(resolve => {
     const t0 = performance.now();
     const w  = new Worker('js/inference-worker.js', { type: 'module' });
     w.onmessage = async e => {
       if (e.data.type === 'status' && e.data.loaded && e.data.total) {
-        document.getElementById('cold-val-ce').textContent =
+        document.getElementById(progressId).textContent =
           ((e.data.loaded / e.data.total) * 100).toFixed(0) + '%';
       } else if (e.data.type === 'ready') {
         const loadMs = performance.now() - t0;
         log(`✅ Cross-Encoder 就緒，${Math.round(loadMs)} ms`, 'ok');
-        coldCEWorker = w;  // keep alive for warm reuse
         const inferResult = await runInferenceBench(w);
+        w.terminate();
         resolve({ loadMs, ...inferResult });
       } else if (e.data.type === 'error') {
         log('❌ CE 失敗：' + e.data.message, 'err');
         w.terminate(); resolve({ loadMs: null, p50: null, p95: null, avg: null });
       }
     };
-    w.postMessage({ type: 'init', data: { origin: location.origin, noCache: true } });
+    w.postMessage({ type: 'init', data: { origin: location.origin, noCache } });
   });
-}
-
-// ── Warm：複用 cold worker，模型已在記憶體，只量推論 ──
-async function measureNerWarm() {
-  if (!coldNerWorker) {
-    log('⚠️ 請先執行步驟一（無快取）建立 NER worker', 'warn');
-    return null;
-  }
-  log('🧠 NER 模型已在記憶體中（Service Worker 快取命中，跳過重新下載）', 'ok');
-  return 0;
-}
-
-async function measureCEWarm() {
-  if (!coldCEWorker) {
-    log('⚠️ 請先執行步驟一（無快取）建立 CE worker', 'warn');
-    return { loadMs: null, p50: null, p95: null, avg: null };
-  }
-  log('⚡ Cross-Encoder 已在記憶體中（Service Worker 快取命中，跳過重新下載）', 'ok');
-  const inferResult = await runInferenceBench(coldCEWorker);
-  return { loadMs: 0, ...inferResult };
 }
 
 // ── 共用推論 benchmark（5 暖機 + 10 計時）────────────
@@ -466,31 +441,15 @@ function applyCards(r, mode) {
 
   // NER
   if (nerMs !== null) {
-    const nerValEl  = document.getElementById(`${prefix}-val-ner`);
-    const nerUnitEl = nerValEl.nextElementSibling; // .card-unit
-    if (mode === 'warm') {
-      nerValEl.textContent  = '已快取';
-      nerValEl.style.fontSize = '1.3rem';
-      if (nerUnitEl) nerUnitEl.textContent = '無需重新下載';
-    } else {
-      nerValEl.textContent = Math.round(nerMs);
-    }
-    nerValEl.className = 'card-value';
+    document.getElementById(`${prefix}-val-ner`).textContent = Math.round(nerMs);
+    document.getElementById(`${prefix}-val-ner`).className = 'card-value';
     document.getElementById(`${prefix}-card-ner`).className = 'card ' + doneClass;
   }
 
   // CE
   if (ce.loadMs !== null) {
-    const ceValEl  = document.getElementById(`${prefix}-val-ce`);
-    const ceUnitEl = ceValEl.nextElementSibling; // .card-unit
-    if (mode === 'warm') {
-      ceValEl.textContent  = '已快取';
-      ceValEl.style.fontSize = '1.3rem';
-      if (ceUnitEl) ceUnitEl.textContent = '無需重新下載';
-    } else {
-      ceValEl.textContent = Math.round(ce.loadMs);
-    }
-    ceValEl.className = 'card-value';
+    document.getElementById(`${prefix}-val-ce`).textContent = Math.round(ce.loadMs);
+    document.getElementById(`${prefix}-val-ce`).className = 'card-value';
     document.getElementById(`${prefix}-card-ce`).className = 'card ' + doneClass;
   }
 
@@ -627,18 +586,12 @@ window.runMode = async function(mode) {
   document.getElementById('log').innerHTML = '';
   btns().forEach(b => b.disabled = true);
 
-  log(`=== ${mode === 'cold' ? '🧊 無快取（首次）' : '♻️ 有快取（二次，複用已載入 worker）'} ===`, 'head');
+  const noCache = mode === 'cold';
+  log(`=== ${noCache ? '🧊 無快取（首次）' : '♻️ 有快取（二次）'} ===`, 'head');
 
-  let net, nerMs, ce;
-  if (mode === 'cold') {
-    net   = await measureNetworkSpeed(false);
-    nerMs = await measureNerLoad();
-    ce    = await measureCELoad();
-  } else {
-    net   = await measureNetworkSpeed(true);
-    nerMs = await measureNerWarm();
-    ce    = await measureCEWarm();
-  }
+  const net   = await measureNetworkSpeed(!noCache);
+  const nerMs = await measureNerLoad(noCache);
+  const ce    = await measureCELoad(noCache, `${mode}-val-ce`);
 
   results[mode] = { net, nerMs, ce };
 
