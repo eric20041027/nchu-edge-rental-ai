@@ -554,9 +554,10 @@ function filterHardExclusions(properties, constraints) {
         }
         if (hasBudgetMention) {
             if (maxBudget !== null && prop.rent > maxBudget) continue;
-            if (limit && budget !== null) {
-                if (limit === 'below' && prop.rent > budget) continue;
-                if (limit === 'above' && prop.rent < budget) continue;
+            if (budget !== null) {
+                const effectiveLimit = limit || 'below';
+                if (effectiveLimit === 'below' && prop.rent > budget) continue;
+                if (effectiveLimit === 'above' && prop.rent < budget) continue;
             }
         }
         candidates.push(prop);
