@@ -169,6 +169,57 @@ cd frontend && python -m http.server 8000
 
 ---
 
+## Benchmark 建置教學
+
+量測瀏覽器端 Edge AI 的模型載入時間與推論延遲。
+
+### 方式一：線上直接測試（最快）
+
+直接開啟部署網址，無需任何環境設定：
+
+```
+https://renting-recommendation-onnx.vercel.app/benchmark.html
+```
+
+### 方式二：本地測試
+
+```bash
+# 1. 複製專案
+git clone https://github.com/eric20041027/Renting-recommendation-ONNX.git
+cd Renting-recommendation-ONNX
+
+# 2. 啟動靜態伺服器（任選其一）
+python3 -m http.server 8080 --directory frontend
+# 或
+npx serve frontend -p 8080
+
+# 3. 開啟瀏覽器
+# http://localhost:8080/benchmark.html
+```
+
+### 測試步驟
+
+1. **步驟一（無快取）**：點擊 🧊「無快取測試」
+   - 在 Chrome DevTools → Application → Storage → 點「Clear site data」清除快取後再測
+   - 量測首次從網路下載模型的時間（NER 37 MB + Cross-Encoder 57 MB）
+
+2. **步驟二（有快取）**：點擊 ♻️「有快取測試」
+   - 直接接著步驟一執行，Service Worker 快取已建立
+   - 量測從本地快取讀取的時間，應大幅縮短
+
+### 量測指標說明
+
+| 指標 | 說明 |
+|:---|:---|
+| **實測下載速度** | Cloudflare 外部測速（Mbps）|
+| **NER 模型載入** | hfl/rbt6 INT8，37 MB，首次 vs 快取後（ms）|
+| **Cross-Encoder 載入** | hfl/rbt3 INT8，57 MB（原 228 MB），首次 vs 快取後（ms）|
+| **推論延遲 P95** | 5 次暖機 + 10 次計時，取 P95（ms）|
+
+> **注意**：推論延遲取決於裝置 CPU 效能，與網速無關；模型載入時間則受網速影響（首次）或磁碟讀取速度影響（快取後）。
+
+---
+
 ## 未來展望
 
 - **向量檢索升級**：房源規模擴增至萬筆時引入 ANN 向量索引（FAISS/Annoy）
