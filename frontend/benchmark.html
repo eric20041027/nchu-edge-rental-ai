@@ -298,8 +298,10 @@
 
 <script type="module">
 
-// ── 儲存兩次結果 ─────────────────────────────────────
+// ── 儲存兩次結果 & 保留 cold worker 供 warm 複用 ─────
 const results = { cold: null, warm: null };
+let coldNerWorker = null;  // kept alive after cold run for warm reuse
+let coldCEWorker  = null;  // kept alive after cold run for warm reuse
 
 function log(msg, cls = '') {
   const el = document.getElementById('log');
@@ -352,8 +354,10 @@ async function measureNetworkSpeed(useCache) {
   }
 }
 
-async function measureNerLoad(noCache) {
+// ── Cold：完整初始化（下載 + 建立 session），保留 worker ──
+async function measureNerLoad() {
   log('🧠 NER 模型載入（計時中）…');
+  if (coldNerWorker) { coldNerWorker.terminate(); coldNerWorker = null; }
   return new Promise(resolve => {
     const t0 = performance.now();
     const w  = new Worker('js/ner-worker.js');
@@ -361,61 +365,88 @@ async function measureNerLoad(noCache) {
       if (e.data.type === 'ner_ready') {
         const ms = performance.now() - t0;
         log(`✅ NER 就緒，${Math.round(ms)} ms`, 'ok');
-        w.terminate(); resolve(ms);
+        coldNerWorker = w;  // keep alive for warm reuse
+        resolve(ms);
       } else if (e.data.type === 'ner_error') {
         log('❌ NER 失敗：' + e.data.message, 'err');
         w.terminate(); resolve(null);
       }
     };
-    w.postMessage({ type: 'ner_init', data: { origin: location.origin, noCache } });
+    w.postMessage({ type: 'ner_init', data: { origin: location.origin, noCache: true } });
   });
 }
 
-async function measureCELoad(noCache) {
+async function measureCELoad() {
   log('⚡ Cross-Encoder 載入（計時中）…');
+  if (coldCEWorker) { coldCEWorker.terminate(); coldCEWorker = null; }
   return new Promise(resolve => {
     const t0 = performance.now();
     const w  = new Worker('js/inference-worker.js', { type: 'module' });
-    const progressId = noCache ? 'cold-val-ce' : 'warm-val-ce';
     w.onmessage = async e => {
       if (e.data.type === 'status' && e.data.loaded && e.data.total) {
-        document.getElementById(progressId).textContent =
+        document.getElementById('cold-val-ce').textContent =
           ((e.data.loaded / e.data.total) * 100).toFixed(0) + '%';
       } else if (e.data.type === 'ready') {
         const loadMs = performance.now() - t0;
         log(`✅ Cross-Encoder 就緒，${Math.round(loadMs)} ms`, 'ok');
-        log('🚀 推論 benchmark（5 暖機 + 10 計時）…');
-        const query = '興大附近 8000 以內有冷氣可以煮飯';
-        const prop  = '台中市南區興大路 近中興大學 套房 月租7500 附冷氣廚房洗衣機';
-        const lats  = [];
-        for (let i = 0; i < 15; i++) {
-          const t = performance.now();
-          await new Promise(res => {
-            const id = 'b' + i;
-            const h  = ev => {
-              if (ev.data.type === 'scoreResult' && ev.data.id === id) {
-                w.removeEventListener('message', h); res();
-              }
-            };
-            w.addEventListener('message', h);
-            w.postMessage({ type: 'score', data: { query, propertyText: prop, id } });
-          });
-          if (i >= 5) lats.push(performance.now() - t);
-        }
-        lats.sort((a, b) => a - b);
-        const p50 = lats[Math.floor(lats.length * 0.5)];
-        const p95 = lats[Math.floor(lats.length * 0.95)] ?? lats[lats.length - 1];
-        const avg = lats.reduce((s, v) => s + v, 0) / lats.length;
-        log(`📊 avg:${Math.round(avg)}ms P50:${Math.round(p50)}ms P95:${Math.round(p95)}ms`, 'info');
-        w.terminate();
-        resolve({ loadMs, p50, p95, avg });
+        coldCEWorker = w;  // keep alive for warm reuse
+        const inferResult = await runInferenceBench(w);
+        resolve({ loadMs, ...inferResult });
       } else if (e.data.type === 'error') {
         log('❌ CE 失敗：' + e.data.message, 'err');
         w.terminate(); resolve({ loadMs: null, p50: null, p95: null, avg: null });
       }
     };
-    w.postMessage({ type: 'init', data: { origin: location.origin, noCache } });
+    w.postMessage({ type: 'init', data: { origin: location.origin, noCache: true } });
   });
+}
+
+// ── Warm：複用 cold worker，模型已在記憶體，只量推論 ──
+async function measureNerWarm() {
+  if (!coldNerWorker) {
+    log('⚠️ 請先執行步驟一（無快取）建立 NER worker', 'warn');
+    return null;
+  }
+  log('🧠 NER 模型已在記憶體中（Service Worker 快取命中，跳過重新下載）', 'ok');
+  return 0;
+}
+
+async function measureCEWarm() {
+  if (!coldCEWorker) {
+    log('⚠️ 請先執行步驟一（無快取）建立 CE worker', 'warn');
+    return { loadMs: null, p50: null, p95: null, avg: null };
+  }
+  log('⚡ Cross-Encoder 已在記憶體中（Service Worker 快取命中，跳過重新下載）', 'ok');
+  const inferResult = await runInferenceBench(coldCEWorker);
+  return { loadMs: 0, ...inferResult };
+}
+
+// ── 共用推論 benchmark（5 暖機 + 10 計時）────────────
+async function runInferenceBench(worker) {
+  log('🚀 推論 benchmark（5 暖機 + 10 計時）…');
+  const query = '興大附近 8000 以內有冷氣可以煮飯';
+  const prop  = '台中市南區興大路 近中興大學 套房 月租7500 附冷氣廚房洗衣機';
+  const lats  = [];
+  for (let i = 0; i < 15; i++) {
+    const t = performance.now();
+    await new Promise(res => {
+      const id = 'b' + i;
+      const h  = ev => {
+        if (ev.data.type === 'scoreResult' && ev.data.id === id) {
+          worker.removeEventListener('message', h); res();
+        }
+      };
+      worker.addEventListener('message', h);
+      worker.postMessage({ type: 'score', data: { query, propertyText: prop, id } });
+    });
+    if (i >= 5) lats.push(performance.now() - t);
+  }
+  lats.sort((a, b) => a - b);
+  const p50 = lats[Math.floor(lats.length * 0.5)];
+  const p95 = lats[Math.floor(lats.length * 0.95)] ?? lats[lats.length - 1];
+  const avg = lats.reduce((s, v) => s + v, 0) / lats.length;
+  log(`📊 avg:${Math.round(avg)}ms P50:${Math.round(p50)}ms P95:${Math.round(p95)}ms`, 'info');
+  return { p50, p95, avg };
 }
 
 // ── 更新卡片 ──────────────────────────────────────────
@@ -435,15 +466,31 @@ function applyCards(r, mode) {
 
   // NER
   if (nerMs !== null) {
-    document.getElementById(`${prefix}-val-ner`).textContent = Math.round(nerMs);
-    document.getElementById(`${prefix}-val-ner`).className = 'card-value';
+    const nerValEl  = document.getElementById(`${prefix}-val-ner`);
+    const nerUnitEl = nerValEl.nextElementSibling; // .card-unit
+    if (mode === 'warm') {
+      nerValEl.textContent  = '已快取';
+      nerValEl.style.fontSize = '1.3rem';
+      if (nerUnitEl) nerUnitEl.textContent = '無需重新下載';
+    } else {
+      nerValEl.textContent = Math.round(nerMs);
+    }
+    nerValEl.className = 'card-value';
     document.getElementById(`${prefix}-card-ner`).className = 'card ' + doneClass;
   }
 
   // CE
   if (ce.loadMs !== null) {
-    document.getElementById(`${prefix}-val-ce`).textContent = Math.round(ce.loadMs);
-    document.getElementById(`${prefix}-val-ce`).className = 'card-value';
+    const ceValEl  = document.getElementById(`${prefix}-val-ce`);
+    const ceUnitEl = ceValEl.nextElementSibling; // .card-unit
+    if (mode === 'warm') {
+      ceValEl.textContent  = '已快取';
+      ceValEl.style.fontSize = '1.3rem';
+      if (ceUnitEl) ceUnitEl.textContent = '無需重新下載';
+    } else {
+      ceValEl.textContent = Math.round(ce.loadMs);
+    }
+    ceValEl.className = 'card-value';
     document.getElementById(`${prefix}-card-ce`).className = 'card ' + doneClass;
   }
 
@@ -580,12 +627,18 @@ window.runMode = async function(mode) {
   document.getElementById('log').innerHTML = '';
   btns().forEach(b => b.disabled = true);
 
-  log(`=== ${mode === 'cold' ? '🧊 無快取（首次）' : '♻️ 有快取（二次）'} ===`, 'head');
+  log(`=== ${mode === 'cold' ? '🧊 無快取（首次）' : '♻️ 有快取（二次，複用已載入 worker）'} ===`, 'head');
 
-  const noCache = mode === 'cold';
-  const net     = await measureNetworkSpeed(!noCache);
-  const nerMs   = await measureNerLoad(noCache);
-  const ce      = await measureCELoad(noCache);
+  let net, nerMs, ce;
+  if (mode === 'cold') {
+    net   = await measureNetworkSpeed(false);
+    nerMs = await measureNerLoad();
+    ce    = await measureCELoad();
+  } else {
+    net   = await measureNetworkSpeed(true);
+    nerMs = await measureNerWarm();
+    ce    = await measureCEWarm();
+  }
 
   results[mode] = { net, nerMs, ce };
 
