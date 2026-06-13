@@ -304,11 +304,37 @@ function semanticExpandQuery(query) {
     return expanded;
 }
 
+// Buffer-based init: warm benchmark passes pre-fetched ArrayBuffer from main thread Cache Storage
+async function initFromBuffer(localOrigin, modelBuffer) {
+    try {
+        const ortModule = await import('https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.mjs');
+        ort = ortModule.default ?? ortModule;
+
+        env.allowRemoteModels = false;
+        env.allowLocalModels = true;
+        env.useBrowserCache = true;
+        env.localModelPath = localOrigin + '/';
+
+        tokenizer = await AutoTokenizer.from_pretrained('models/custom_onnx_model_dir');
+
+        session = await ort.InferenceSession.create(modelBuffer, {
+            executionProviders: ['wasm'],
+            graphOptimizationLevel: 'all',
+            sessionOptions: { numThreads: 4 }
+        });
+        postMessage({ type: 'ready' });
+    } catch (err) {
+        postMessage({ type: 'error', message: err.message });
+    }
+}
+
 onmessage = async (e) => {
     const { type, data } = e.data;
 
     if (type === 'init') {
         await init(data.origin, data.noCache ?? false);
+    } else if (type === 'init_buffer') {
+        await initFromBuffer(data.origin, data.modelBuffer);
     } else if (type === 'score') {
         const { query, propertyText, id } = data;
         

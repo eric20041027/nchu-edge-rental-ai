@@ -352,16 +352,51 @@ async function measureNetworkSpeed(useCache) {
   }
 }
 
-// ── 清除 SW Cache Storage（cold 前呼叫，模擬首次訪問）──
+// ── SW Cache Storage helpers ──────────────────────────
 async function clearModelCaches() {
   const keys = await caches.keys();
   await Promise.all(keys.map(k => caches.delete(k)));
   log(`🗑️ 已清除 ${keys.length} 個 SW Cache（${keys.join(', ') || '無'}）`, 'info');
 }
 
-// ── Worker 載入量測（cold/warm 皆用正常 fetch，讓 SW 決定快取）──
-async function measureNerLoad(label) {
-  log(`🧠 NER 模型載入（計時中，${label}）…`);
+// After cold run, fetch models from network on main thread and store into Cache Storage
+// (Worker fetch bypasses SW, so SW never gets a chance to cache them automatically)
+async function populateModelCaches() {
+  const CACHE_NAME = 'rental-models-v20260613';
+  const MODEL_URLS = [
+    location.origin + '/models/ner_model_dir/ner_model_quant.onnx',
+    location.origin + '/models/custom_onnx_model_dir/my_custom_model_quant.onnx',
+  ];
+  log('💾 正在將模型存入 Cache Storage 供 warm 測試使用…', 'info');
+  const cache = await caches.open(CACHE_NAME);
+  await Promise.all(MODEL_URLS.map(async url => {
+    const existing = await cache.match(url);
+    if (existing) return;
+    const resp = await fetch(url, { cache: 'no-store' });
+    if (resp.ok) {
+      await cache.put(url, resp);
+      log(`💾 已快取：${url.split('/').pop()}`, 'info');
+    }
+  }));
+}
+
+// Read a model file from SW Cache Storage into an ArrayBuffer (main thread can access Cache API)
+async function fetchFromCache(url) {
+  const keys = await caches.keys();
+  for (const key of keys) {
+    const cache = await caches.open(key);
+    const resp  = await cache.match(url);
+    if (resp) {
+      log(`📦 Cache hit: ${url.split('/').pop()} (${key})`, 'info');
+      return await resp.arrayBuffer();
+    }
+  }
+  return null;
+}
+
+// ── Cold：worker 自行從網路下載（noCache:true），SW cacheFirst 存入 Cache Storage ──
+async function measureNerCold() {
+  log('🧠 NER 模型載入（無快取，從網路下載）…');
   return new Promise(resolve => {
     const t0 = performance.now();
     const w  = new Worker('js/ner-worker.js');
@@ -375,13 +410,12 @@ async function measureNerLoad(label) {
         w.terminate(); resolve(null);
       }
     };
-    // noCache: false — let SW handle caching (cold: cache miss → download; warm: cache hit)
-    w.postMessage({ type: 'ner_init', data: { origin: location.origin, noCache: false } });
+    w.postMessage({ type: 'ner_init', data: { origin: location.origin, noCache: true } });
   });
 }
 
-async function measureCELoad(label, progressId) {
-  log(`⚡ Cross-Encoder 載入（計時中，${label}）…`);
+async function measureCECold(progressId) {
+  log('⚡ Cross-Encoder 載入（無快取，從網路下載）…');
   return new Promise(resolve => {
     const t0 = performance.now();
     const w  = new Worker('js/inference-worker.js', { type: 'module' });
@@ -400,8 +434,58 @@ async function measureCELoad(label, progressId) {
         w.terminate(); resolve({ loadMs: null, p50: null, p95: null, avg: null });
       }
     };
-    // noCache: false — let SW handle caching
-    w.postMessage({ type: 'init', data: { origin: location.origin, noCache: false } });
+    w.postMessage({ type: 'init', data: { origin: location.origin, noCache: true } });
+  });
+}
+
+// ── Warm：主頁面從 Cache Storage 讀 buffer，transferable 傳給 worker，跳過網路 ──
+async function measureNerWarm() {
+  log('🧠 NER 模型載入（從 SW Cache Storage 讀取）…');
+  const t0  = performance.now();
+  const buf = await fetchFromCache(location.origin + '/models/ner_model_dir/ner_model_quant.onnx');
+  if (!buf) {
+    log('⚠️ Cache Storage 無 NER 模型，請先執行步驟一', 'warn');
+    return null;
+  }
+  return new Promise(resolve => {
+    const w = new Worker('js/ner-worker.js');
+    w.onmessage = e => {
+      if (e.data.type === 'ner_ready') {
+        const ms = performance.now() - t0;
+        log(`✅ NER 就緒（快取），${Math.round(ms)} ms`, 'ok');
+        w.terminate(); resolve(ms);
+      } else if (e.data.type === 'ner_error') {
+        log('❌ NER 失敗：' + e.data.message, 'err');
+        w.terminate(); resolve(null);
+      }
+    };
+    w.postMessage({ type: 'ner_init_buffer', data: { origin: location.origin, modelBuffer: buf } }, [buf]);
+  });
+}
+
+async function measureCEWarm(progressId) {
+  log('⚡ Cross-Encoder 載入（從 SW Cache Storage 讀取）…');
+  const t0  = performance.now();
+  const buf = await fetchFromCache(location.origin + '/models/custom_onnx_model_dir/my_custom_model_quant.onnx');
+  if (!buf) {
+    log('⚠️ Cache Storage 無 CE 模型，請先執行步驟一', 'warn');
+    return { loadMs: null, p50: null, p95: null, avg: null };
+  }
+  return new Promise(resolve => {
+    const w = new Worker('js/inference-worker.js', { type: 'module' });
+    w.onmessage = async e => {
+      if (e.data.type === 'ready') {
+        const loadMs = performance.now() - t0;
+        log(`✅ Cross-Encoder 就緒（快取），${Math.round(loadMs)} ms`, 'ok');
+        const inferResult = await runInferenceBench(w);
+        w.terminate();
+        resolve({ loadMs, ...inferResult });
+      } else if (e.data.type === 'error') {
+        log('❌ CE 失敗：' + e.data.message, 'err');
+        w.terminate(); resolve({ loadMs: null, p50: null, p95: null, avg: null });
+      }
+    };
+    w.postMessage({ type: 'init_buffer', data: { origin: location.origin, modelBuffer: buf } }, [buf]);
   });
 }
 
@@ -598,16 +682,21 @@ window.runMode = async function(mode) {
   const isCold = mode === 'cold';
   log(`=== ${isCold ? '🧊 無快取（首次）' : '♻️ 有快取（二次）'} ===`, 'head');
 
+  let net, nerMs, ce;
   if (isCold) {
     await clearModelCaches();
     log('💡 SW Cache 已清除，模擬首次訪問（從網路下載）', 'info');
+    net   = await measureNetworkSpeed(false);
+    nerMs = await measureNerCold();
+    ce    = await measureCECold(`${mode}-val-ce`);
+    // Worker fetch bypasses SW, so manually populate Cache Storage for warm test
+    await populateModelCaches();
   } else {
-    log('💡 SW Cache 保留，模擬二次訪問（快取命中）', 'info');
+    log('💡 主頁面從 Cache Storage 讀取模型 buffer，傳入 worker（零網路請求）', 'info');
+    net   = await measureNetworkSpeed(true);
+    nerMs = await measureNerWarm();
+    ce    = await measureCEWarm(`${mode}-val-ce`);
   }
-
-  const net   = await measureNetworkSpeed(!isCold);
-  const nerMs = await measureNerLoad(isCold ? '無快取，從網路下載' : 'SW 快取命中');
-  const ce    = await measureCELoad(isCold ? '無快取，從網路下載' : 'SW 快取命中', `${mode}-val-ce`);
 
   results[mode] = { net, nerMs, ce };
 
