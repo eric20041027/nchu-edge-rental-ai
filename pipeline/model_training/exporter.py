@@ -148,41 +148,28 @@ class Exporter(BaseTrainer):
             dummy_inputs_cpu = {k: v.to("cpu") if isinstance(v, torch.Tensor) else v
                                for k, v in dummy_inputs.items()}
 
-            # Use optimum for reliable ONNX export (embeds weights correctly).
-            # torch.onnx dynamo backend (torch >= 2.x) writes weights to a
-            # separate .data file instead of embedding them, producing a tiny
-            # ~0.6 MB .onnx that breaks downstream quantization.
-            try:
-                from optimum.onnxruntime import ORTModelForSequenceClassification
-                import shutil
-                self.log_step("Exporting via optimum (recommended path)")
-                ort_model = ORTModelForSequenceClassification.from_pretrained(
-                    str(self.config.saved_model_dir), export=True
+            # Use torch.onnx.export (TorchScript) to guarantee weights are embedded
+            # in a single .onnx file. optimum export is avoided because it produces
+            # shape annotations that conflict with onnxruntime shape inference
+            # during quantization (ShapeInferenceError dim 0: 768 vs 2).
+            self.log_step("Exporting via torch.onnx.export (TorchScript)")
+            with torch.no_grad():
+                torch.onnx.export(
+                    self.model,
+                    tuple(dummy_inputs_cpu.values()),
+                    str(self.config.onnx_output_path),
+                    input_names=list(dummy_inputs_cpu.keys()),
+                    output_names=["logits"],
+                    dynamic_axes={
+                        "input_ids": {0: "batch_size"},
+                        "attention_mask": {0: "batch_size"},
+                        "token_type_ids": {0: "batch_size"},
+                        "logits": {0: "batch_size"},
+                    },
+                    opset_version=self.config.onnx_opset_version,
+                    do_constant_folding=True,
+                    export_params=True,
                 )
-                tmp_dir = self.config.onnx_output_path.parent / "_ort_export_tmp"
-                ort_model.save_pretrained(str(tmp_dir))
-                shutil.copy(str(tmp_dir / "model.onnx"), str(self.config.onnx_output_path))
-                shutil.rmtree(str(tmp_dir), ignore_errors=True)
-            except ImportError:
-                # Fallback: legacy TorchScript path (requires torch < 2.x dynamo)
-                self.log_step("optimum not found, falling back to torch.onnx.export")
-                with torch.no_grad():
-                    torch.onnx.export(
-                        self.model,
-                        tuple(dummy_inputs_cpu.values()),
-                        str(self.config.onnx_output_path),
-                        input_names=list(dummy_inputs_cpu.keys()),
-                        output_names=["logits"],
-                        dynamic_axes={
-                            "input_ids": {0: "batch_size"},
-                            "attention_mask": {0: "batch_size"},
-                            "token_type_ids": {0: "batch_size"},
-                            "logits": {0: "batch_size"},
-                        },
-                        opset_version=self.config.onnx_opset_version,
-                        do_constant_folding=True,
-                        export_params=True,
-                    )
 
             self.log_result("ONNX export", f"saved to {self.config.onnx_output_path}")
 
