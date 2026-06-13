@@ -138,7 +138,7 @@ Student 損失函數：`0.5×CE(label smoothing ε=0.05) + 0.5×weighted_BCE(sof
 
 ## 前端推論效能
 
-系統採雙 Web Worker 並行推論（NER + Cross-Encoder 獨立，主線程零阻塞），搭配 Cache API + Service Worker 實現離線可用。實測於 i5-11600KF，30 候選重排 P95 延遲 **2,219 ms**，heap 穩定 56.6 MB，無記憶體洩漏。詳細的 FLOPs 分析、各裝置延遲推算與前端架構，請參考 [邊緣推論與前端效能](docs/EDGE_INFERENCE.md)。
+系統採雙 Web Worker 並行推論（NER + Cross-Encoder 獨立，主線程零阻塞），搭配 Cache API + Service Worker 實現離線可用。實測於 i5-11600KF（82 Mbps），首次載入 **16.31 s**，快取後載入 **1.64 s**（↓90%），單次推論 P95 **248 ms**，heap 穩定 56.6 MB，無記憶體洩漏。詳細的 FLOPs 分析、各裝置延遲推算與前端架構，請參考 [邊緣推論與前端效能](docs/EDGE_INFERENCE.md)。
 
 ---
 
@@ -200,12 +200,13 @@ npx serve frontend -p 8080
 ### 測試步驟
 
 1. **步驟一（無快取）**：點擊 🧊「無快取測試」
-   - 在 Chrome DevTools → Application → Storage → 點「Clear site data」清除快取後再測
-   - 量測首次從網路下載模型的時間（NER 37 MB + Cross-Encoder 57 MB）
+   - benchmark 會自動清除 SW Cache Storage，模擬首次訪問
+   - 量測從網路下載模型的時間（NER 37 MB + Cross-Encoder 57 MB）
 
 2. **步驟二（有快取）**：點擊 ♻️「有快取測試」
-   - 直接接著步驟一執行，Service Worker 快取已建立
-   - 量測從本地快取讀取的時間，應大幅縮短
+   - 直接接著步驟一執行（無需手動操作）
+   - 主頁面從 Cache Storage 讀取 buffer 傳給 Worker，**零網路請求**
+   - 量測純 WASM session 初始化時間，應比首次快 ~90%
 
 ### 量測指標說明
 
