@@ -185,11 +185,36 @@ async function extractEntities(text) {
 
 // ── Message handler ─────────────────────────────────────────────────────────
 
+// Buffer-based init: warm benchmark passes pre-fetched ArrayBuffer from main thread Cache Storage
+async function initFromBuffer(origin, modelBuffer) {
+    try {
+        postMessage({ type: 'ner_status', message: '載入 NER 模組...' });
+        const ortModule = await import('https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.mjs');
+        ort = ortModule.default ?? ortModule;
+
+        postMessage({ type: 'ner_status', message: '載入 NER 詞表...' });
+        const tokenizerRes = await fetch(origin + '/models/ner_model_dir/tokenizer.json', { cache: 'default' });
+        const tokenizerJson = await tokenizerRes.json();
+        vocab = new Map(Object.entries(tokenizerJson.model.vocab));
+
+        postMessage({ type: 'ner_status', message: '初始化 NER Session...' });
+        session = await ort.InferenceSession.create(modelBuffer, {
+            executionProviders: ['wasm'],
+            graphOptimizationLevel: 'all',
+        });
+        postMessage({ type: 'ner_ready' });
+    } catch (err) {
+        postMessage({ type: 'ner_error', message: err.message });
+    }
+}
+
 onmessage = async (e) => {
     const { type, data } = e.data;
 
     if (type === 'ner_init') {
         await init(data.origin, data.noCache ?? false);
+    } else if (type === 'ner_init_buffer') {
+        await initFromBuffer(data.origin, data.modelBuffer);
     } else if (type === 'ner_extract') {
         const { query, id } = data;
         try {
