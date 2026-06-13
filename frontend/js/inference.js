@@ -20,6 +20,37 @@ let pendingNER  = new Map();
 let nerIdCounter = 0;
 let nerReady    = false;
 
+// --- Source-aware boolean reliability (bool 空值≠False) ---------------------
+// 兩來源爬蟲抓取的欄位子集不同，部分 bool 欄在某來源「整欄崩塌」(≈0% true)，
+// 那是「爬蟲沒抓該欄」而非「房子真的沒有」。對崩塌欄的 false 必須視為「未知」
+// (回退文字判斷 / 交 AI)，不可當「明確無」硬判，否則系統性誤殺該來源房源。
+//
+// 崩塌判定來自現有 704 筆 property_data.json 實測 true 比率(<5% 視為崩塌)：
+//   has_parking      nchu 63% / dd  0%   → dd 崩塌
+//   water_dispenser  nchu 63% / dd  0%   → dd 崩塌
+//   has_waste_disposal nchu 0% / dd 99%  → nchu 崩塌
+//   has_window       nchu  0% / dd 100%  → nchu 崩塌
+//   has_elevator / has_balcony 兩來源皆有訊號 → 皆可信
+// 資料換版時需依新統計更新此表 (見 data_source_misalignment 記憶)。
+const COLLAPSED_BOOL_FIELDS = {
+    nchu: new Set(['has_waste_disposal', 'has_window']),
+    dd:   new Set(['has_parking', 'water_dispenser']),
+};
+
+function propSource(prop) {
+    return (prop.url || '').includes('nchu') ? 'nchu' : 'dd';
+}
+
+// 三態解讀一個 bool 設施欄：
+//   'yes'     — has_xxx===true，明確有
+//   'no'      — has_xxx===false 且該欄對此來源可信，明確無
+//   'unknown' — has_xxx===false 但該欄對此來源崩塌，未知(交文字/AI 判)
+function boolFieldState(prop, field) {
+    if (prop[field] === true) return 'yes';
+    if (COLLAPSED_BOOL_FIELDS[propSource(prop)]?.has(field)) return 'unknown';
+    return 'no';
+}
+
 // --- Property Data Synchronization ---
 export async function initData() {
     const response = await fetch('assets/property_data.json?v=20260310');
@@ -728,22 +759,24 @@ function calculateRuleBasedScore(candidates, queryKeywords, text, constraints) {
             let isMatch = pText.includes(kw);
             
             // --- Special Case: Intent-Based Mapping + Boolean Flags ---
+            // bool 設施欄一律走 boolFieldState 三態：yes→命中；no→信任文字回退；
+            // unknown(該來源此欄崩塌)→純看文字，不因假性 false 而判定無 (待辦1)。
             if (kw.includes('樓梯') || kw.includes('電梯')) {
                 const elevatorKws = ['電梯', '華廈', '大樓'];
-                isMatch = prop.has_elevator || elevatorKws.some(alt => pText.includes(alt));
-            } 
+                isMatch = boolFieldState(prop, 'has_elevator') === 'yes' || elevatorKws.some(alt => pText.includes(alt));
+            }
             else if (kw.includes('垃圾') || kw.includes('追車')) {
                 const wasteKws = ['子母車', '代收垃圾', '垃圾處理', '垃圾子車'];
-                isMatch = prop.has_waste_disposal || wasteKws.some(alt => pText.includes(alt));
+                isMatch = boolFieldState(prop, 'has_waste_disposal') === 'yes' || wasteKws.some(alt => pText.includes(alt));
             }
             else if (kw.includes('陽台')) {
-                isMatch = prop.has_balcony || pText.includes('陽台');
+                isMatch = boolFieldState(prop, 'has_balcony') === 'yes' || pText.includes('陽台');
             }
             else if (kw.includes('窗')) {
-                isMatch = prop.has_window || pText.includes('窗');
+                isMatch = boolFieldState(prop, 'has_window') === 'yes' || pText.includes('窗');
             }
             else if (kw.includes('車位') || kw.includes('停車')) {
-                isMatch = prop.has_parking || pText.includes('車位') || pText.includes('停車');
+                isMatch = boolFieldState(prop, 'has_parking') === 'yes' || pText.includes('車位') || pText.includes('停車');
             }
             else if (kw.includes('電') || kw.includes('錢') || kw.includes('省')) {
                 if (kw.includes('電費') || kw.includes('台電') || kw.includes('省')) {
