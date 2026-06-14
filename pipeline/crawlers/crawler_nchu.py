@@ -21,6 +21,40 @@ CSV_COLUMNS = [
 
 FURNITURE_DB = ["床", "桌子", "椅子", "沙發", "衣櫃", "鞋櫃", "櫃子", "排油煙機", "瓦斯爐", "電磁爐", "流理台", "電視", "第四台", "電視盒", "冰箱", "洗衣機", "冷氣", "網路", "熱水器", "天然瓦斯", "住警器", "飲水機", "電梯", "陽台"]
 
+# Canonical feature labels (mirrors crawler_ddroom.FEATURES_DB so downstream
+# string matching in precompute_embeddings.py lights up the same has_* flags
+# for both sources). NCHU lists these inside its 家具設施 / 安全管理 / 消防逃生 /
+# 租金包含 / 備註 secondary tables rather than as chips, so we derive them.
+FEATURES_DB = ["可養貓", "可養狗", "可養其他寵物", "對外窗", "有電梯", "水泥隔間", "保全設施", "垃圾代收", "包裹代收", "定期清潔", "免仲介費", "可報稅", "租金補貼", "高齡友善", "飲水機", "氣密窗", "有陽台", "可開伙", "台電", "台水", "可申請補助", "可入籍"]
+
+# Keyword -> canonical feature. Scanned over the union of the captured NCHU
+# tables. Keeps the front-end vocabulary aligned across both crawlers.
+NCHU_FEATURE_RULES = [
+    (["飲水機"], "飲水機"),
+    (["陽台", "曬衣"], "有陽台"),
+    (["電梯"], "有電梯"),
+    (["對外窗", "鋁窗", "鐵鋁門 / 窗", "鐵鋁門/窗"], "對外窗"),
+    (["氣密窗"], "氣密窗"),
+    (["監視", "防盜", "辨識器", "門禁", "感應", "保全"], "保全設施"),
+    (["子母車", "垃圾代收", "垃圾處理"], "垃圾代收"),
+    (["包裹", "管理員", "管理室"], "包裹代收"),
+    (["定期清潔", "清潔服務"], "定期清潔"),
+    (["免仲介", "免服務費"], "免仲介費"),
+    (["可報稅", "可申報"], "可報稅"),
+    (["可入籍", "可遷入戶籍", "可設籍"], "可入籍"),
+    (["瓦斯", "電磁爐", "流理台", "排油煙"], "可開伙"),
+]
+
+
+def derive_nchu_features(blob: str) -> list:
+    """Map free text from NCHU secondary tables to canonical feature labels."""
+    found = []
+    for keywords, label in NCHU_FEATURE_RULES:
+        if label not in found and any(kw in blob for kw in keywords):
+            found.append(label)
+    return found
+
+
 def log(msg):
     print(msg, flush=True)
 
@@ -81,8 +115,12 @@ async def get_nchu_detail(page, rid: str) -> dict:
     res["樓層"] = data_map.get("樓層", "")
     res["電話"] = data_map.get("電話", "")
     
-    # Secondary tables (Amenities, Includes, Extras)
+    # Secondary tables. All use a #F555A8 pink header cell + a value cell.
+    # Previously only 家具設施 / 另計費用 / 備註 were captured, dropping the
+    # 租金包含 / 安全管理 / 消防逃生 tables that NCHU pages actually provide —
+    # which is why has_window / has_subsidy / service_level collapsed for NCHU.
     extra_text = ""
+    sections = {}  # label -> raw value text, for feature derivation
     for table in soup.find_all("table"):
         header_td = table.find("td", style=re.compile(r"background-color:#F555A8"))
         if header_td:
@@ -90,6 +128,7 @@ async def get_nchu_detail(page, rid: str) -> dict:
             val_td = table.find_all("td")[1] if len(table.find_all("td")) > 1 else None
             if val_td:
                 val = val_td.get_text(strip=True).replace("/", " / ")
+                sections[label] = val
                 if label == "家具設施":
                     items = [it.strip() for it in val.split("/") if it.strip()]
                     res["家具設施"] = "/".join(items)
@@ -99,6 +138,31 @@ async def get_nchu_detail(page, rid: str) -> dict:
                 elif label == "備註":
                     res["特色"] = val
                     extra_text += " " + val
+                elif label in ("安全管理", "消防逃生", "租金包含"):
+                    extra_text += " " + val
+
+    # Rent inclusions -> water/subsidy columns so downstream "含水"/補助 match.
+    rent_includes = sections.get("租金包含", "")
+    if "水費" in rent_includes or "含水" in rent_includes:
+        res["水費"] = "含水費"
+    if any(kw in rent_includes for kw in ["租屋補助", "租金補貼", "租補"]):
+        res["租屋補助"] = "可申請租屋補助"
+
+    # Derive canonical feature labels from every captured table + furniture,
+    # mirroring crawler_ddroom's 特色 chips. Merge with the 備註-derived 特色
+    # text rather than overwriting (备注 carries 禁養寵物/限女性 hard-filter signal).
+    feature_blob = " ".join([
+        res.get("家具設施", ""), res.get("特色", ""),
+        sections.get("安全管理", ""), sections.get("消防逃生", ""),
+        sections.get("租金包含", ""),
+    ])
+    derived = derive_nchu_features(feature_blob)
+    if derived:
+        existing = [it.strip() for it in res["特色"].split("/") if it.strip()]
+        for d in derived:
+            if d not in existing:
+                existing.append(d)
+        res["特色"] = " / ".join(existing)
     
     # Improved Electric Fee detection: look for per unit price
     # Usually format is like "電費5元" or "每度5元"
