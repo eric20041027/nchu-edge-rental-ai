@@ -2,6 +2,37 @@
 
 ---
 
+## [2026.06.14] - 資料來源對齊、語意層審查、OSRM 距離、兩項 NO-GO 決策
+
+### 雙來源欄位對齊（根因修復）
+
+- 興大 crawler 補抓 3 個漏解析的二級表格（租金包含/安全管理/消防逃生）+ 新增 `FEATURES_DB` 衍生 canonical 標籤
+- 實測收斂：興大特色項 avg **1.6→5.32**、`has_window` **0→70%**、`safety_level high` **0→94%**，硬篩 100% 保留
+- bool 設施欄改三態判定（`boolFieldState`），崩塌欄 false 視為「未知」而非「無」，避免誤殺興大房
+
+### OSRM 通勤距離補全
+
+- `distance / walk_mins / scooter_mins` 從 0/704 → **704/704**（702 OSRM 真值 + 2 地址爬壞 fallback）
+- `inference.js` 加 `distance=0` 守衛（視為未知不加分），避免 `Math.ceil(0/0.08)` 誤判超近校
+
+### 語意擴展層可驗證性審查（P2）
+
+- 新增 `pipeline/data_prep/audit_expansion_tokens.py`：以前端真實比對邏輯對 704 房源檢出 0-backing 臆測詞
+- 救援 16 詞（加同義橋/納入電費結構欄）、刪除真死 token + 整條失效 rule
+- 結果：規則數 **132→105**、unique token **122→75**、0-backing **60→0**
+
+### 兩項離線驗證的 NO-GO 工程決策
+
+- **Bi-encoder 意圖層 fallback**：text2vec 對 2093 條口語 query 驗證，thr=0.55 正確路由僅 49%、誤路由 28%，各向異性 0.294 使精準⊥覆蓋 → 不值 205 MB 前端成本。`docs/encoder_fallback_offline_decision.md`
+- **CE 文字層 enriched 餵入**：CE 對訓練時短結構文字格式 OOD 敏感（含「有陽台」的 enriched 反而比 raw 得分低），改餵會破壞排序 → 維持餵 `prop.text`，根治需重訓。`docs/ce_text_layer_decision.md`
+
+### 文件
+
+- README 加入資料來源對齊、可驗證性審查、已驗證工程決策（負面結果）章節
+- DATA_PIPELINE.md 新增「雙來源欄位對齊」與「語意擴展層可驗證性審查」
+
+---
+
 ## [2026.06.11] - 量化策略升級、git 歷史清理、指標與文件全面更新
 
 ### 量化策略升級（Cross-Encoder）
