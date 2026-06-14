@@ -244,6 +244,8 @@ def main() -> None:
             "floor": prop["floor"],
             "furniture": prop["furniture_str"],
             "distance": prop["distance"],
+            "walk_mins": prop["walk_mins"],
+            "scooter_mins": prop["scooter_mins"],
             "img": prop["img"],
             "contact": prop["contact"],
             "phone": prop["phone"],
