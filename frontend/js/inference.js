@@ -306,13 +306,8 @@ function explainMatch(query, prop, constraints) {
     }
 
     // 4. Distance & Geo Tier
-    if (q.includes('走路') || q.includes('近') || q.includes('步行')) {
-        if (prop.geo_tier === "core") {
-            reasons.push("🚀 步行核心區，下課就到家");
-        } else if (prop.geo_tier === "active") {
-            reasons.push("📍 位於熱鬧商圈，生活機能優");
-        }
-    }
+    // 移除:geo_tier 在現有爬蟲資料退化(701/704=core,3=active),無法據以生成可信標籤。
+    // 距離訊號改由 OSRM 通勤距離(distance / walk_mins)在排序層處理,不在此產生臆測標籤。
 
     // 5. Condition & Aesthetics
     if (q.includes('漂亮') || q.includes('質感') || q.includes('新') || q.includes('裝潢')) {
@@ -440,12 +435,8 @@ function explainMatch(query, prop, constraints) {
             check: p => p.includes('套房') || p.includes('獨衛') || p.includes('獨立'),
             label: '🏠 獨立套房不共用'
         },
-        // ── 交通通勤 ──────────────────────────────────
-        {
-            triggers: ['通勤', '上班方便', '沒有車', '不開車', '近公車', '近捷運'],
-            check: p => p.includes('公車') || p.includes('捷運') || p.includes('交通') || p.includes('生活機能'),
-            label: '🚌 交通便利 / 近大眾運輸'
-        },
+        // ── 交通通勤 ── 移除:check 的 公車/捷運/交通/生活機能 在爬蟲資料 0 命中,
+        //    此規則永遠無法 truthy(dead code)。通勤訊號改由 OSRM distance 處理。
         // ── 在家工作 / WFH ────────────────────────────
         {
             triggers: ['在家工作', 'WFH', '遠距工作', '居家辦公', '書桌', '打報告', '念書', '讀書'],
@@ -773,10 +764,6 @@ function expandQueryIntent(query) {
         "一個人住":    "獨立套房 獨衛 獨廁 套房",
         "不想跟人共用":  "獨立套房 獨衛 套房",
         "騎車上班":    "機車停車位 停車",
-        "通勤":      "近公車 近捷運 交通便利",
-        "沒有車":     "近公車 生活機能 便利商店 交通便利",
-        "不開車":     "近公車 近捷運 生活機能",
-        "上班方便":    "交通便利 近公車 近捷運",
         "不要西曬":    "非西向 東向 北向 採光",
         "要有陽台":    "陽台 曬衣 採光 通風",
         "不要頂樓":    "非頂樓 非頂加",
@@ -816,7 +803,7 @@ function expandQueryIntent(query) {
         "希望煮飯":    "廚房 瓦斯 開火 自炊 電磁爐 排油煙機 流理台",
         "下班晚":     "子母車 垃圾代收 門禁 管理員 安全",
         "省錢":      "台電 台水 便宜 補助 租補",
-        "生活便利":    "超商 興大路 核心區 核心 核心圈",
+        "生活便利":    "興大路",
         "走路到學校":   "走路10分",
         "走路去學校":   "走路10分",
         "走路可以到":   "走路10分",
