@@ -342,6 +342,11 @@ function explainMatch(query, prop, constraints) {
             label: '❄️ 房內附冷氣'
         },
         {
+            triggers: ['電視', '看電視', '電視機', 'tv', '液晶', '追劇'],
+            check: p => p.includes('電視') || p.includes('液晶'),
+            label: '📺 房內附電視'
+        },
+        {
             triggers: ['廚房', '開伙', '煮飯', '瓦斯', '自炊', '炒菜', '料理', '在家煮', '自己煮', '開火', '煮東西'],
             check: p => p.includes('廚房') || p.includes('開伙') || p.includes('瓦斯') || p.includes('可自炊') || p.includes('電磁爐') || p.includes('排油煙') || p.includes('流理台') || p.includes('爐'),
             label: '🍳 可開伙自炊'
