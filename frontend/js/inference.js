@@ -822,9 +822,20 @@ function expandQueryIntent(query) {
     // <<< GENERATED <<<
     };
 
+    // 否定守衛:略過「被否定詞緊鄰修飾」的命中,避免子字串碰撞把反義句帶偏。
+    // 例:「沒有車」含「有車」、「不開車」含「開車」→ 否則會誤擴展成「車位 停車場」,
+    // 把無車使用者推去停車位房源。比對 intent 前一字是否為 不/沒/無/非/免/勿。
+    const NEGATORS = '不沒無非免勿';
     for (const [intent, expansion] of Object.entries(intentMap)) {
-        if (query.includes(intent)) {
-            expanded += " " + expansion;
+        let from = 0, idx;
+        while ((idx = query.indexOf(intent, from)) !== -1) {
+            // 注意:''.includes 對空字串恆為 true,故句首(idx===0)須明確視為「無否定詞」。
+            const negated = idx > 0 && NEGATORS.includes(query[idx - 1]);
+            if (!negated) {
+                expanded += " " + expansion;
+                break;  // 命中一次即擴展,與原行為一致
+            }
+            from = idx + 1;  // 此處被否定,繼續找下一個非否定出現位置
         }
     }
     return expanded;
