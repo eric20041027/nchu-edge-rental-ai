@@ -9,7 +9,7 @@
  * Version key: bump CACHE_VERSION when deploying new model weights or major JS changes.
  */
 
-const CACHE_VERSION  = 'v20260614b';
+const CACHE_VERSION  = 'v20260614c';
 const STATIC_CACHE   = `rental-static-${CACHE_VERSION}`;
 const MODEL_CACHE    = `rental-models-${CACHE_VERSION}`;
 const CDN_CACHE      = `rental-cdn-${CACHE_VERSION}`;
