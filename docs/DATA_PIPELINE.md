@@ -80,7 +80,27 @@ $$R = \frac{\text{已滿足維度數}}{\text{已指定維度數}}$$
 
 **前端應用**：推薦結果顯示「步行 X 分鐘 / 騎車 Y 分鐘」，支援通勤時間過濾。
 
-## 6. 雜訊測試集生成（Group D 評估用）
+## 6. 雙來源欄位對齊（租租通 vs 興大）
+
+`property_data.json` 共 704 筆，無顯式 `source` 欄，以 `url` 區分：租租通（dd-room）**559 筆**、興大官網（nchu）**145 筆**。兩來源由不同 crawler 抓取不同欄位子集，造成排序系統性偏袒租租通。
+
+### 根因：crawler 解析不完整（非缺資料）
+
+興大 detail 頁有 6 個二級表格，但 `crawler_nchu` 原只解析「家具設施 / 另計費用 / 備註」三個，漏掉現成的「租金包含 / 安全管理 / 消防逃生」。下游 bool 欄全由 `full_text` 子字串衍生，漏抓即全 miss（例 `has_window` 來自「窗」，但「鐵鋁門/窗」就在沒被抓的「安全管理」表裡）。
+
+**修法**：
+
+1. **crawler 補抓 3 漏表** + 新增 `FEATURES_DB` / `derive_nchu_features()`，從各表衍生 canonical 標籤折入特色。實測收斂：興大特色項 avg **1.6→5.32**、`has_window` **0→70%**、`safety_level high` **0→94%**，硬篩 100% 保留。
+2. **bool 設施欄三態判定**（`boolFieldState`）：`yes`→命中、可信 `false`→明確無、**崩塌欄 `false`→未知**（回退文字/交 AI）。某來源整欄崩塌（≈0% true）是「來源性偏誤」非真實差異，硬判 false 會誤殺。崩塌欄以 `COLLAPSED_BOOL_FIELDS` 硬編（資料換版需依新統計更新）。
+3. **前端同義橋接**（`PROP_SYNONYMS`）：查詢擴展詞對上兩來源不同用詞（可寵→可養貓、廚房→可開伙、禁菸→無菸、台水→`electricity_billing` 結構欄…）。
+
+### 語意擴展層可驗證性審查
+
+105 條口語意圖規則的擴展詞，逐一以**前端真實比對邏輯**（`buildPropText` + bool 欄 + `PROP_SYNONYMS` + `electricity_billing`）對 704 房源比對命中數。**0 命中 = 無資料支撐的模型臆測**，分類處理：救援可橋接者、刪除真死 token 與整條失效 rule（規則數 132→105、unique token 122→75、0-backing 60→0）。
+
+**實作 / 重跑**：`pipeline/data_prep/audit_expansion_tokens.py`
+
+## 7. 雜訊測試集生成（Group D 評估用）
 
 `pipeline/data_prep/noise_generator.py` 生成 `data/processed/noisy_test.json`：
 
