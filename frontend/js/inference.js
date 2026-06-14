@@ -26,14 +26,17 @@ let nerReady    = false;
 // (回退文字判斷 / 交 AI)，不可當「明確無」硬判，否則系統性誤殺該來源房源。
 //
 // 崩塌判定來自現有 704 筆 property_data.json 實測 true 比率(<5% 視為崩塌)：
-//   has_parking      nchu 63% / dd  0%   → dd 崩塌
-//   water_dispenser  nchu 63% / dd  0%   → dd 崩塌
-//   has_waste_disposal nchu 0% / dd 99%  → nchu 崩塌
-//   has_window       nchu  0% / dd 100%  → nchu 崩塌
+//   has_parking      nchu 61% / dd  0%   → dd 崩塌
+//   water_dispenser  nchu 61% / dd  0%   → dd 崩塌
+//   has_waste_disposal nchu 0% / dd 99%  → nchu 崩塌(興大頁面真無此欄)
+//   has_subsidy      nchu  0% / dd 100%  → nchu 崩塌(興大真無租屋補助欄)
+//   has_window       nchu 70% / dd 100%  → 兩來源皆可信(2026-06-14 補抓安全管理表後脫離崩塌)
 //   has_elevator / has_balcony 兩來源皆有訊號 → 皆可信
+// 2026-06-14 興大 crawler 補抓 租金包含/安全管理/消防逃生 二級表格 + 衍生特色標籤後，
+// has_window 0%→70%、safety_level high 0%→94%、特色 avg 1.6→5.3。
 // 資料換版時需依新統計更新此表 (見 data_source_misalignment 記憶)。
 const COLLAPSED_BOOL_FIELDS = {
-    nchu: new Set(['has_waste_disposal', 'has_window']),
+    nchu: new Set(['has_waste_disposal', 'has_subsidy']),
     dd:   new Set(['has_parking', 'water_dispenser']),
 };
 
@@ -53,7 +56,7 @@ function boolFieldState(prop, field) {
 
 // --- Property Data Synchronization ---
 export async function initData() {
-    const response = await fetch('assets/property_data.json?v=20260310');
+    const response = await fetch('assets/property_data.json?v=20260614g');
     propertyData = await response.json();
     console.log(`Loaded ${propertyData.length} property descriptions`);
 }
