@@ -1,5 +1,21 @@
 # 擴展詞 ↔ 房源資料 可驗證性盤點 (2026-06-14)
 
+> ## ✅ P2 已結案 (2026-06-14)
+> 用 `pipeline/data_prep/audit_expansion_tokens.py`(複刻 inference.js 真實比對:
+> buildPropText + BOOL_FIELD_FEATURES + PROP_SYNONYMS + electricity_billing 欄)
+> 對 current main 704 房源重算,找出 **60 個 0-backing token**,逐一分類後處理:
+> - **救援 16 個**(加 PROP_SYNONYMS 橋 / 納入 electricity_billing 欄):禁菸→無菸、
+>   採光/通風→對外窗、安全/監視器/刷卡→保全、女性友善→限女、租補→租金補貼、
+>   室友/合租→雅房/分租、隔音→氣密窗、台水/帳單/自繳/標準電費→電費族結構欄。
+> - **刪除 ~44 個真死 token**(橋不到任何真實資料):浴缸/獨衛族/靜巷/短租族/頂樓族/
+>   質感族/預算族/家具齊全族/落地窗(premium 0 命中,不假橋到泛用窗)…
+> - **整條移除 27 條 rule**(token 全死或刪後只剩誤導性的「套房」):西曬/夜貓子/短租/
+>   只租幾個月/不確定租多久/學生/便宜/個人衛浴/一個人住/想泡澡/不要頂樓…
+> - 結果:rules **132→105**,unique token 122→75,**0-backing token 60→0**。
+> - 三表同步(sync_semantic_rules.py)、node --check 過、Node 端到端驗(台水台電→台電
+>   台水 標準電費;短租→無擴展不崩)。**重跑:`python pipeline/data_prep/audit_expansion_tokens.py`**。
+> 下方原始盤點(raw blob 版,未含 bool/同義橋)保留為歷史。
+
 針對 704 筆 `frontend/assets/property_data.json` 實測:把每個語意擴展 token 對
 房源 blob(`text` + `furniture` + `features` + `notes` + `other_fees` + 電費欄 + `address`)
 做 `includes` 比對,統計命中數。**命中 0 = 爬蟲資料無對應實據,屬模型臆測。**
