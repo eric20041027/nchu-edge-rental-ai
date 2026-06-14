@@ -75,8 +75,27 @@ function boolFieldState(prop, field) {
 }
 
 // --- Property Data Synchronization ---
+// Fetch with retry + backoff. Mobile reloads often abort in-flight requests or
+// hit transient 5G drops, which previously failed the whole init with no recovery.
+async function fetchWithRetry(url, { retries = 3, backoff = 600 } = {}) {
+    let lastErr;
+    for (let attempt = 0; attempt <= retries; attempt++) {
+        try {
+            const response = await fetch(url, { cache: 'default' });
+            if (!response.ok) throw new Error(`HTTP ${response.status} for ${url}`);
+            return response;
+        } catch (e) {
+            lastErr = e;
+            if (attempt < retries) {
+                await new Promise(r => setTimeout(r, backoff * (attempt + 1)));
+            }
+        }
+    }
+    throw lastErr;
+}
+
 export async function initData() {
-    const response = await fetch('assets/property_data.json?v=20260614i');
+    const response = await fetchWithRetry('assets/property_data.json?v=20260614i');
     propertyData = await response.json();
     console.log(`Loaded ${propertyData.length} property descriptions`);
 }
