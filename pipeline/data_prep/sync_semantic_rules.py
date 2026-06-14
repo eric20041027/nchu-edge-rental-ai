@@ -26,7 +26,9 @@ INFER_FILE = ROOT / "frontend" / "js" / "inference.js"
 
 
 def load_rules() -> dict[str, list[str]]:
-    return json.loads(CANON.read_text(encoding="utf-8"))
+    data = json.loads(CANON.read_text(encoding="utf-8"))
+    # 支援升級後結構 {"rules": {...}, ...} 與舊扁平結構 {key: [feats]}
+    return data["rules"] if isinstance(data, dict) and "rules" in data else data
 
 
 def replace_block(text: str, begin: str, end: str, body: str) -> str:
