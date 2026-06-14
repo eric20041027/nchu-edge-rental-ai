@@ -149,7 +149,19 @@ async function setupApplication() {
 
     } catch (e) {
         console.error("Initialization error:", e);
-        loadStatus.innerHTML = '<div style="color:#ff6b6b"><i class="fa-solid fa-triangle-exclamation"></i> 載入失敗，請刷新或確認網路。</div>';
+        // Recoverable error state: reset the stuck "preparing…" placeholder and offer
+        // an in-page retry so users don't have to fully reload (common on mobile 5G).
+        userRequirement.placeholder = "載入失敗，請點下方重試";
+        loadStatus.style.display = '';
+        loadStatus.innerHTML = '<div style="color:#ff6b6b;display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
+            + '<span><i class="fa-solid fa-triangle-exclamation"></i> 載入失敗，請確認網路後重試。</span>'
+            + '<button id="ls-retry-btn" style="background:#00FFD1;color:#0a0a0a;border:none;border-radius:8px;'
+            + 'padding:6px 16px;font-weight:700;cursor:pointer">重試</button></div>';
+        const retryBtn = document.getElementById('ls-retry-btn');
+        if (retryBtn) retryBtn.addEventListener('click', () => {
+            loadStatus.remove();
+            setupApplication();
+        }, { once: true });
     }
 }
 
