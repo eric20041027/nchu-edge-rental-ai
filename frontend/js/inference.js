@@ -712,6 +712,12 @@ function buildPropText(prop) {
     }
     return parts.join(" ");
 }
+// 註:曾嘗試把 buildPropText(去重後)餵給 cross-encoder 以補興大文字層偏誤,經離線
+// A/B 驗證為 NO-GO(見 pipeline/data_prep/eval_ce_text_enrichment.py 與
+// docs/ce_text_layer_decision.md):CE 只認訓練時的短結構 prop.text 格式,餵較長的
+// enriched 文字屬 OOD,分數崩壞(「要有陽台」query:含「有陽台」的 enriched 文字反而
+// 從 +7.9 掉到 +0.5,連 raw+「有陽台」都掉到 −1.8)。故 scorePair 維持餵 prop.text。
+// 文字層根治需重訓 CE(超出本次範圍,且既往重訓會回歸 — 見 retrain_jun13_result)。
 
 // 房源是否含某特徵詞(含同義歸一): 直接命中, 或任一同義詞命中。
 function propHasFeature(propText, feature) {
