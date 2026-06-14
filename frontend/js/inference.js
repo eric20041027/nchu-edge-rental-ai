@@ -20,6 +20,37 @@ let pendingNER  = new Map();
 let nerIdCounter = 0;
 let nerReady    = false;
 
+// --- Source-aware boolean reliability (bool 空值≠False) ---------------------
+// 兩來源爬蟲抓取的欄位子集不同，部分 bool 欄在某來源「整欄崩塌」(≈0% true)，
+// 那是「爬蟲沒抓該欄」而非「房子真的沒有」。對崩塌欄的 false 必須視為「未知」
+// (回退文字判斷 / 交 AI)，不可當「明確無」硬判，否則系統性誤殺該來源房源。
+//
+// 崩塌判定來自現有 704 筆 property_data.json 實測 true 比率(<5% 視為崩塌)：
+//   has_parking      nchu 63% / dd  0%   → dd 崩塌
+//   water_dispenser  nchu 63% / dd  0%   → dd 崩塌
+//   has_waste_disposal nchu 0% / dd 99%  → nchu 崩塌
+//   has_window       nchu  0% / dd 100%  → nchu 崩塌
+//   has_elevator / has_balcony 兩來源皆有訊號 → 皆可信
+// 資料換版時需依新統計更新此表 (見 data_source_misalignment 記憶)。
+const COLLAPSED_BOOL_FIELDS = {
+    nchu: new Set(['has_waste_disposal', 'has_window']),
+    dd:   new Set(['has_parking', 'water_dispenser']),
+};
+
+function propSource(prop) {
+    return (prop.url || '').includes('nchu') ? 'nchu' : 'dd';
+}
+
+// 三態解讀一個 bool 設施欄：
+//   'yes'     — has_xxx===true，明確有
+//   'no'      — has_xxx===false 且該欄對此來源可信，明確無
+//   'unknown' — has_xxx===false 但該欄對此來源崩塌，未知(交文字/AI 判)
+function boolFieldState(prop, field) {
+    if (prop[field] === true) return 'yes';
+    if (COLLAPSED_BOOL_FIELDS[propSource(prop)]?.has(field)) return 'unknown';
+    return 'no';
+}
+
 // --- Property Data Synchronization ---
 export async function initData() {
     const response = await fetch('assets/property_data.json?v=20260310');
@@ -232,6 +263,8 @@ function parseConstraintsFromText(text) {
         requireSubsidy, isSocialHousing,
         excludeRooftop, excludeWooden, excludeHaunted, maxWalkMins, maxScooterMins,
         wantsPet: (text.includes('養貓') || text.includes('養狗') || text.includes('寵物')),
+        requireElevator: (text.includes('電梯') || text.includes('升降梯') || text.includes('不爬樓') || text.includes('不用爬') || text.includes('不想爬') || text.includes('不要爬') || text.includes('腿不好') || text.includes('膝蓋不好')),
+        requireCooking: (text.includes('開伙') || text.includes('開火') || text.includes('自炊') || text.includes('煮飯') || text.includes('炒菜') || text.includes('在家煮') || text.includes('自己煮')),
         requireWaterDispenser: (text.includes('飲水機')),
         requirePrivateWasher: (text.includes('獨洗') || text.includes('個人洗衣機')),
         requireGuard: (text.includes('代收') || text.includes('包裹') || text.includes('管理員') || text.includes('警衛')),
@@ -307,6 +340,11 @@ function explainMatch(query, prop, constraints) {
             triggers: ['冷氣', '空調', '怕熱', '夏天熱'],
             check: p => p.includes('冷氣') || p.includes('空調'),
             label: '❄️ 房內附冷氣'
+        },
+        {
+            triggers: ['電視', '看電視', '電視機', 'tv', '液晶', '追劇'],
+            check: p => p.includes('電視') || p.includes('液晶'),
+            label: '📺 房內附電視'
         },
         {
             triggers: ['廚房', '開伙', '煮飯', '瓦斯', '自炊', '炒菜', '料理', '在家煮', '自己煮', '開火', '煮東西'],
@@ -499,16 +537,25 @@ function filterHardExclusions(properties, constraints) {
         budget, minBudget, maxBudget, limit, genderUnrestricted, hasGenderMention, hasBudgetMention,
         excludeRooftop, excludeWooden, maxElectricityPrice, wantsUtilityBilling,
         maxWalkMins, maxScooterMins,
-        requireSubsidy, isSocialHousing, requireBalcony, requireWindow, requireParking, requireWaste
+        requireSubsidy, isSocialHousing, requireBalcony, requireWindow, requireParking, requireWaste,
+        wantsPet, requireElevator, requireCooking
     } = constraints;
     const candidates = [];
-    
+
     for (const prop of properties) {
         // 1. Core Policy Exclusions (Keep these hard)
         if (excludeRooftop && (prop.is_rooftop || prop.text.includes('頂加'))) continue;
         if (excludeWooden && prop.is_wooden_partition) continue;
         if (requireSubsidy && (prop.text.includes('不可補助') || prop.text.includes('不可報稅') || prop.text.includes('不可入籍'))) continue;
         if (isSocialHousing && !prop.text.includes('社會住宅') && !prop.text.includes('社宅')) continue;
+
+        // 1b. Documented hard constraints (一票否決): exclude only EXPLICIT conflicts,
+        // leave unstated properties for AI to judge so the candidate pool isn't over-pruned.
+        if (wantsPet && (prop.text.includes('禁養') || prop.text.includes('不可養') || prop.text.includes('不可寵') || prop.text.includes('謝絕寵物'))) continue;
+        // 電梯：只信「文字明確寫無電梯」。has_elevator===false 在興大來源不可靠（爬蟲常未抓到，
+        // false 可能代表「未知」而非「真的沒有」），不可作為硬篩依據，否則誤殺興大房源。
+        if (requireElevator && (prop.text.includes('無電梯') || prop.text.includes('沒有電梯') || prop.text.includes('沒電梯'))) continue;
+        if (requireCooking && (prop.text.includes('禁開伙') || prop.text.includes('不可開伙') || prop.text.includes('不可開火') || prop.text.includes('禁炊'))) continue;
 
         // 2. Soft Amenities (REMOVED HARD CONTINUES)
         // We no longer 'continue' here. We let these be handled by Rule-Based and AI scoring.
@@ -717,22 +764,24 @@ function calculateRuleBasedScore(candidates, queryKeywords, text, constraints) {
             let isMatch = pText.includes(kw);
             
             // --- Special Case: Intent-Based Mapping + Boolean Flags ---
+            // bool 設施欄一律走 boolFieldState 三態：yes→命中；no→信任文字回退；
+            // unknown(該來源此欄崩塌)→純看文字，不因假性 false 而判定無 (待辦1)。
             if (kw.includes('樓梯') || kw.includes('電梯')) {
                 const elevatorKws = ['電梯', '華廈', '大樓'];
-                isMatch = prop.has_elevator || elevatorKws.some(alt => pText.includes(alt));
-            } 
+                isMatch = boolFieldState(prop, 'has_elevator') === 'yes' || elevatorKws.some(alt => pText.includes(alt));
+            }
             else if (kw.includes('垃圾') || kw.includes('追車')) {
                 const wasteKws = ['子母車', '代收垃圾', '垃圾處理', '垃圾子車'];
-                isMatch = prop.has_waste_disposal || wasteKws.some(alt => pText.includes(alt));
+                isMatch = boolFieldState(prop, 'has_waste_disposal') === 'yes' || wasteKws.some(alt => pText.includes(alt));
             }
             else if (kw.includes('陽台')) {
-                isMatch = prop.has_balcony || pText.includes('陽台');
+                isMatch = boolFieldState(prop, 'has_balcony') === 'yes' || pText.includes('陽台');
             }
             else if (kw.includes('窗')) {
-                isMatch = prop.has_window || pText.includes('窗');
+                isMatch = boolFieldState(prop, 'has_window') === 'yes' || pText.includes('窗');
             }
             else if (kw.includes('車位') || kw.includes('停車')) {
-                isMatch = prop.has_parking || pText.includes('車位') || pText.includes('停車');
+                isMatch = boolFieldState(prop, 'has_parking') === 'yes' || pText.includes('車位') || pText.includes('停車');
             }
             else if (kw.includes('電') || kw.includes('錢') || kw.includes('省')) {
                 if (kw.includes('電費') || kw.includes('台電') || kw.includes('省')) {
