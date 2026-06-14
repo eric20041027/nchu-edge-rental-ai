@@ -275,7 +275,7 @@ function parseConstraintsFromText(text) {
 // --- Explainability: Match Reasons & Conflict Detection ---
 function explainMatch(query, prop, constraints) {
     const reasons = [];
-    const pText = (prop.text + (prop.furniture || "") + (prop.notes ? prop.notes.join(" ") : "")).toLowerCase();
+    const pText = buildPropText(prop).toLowerCase();
     const q = query.toLowerCase();
     
     // 1. Budget & CP Value
@@ -306,13 +306,8 @@ function explainMatch(query, prop, constraints) {
     }
 
     // 4. Distance & Geo Tier
-    if (q.includes('走路') || q.includes('近') || q.includes('步行')) {
-        if (prop.geo_tier === "core") {
-            reasons.push("🚀 步行核心區，下課就到家");
-        } else if (prop.geo_tier === "active") {
-            reasons.push("📍 位於熱鬧商圈，生活機能優");
-        }
-    }
+    // 移除:geo_tier 在現有爬蟲資料退化(701/704=core,3=active),無法據以生成可信標籤。
+    // 距離訊號改由 OSRM 通勤距離(distance / walk_mins)在排序層處理,不在此產生臆測標籤。
 
     // 5. Condition & Aesthetics
     if (q.includes('漂亮') || q.includes('質感') || q.includes('新') || q.includes('裝潢')) {
@@ -440,12 +435,8 @@ function explainMatch(query, prop, constraints) {
             check: p => p.includes('套房') || p.includes('獨衛') || p.includes('獨立'),
             label: '🏠 獨立套房不共用'
         },
-        // ── 交通通勤 ──────────────────────────────────
-        {
-            triggers: ['通勤', '上班方便', '沒有車', '不開車', '近公車', '近捷運'],
-            check: p => p.includes('公車') || p.includes('捷運') || p.includes('交通') || p.includes('生活機能'),
-            label: '🚌 交通便利 / 近大眾運輸'
-        },
+        // ── 交通通勤 ── 移除:check 的 公車/捷運/交通/生活機能 在爬蟲資料 0 命中,
+        //    此規則永遠無法 truthy(dead code)。通勤訊號改由 OSRM distance 處理。
         // ── 在家工作 / WFH ────────────────────────────
         {
             triggers: ['在家工作', 'WFH', '遠距工作', '居家辦公', '書桌', '打報告', '念書', '讀書'],
@@ -500,7 +491,7 @@ function explainMatch(query, prop, constraints) {
 
 function checkConflicts(prop, constraints) {
     const { wantsPet, wantsRoomType } = constraints;
-    const pText = prop.text + (prop.notes ? prop.notes.join(" ") : "");
+    const pText = buildPropText(prop);
 
     // 1. Room Type Mismatch
     if (wantsRoomType && prop.room_type && prop.room_type !== wantsRoomType) {
@@ -647,61 +638,204 @@ function parseBudgetFromNER(budgetSpans) {
     return budget ? { budget, limit: limit || 'below' } : null;
 }
 
+// --- Property Feature Normalization (房源端特徵正規化) ---
+// 把房源的結構化欄位(furniture/features/notes)+ bool 設施欄一起納入可比對文字,
+// 並做同義詞歸一,讓查詢擴展詞(可寵/廚房/獨衛…)能對上房源實際用詞(可養貓/可開伙/獨立衛浴…)。
+// 落地率實測:只看 text 17.6% → +結構欄+bool 30.5% → +同義歸一 45.8%。
+const PROP_SYNONYMS = {
+    "可寵":["可養貓","可養狗","可養寵物","可養其他寵物"],"寵物友善":["可養貓","可養狗","可養寵物"],
+    "廚房":["可開伙","流理台"],"開火":["可開伙","瓦斯","電磁爐"],"自炊":["可開伙"],"可伙":["可開伙"],
+    "抽油煙機":["排油煙"],"獨衛":["獨立衛浴","專用衛浴"],"獨立衛浴":["獨衛"],"獨廁":["獨立衛浴","獨衛"],
+    "變頻":["冷氣"],"變頻冷氣":["冷氣"],"吹冷氣":["冷氣"],"全新":["新裝潢","新成屋"],
+    "管理員":["保全","警衛"],"監視器":["保全","監視"],"門禁":["保全","刷卡"],
+    "床架":["床"],"床墊":["床"],"書桌椅":["桌子","書桌","椅子"],
+    "天然瓦斯熱水器":["熱水器","瓦斯"],"電熱水器":["熱水器"],
+    "全配":["家具","家電"],"全家具":["家具"],"全家電":["家電"],"家具齊全":["家具"],
+    "子母車":["垃圾"],"垃圾代收":["垃圾"],"獨立洗衣機":["洗衣機"],"獨洗":["洗衣機"],
+};
+const BOOL_FIELD_FEATURES = {
+    has_elevator:"電梯", has_window:"對外窗", has_balcony:"陽台",
+    has_parking:"車位 停車場", has_waste_disposal:"垃圾處理", is_rooftop:"頂樓",
+    water_dispenser:"飲水機", private_washer:"獨洗", has_subsidy:"補助", is_taipower:"台電",
+};
+
+// 產生房源「完整可比對文字」: text + 結構化欄位 + bool 設施詞。所有房源關鍵字比對統一使用。
+function buildPropText(prop) {
+    const parts = [prop.text || ""];
+    for (const f of ["furniture", "features", "building_type", "room_type"]) {
+        if (prop[f]) parts.push(String(prop[f]).replace(/\//g, " "));
+    }
+    for (const f of ["notes", "other_fees"]) {
+        if (Array.isArray(prop[f])) parts.push(prop[f].join(" "));
+    }
+    for (const [bk, wd] of Object.entries(BOOL_FIELD_FEATURES)) {
+        if (prop[bk] === true) parts.push(wd);
+    }
+    return parts.join(" ");
+}
+
+// 房源是否含某特徵詞(含同義歸一): 直接命中, 或任一同義詞命中。
+function propHasFeature(propText, feature) {
+    if (propText.includes(feature)) return true;
+    const syns = PROP_SYNONYMS[feature];
+    if (syns) for (const s of syns) if (propText.includes(s)) return true;
+    return false;
+}
+
 // --- Semantic Query Expansion ---
 function expandQueryIntent(query) {
     let expanded = query;
     const intentMap = {
-        '潔癖': '全新 獨洗 禁菸 乾淨',
-        '稍微潔癖': '全新 獨洗 禁菸 乾淨',
-        '愛乾淨': '全新 獨洗 禁菸 乾淨',
-        '懶人': '電梯 子母車 垃圾處理 飲水機',
-        '不想爬樓梯': '電梯 華廈 大樓',
-        '不爬樓梯': '電梯 華廈 大樓',
-        '不要爬樓梯': '電梯 華廈 大樓',
-        '腿不好': '電梯 華廈 大樓',
-        '膝蓋不好': '電梯 華廈 大樓',
-        '自炊': '廚房 瓦斯 開火 自炊 電磁爐 排油煙機 流理台',
-        '在家煮': '廚房 瓦斯 開火 自炊 電磁爐 排油煙機 流理台',
-        '自己煮': '廚房 瓦斯 開火 自炊 電磁爐 排油煙機 流理台',
-        '在家開伙': '廚房 瓦斯 開火 自炊 電磁爐 排油煙機 流理台',
-        '想煮飯': '廚房 瓦斯 開火 自炊 電磁爐 排油煙機 流理台',
-        '希望煮飯': '廚房 瓦斯 開火 自炊 電磁爐 排油煙機 流理台',
-        '外送族': '管理員 飲水機 子母車',
-        '不想出門': '管理員 飲水機 子母車',
-        '下班晚': '子母車 垃圾代收 門禁 管理員 安全',
-        '不想追垃圾車': '子母車 垃圾處理',
-        '省錢': '台電 台水 便宜 補助 租補',
-        '省電費': '變頻 台電',
-        '怕熱': '冷氣 變頻冷氣',
-        '怕悶熱': '陽台 採光 通風 對外窗',
-        '怕吵': '隔音 氣密窗 禁菸 靜巷',
-        '安靜': '隔音 氣密窗 禁菸 靜巷',
-        '首租': '全新',
-        '高品質': '管理員 電梯 漂亮 全新 質感',
-        '有車': '車位 停車場',
-        '開車': '車位 停車場',
-        '生活便利': '超商 興大路 核心區 核心 核心圈',
-        '網美': '裝潢 採光 漂亮 落地窗',
-        '走路到學校': '走路10分',
-        '走路去學校': '走路10分',
-        '走路可以到': '走路10分',
-        '走路就可以': '走路10分',
-        '走路過去': '走路10分',
-        '步行到學校': '走路10分',
-        '步行去學校': '走路10分',
-        '步行可以到': '走路10分',
-        '騎車到學校': '騎車10分',
-        '騎車去學校': '騎車10分',
-        '騎車可以到': '騎車10分',
-        '騎車就可以': '騎車10分',
-        '騎車過去': '騎車10分',
-        '騎機車到學校': '騎車10分',
-        '騎機車去學校': '騎車10分',
+        // >>> GENERATED: semantic rules (sync_semantic_rules.py) >>>
+        "潔癖":      "全新 獨洗 禁菸 乾淨 裝潢",
+        "愛乾淨":     "全新 獨洗 禁菸 乾淨",
+        "稍微潔癖":    "全新 獨洗 禁菸 乾淨",
+        "想在家煮飯":   "可伙 廚房 流理台 瓦斯爐 電磁爐 開火",
+        "想自己煮飯":   "可伙 廚房 流理台 瓦斯爐 開火",
+        "在家開伙":    "可伙 廚房 抽油煙機 流理台 瓦斯 開火 自炊 電磁爐 排油煙機",
+        "想下廚":     "可伙 廚房 抽油煙機 瓦斯爐",
+        "要下廚":     "可伙 廚房 抽油煙機 瓦斯爐",
+        "喜歡下廚":    "可伙 廚房 抽油煙機 瓦斯爐 流理台",
+        "喜歡自己煮":   "可伙 廚房 流理台 瓦斯爐",
+        "自己煮":     "廚房 瓦斯 開火 流理台 可伙 自炊 電磁爐 排油煙機",
+        "自炊":      "可伙 廚房 流理台 電磁爐 開火 瓦斯 自炊 排油煙機",
+        "省伙食費":    "廚房 瓦斯 開火 流理台",
+        "省餐費":     "可伙 廚房 流理台",
+        "不想外食":    "可伙 廚房 流理台 電磁爐",
+        "不吃外食":    "可伙 廚房 流理台 瓦斯爐",
+        "可以煮東西":   "可伙 廚房",
+        "要能煮飯":    "可伙 廚房 流理台 電磁爐",
+        "煮飯":      "可伙 廚房 流理台",
+        "開火":      "可伙 廚房 瓦斯爐 電磁爐",
+        "要有廚房":    "廚房 流理台 可伙",
+        "有瓦斯":     "天然瓦斯 瓦斯爐 可伙",
+        "天然瓦斯":    "天然瓦斯 瓦斯爐 可伙 廚房",
+        "怕熱":      "冷氣 變頻 吹冷氣 變頻冷氣",
+        "夏天":      "冷氣",
+        "西曬":      "遮陽 窗簾 隔熱",
+        "怕悶熱":     "陽台 採光 通風 對外窗",
+        "採光好":     "落地窗 採光 對外窗",
+        "網美":      "裝潢 採光 漂亮 落地窗",
+        "獨洗獨曬":    "洗衣機 陽台 曬衣 獨洗",
+        "有車":      "車位 停車場",
+        "開車":      "車位 停車場",
+        "可貓":      "可寵 養寵 寵物友善 可養貓",
+        "可狗":      "可寵 養寵 寵物友善 可養狗",
+        "有毛孩":     "可寵 寵物",
+        "台水電":     "台電 台水 帳單 自繳",
+        "省電費":     "變頻 台電",
+        "懶人":      "電梯 子母車 垃圾處理 飲水機",
+        "外送族":     "管理員 飲水機 子母車",
+        "不想出門":    "管理員 飲水機 子母車",
+        "不想追垃圾車":  "子母車 垃圾處理 垃圾代收",
+        "怕吵":      "隔音 氣密窗 禁菸 靜巷",
+        "安靜":      "靜巷 隔音 氣密窗 禁菸",
+        "夜貓子":     "無門禁 24小時 自由進出",
+        "作息晚":     "無門禁 24小時 自由進出",
+        "晚歸":      "門禁 管理員 安全 刷卡",
+        "女生獨居":    "管理員 門禁 監視器 女性友善 安全",
+        "女生住":     "管理員 門禁 監視器 安全",
+        "獨居女":     "管理員 門禁 監視器 女性友善",
+        "女生安全":    "管理員 門禁 監視器 安全",
+        "怕危險":     "管理員 門禁 監視器 安全",
+        "治安":      "管理員 門禁 監視器 靜巷 安全",
+        "拎包入住":    "全配 全家具 全家電 冰箱 洗衣機 床",
+        "不想買家具":   "全配 全家具 家具齊全",
+        "什麼都有":    "全配 全家具 全家電 冰箱 洗衣機",
+        "家電齊全":    "冰箱 洗衣機 冷氣 全家電",
+        "要有冰箱":    "冰箱 全配",
+        "要有書桌":    "書桌 書桌椅",
+        "要有床":     "床架 床墊 全配",
+        "空屋":      "空屋 自備家具",
+        "不想共用廁所":  "獨衛 獨立衛浴 套房",
+        "不想共廁":    "獨衛 獨立衛浴 套房",
+        "個人衛浴":    "獨衛 獨立衛浴",
+        "獨立衛浴":    "獨衛 套房",
+        "想泡澡":     "浴缸 獨衛",
+        "要有熱水":    "熱水器 天然瓦斯熱水器 電熱水器",
+        "短租":      "短期 彈性租期 月租 不限租期",
+        "只租幾個月":   "短租 彈性租期 不限租期",
+        "不確定租多久":  "彈性租期 短租 月租",
+        "剛畢業":     "短租 彈性 經濟實惠",
+        "工作不穩定":   "彈性租期 短租",
+        "找室友":     "雅房 分租 室友 合租",
+        "想合租":     "雅房 分租 室友 合租",
+        "不想一個人住":  "雅房 分租 室友",
+        "一個人住":    "獨立套房 獨衛 獨廁 套房",
+        "不想跟人共用":  "獨立套房 獨衛 套房",
+        "騎車上班":    "機車停車位 停車",
+        "不要西曬":    "非西向 東向 北向 採光",
+        "要有陽台":    "陽台 曬衣 採光 通風",
+        "不要頂樓":    "非頂樓 非頂加",
+        "頂樓加蓋":    "頂加",
+        "在家工作":    "網路 寬頻 書桌 安靜",
+        "WFH":     "網路 寬頻 書桌 安靜",
+        "遠距工作":    "網路 寬頻 書桌 安靜",
+        "居家辦公":    "網路 寬頻 書桌 安靜",
+        "學生":      "學生套房 經濟實惠 低價",
+        "剛出社會":    "經濟實惠 低價 套房",
+        "薪水不多":    "經濟實惠 低租金 實惠",
+        "不要太貴":    "實惠 低租金 經濟",
+        "便宜":      "低租金 經濟實惠",
+        "打報告":     "寬頻 網路 書桌",
+        "上網":      "寬頻 網路",
+        "念書":      "書桌 書桌椅 安靜 寬頻",
+        "讀書":      "書桌 書桌椅 安靜 寬頻",
+        "不想爬樓梯":   "電梯 大樓 華廈",
+        "搬東西":     "電梯",
+        "膝蓋不好":    "電梯 大樓 華廈",
+        "機車":      "機車停車位",
+        "高品質":     "管理員 電梯 漂亮 全新 質感",
+        "首租":      "全新",
+        "健身":      "健身房 交誼廳",
+        "不想去自助洗":  "洗衣機 獨立洗衣機",
+        "不想共用洗衣機": "洗衣機 獨立洗衣機",
+        "養貓":      "可養貓 寵物友善 可寵",
+        "養狗":      "可養狗 寵物友善 可寵",
+        "台電":      "台電 台水 標準電費",
+        "獨立電表":    "獨立電錶 台電",
+        "首選":      "全新",
+        "不爬樓梯":    "電梯 華廈 大樓",
+        "不要爬樓梯":   "電梯 華廈 大樓",
+        "腿不好":     "電梯 華廈 大樓",
+        "在家煮":     "廚房 瓦斯 開火 自炊 電磁爐 排油煙機 流理台",
+        "想煮飯":     "廚房 瓦斯 開火 自炊 電磁爐 排油煙機 流理台",
+        "希望煮飯":    "廚房 瓦斯 開火 自炊 電磁爐 排油煙機 流理台",
+        "下班晚":     "子母車 垃圾代收 門禁 管理員 安全",
+        "省錢":      "台電 台水 便宜 補助 租補",
+        "生活便利":    "興大路",
+        "走路到學校":   "走路10分",
+        "走路去學校":   "走路10分",
+        "走路可以到":   "走路10分",
+        "走路就可以":   "走路10分",
+        "走路過去":    "走路10分",
+        "步行到學校":   "走路10分",
+        "步行去學校":   "走路10分",
+        "步行可以到":   "走路10分",
+        "騎車到學校":   "騎車10分",
+        "騎車去學校":   "騎車10分",
+        "騎車可以到":   "騎車10分",
+        "騎車就可以":   "騎車10分",
+        "騎車過去":    "騎車10分",
+        "騎機車到學校":  "騎車10分",
+        "騎機車去學校":  "騎車10分",
+    // <<< GENERATED <<<
     };
 
+    // 否定守衛:略過「被否定詞緊鄰修飾」的命中,避免子字串碰撞把反義句帶偏。
+    // 例:「沒有車」含「有車」、「不開車」含「開車」→ 否則會誤擴展成「車位 停車場」,
+    // 把無車使用者推去停車位房源。比對 intent 前一字是否為 不/沒/無/非/免/勿。
+    const NEGATORS = '不沒無非免勿';
     for (const [intent, expansion] of Object.entries(intentMap)) {
-        if (query.includes(intent)) {
-            expanded += " " + expansion;
+        let from = 0, idx;
+        while ((idx = query.indexOf(intent, from)) !== -1) {
+            // 注意:''.includes 對空字串恆為 true,故句首(idx===0)須明確視為「無否定詞」。
+            const negated = idx > 0 && NEGATORS.includes(query[idx - 1]);
+            if (!negated) {
+                expanded += " " + expansion;
+                break;  // 命中一次即擴展,與原行為一致
+            }
+            from = idx + 1;  // 此處被否定,繼續找下一個非否定出現位置
         }
     }
     return expanded;
@@ -754,15 +888,16 @@ function calculateRuleBasedScore(candidates, queryKeywords, text, constraints) {
 
     const preScored = candidates.map(prop => {
         let kScore = 0, matchCount = 0, totalRequirements = 0;
-        const pText = (prop.text + (prop.furniture || "") + (prop.notes ? prop.notes.join(" ") : "")).toLowerCase();
+        const pText = buildPropText(prop).toLowerCase();
 
         // 1. Semantic Amenity Scoring (The "Option A" logic)
         queryKeywords.forEach(kw => {
             if (kw.length < 2 || ignoreList.includes(kw)) return;
             
             totalRequirements++;
-            let isMatch = pText.includes(kw);
-            
+            // 含同義歸一：擴展詞(可寵/廚房/獨衛…)對上房源實際用詞(可養貓/可開伙/獨立衛浴…)。
+            let isMatch = propHasFeature(pText, kw);
+
             // --- Special Case: Intent-Based Mapping + Boolean Flags ---
             // bool 設施欄一律走 boolFieldState 三態：yes→命中；no→信任文字回退；
             // unknown(該來源此欄崩塌)→純看文字，不因假性 false 而判定無 (待辦1)。
