@@ -947,16 +947,19 @@ function calculateRuleBasedScore(candidates, queryKeywords, text, constraints) {
 
         // 2. Commute Time Scoring
         const isCommuteExplicit = text.includes('近') || text.includes('走') || text.includes('分鐘') || text.includes('公里');
-        if (maxWalkMins !== null && isCommuteExplicit) {
+        // distance===0 代表 geocode 失敗(地址爬壞)→ 視為「未知」不加分,
+        // 不可當成 0 公里超近校(否則 Math.ceil(0/0.08)=0 會誤加分)。
+        const hasCommuteSignal = (prop.walk_mins > 0) || (prop.distance > 0);
+        if (maxWalkMins !== null && isCommuteExplicit && hasCommuteSignal) {
             totalRequirements++;
             const propWalk = prop.walk_mins || Math.ceil(prop.distance / 0.08);
             if (propWalk <= maxWalkMins) {
                 matchCount++;
-                kScore += 20; 
+                kScore += 20;
             }
         }
-        
-        if (maxScooterMins !== null && isCommuteExplicit) {
+
+        if (maxScooterMins !== null && isCommuteExplicit && hasCommuteSignal) {
             totalRequirements++;
             const propScooter = prop.scooter_mins || Math.max(1, Math.ceil(prop.distance / 0.5));
             if (propScooter <= maxScooterMins) {
