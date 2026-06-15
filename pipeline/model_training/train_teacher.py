@@ -273,10 +273,21 @@ def train_teacher():
                       if f.endswith(".safetensors") or f.endswith(".bin")]
         if ckpt_files:
             print(f"\n[WARN] {TEACHER_SAVE_DIR} already has weights: {ckpt_files}")
-            ans = input("  Overwrite existing teacher? (yes/no): ").strip().lower()
-            if ans != "yes":
-                print("  Aborted. Existing teacher preserved.")
+            # 非互動覆寫控制(供 subprocess/Colab 自動化使用,避免 input() 在無 stdin 時掛掉):
+            #   TEACHER_OVERWRITE=yes  → 直接覆寫重訓
+            #   TEACHER_OVERWRITE=skip → 沿用現有 teacher,跳過重訓(return)
+            #   未設            → 維持原互動詢問
+            env_choice = os.environ.get("TEACHER_OVERWRITE", "").strip().lower()
+            if env_choice == "skip":
+                print("  [TEACHER_OVERWRITE=skip] 沿用現有 teacher,跳過重訓。")
                 return
+            elif env_choice == "yes":
+                print("  [TEACHER_OVERWRITE=yes] 覆寫重訓 teacher。")
+            else:
+                ans = input("  Overwrite existing teacher? (yes/no): ").strip().lower()
+                if ans != "yes":
+                    print("  Aborted. Existing teacher preserved.")
+                    return
 
     # ── Load data ─────────────────────────────────────────────────────────────
     tokenizer = BertTokenizerFast.from_pretrained(TEACHER_CHECKPOINT)
