@@ -563,6 +563,29 @@ function checkConflicts(prop, constraints) {
         return "此房源禁止吸菸";
     }
 
+    // 5. 軟性設施不符 — 這些條件在 filterHardExclusions 不硬篩(註:595-597「REMOVED HARD
+    //    CONTINUES」,改交給 rule/AI scoring),所以不符的房源仍會出現在結果裡。用 bool 結構欄
+    //    『嚴格 === false』(房源明確沒有)才標不符,避免「軟性提及」(parser 對句中含「窗/陽台」
+    //    即 requireWindow/Balcony=true)誤標。覆蓋使用者最常問且 CE 富化解鎖的特徵。
+    const {
+        requireElevator, requireBalcony, requireWindow, requireParking,
+        requireWaste, requireCooking,
+    } = constraints;
+
+    if (requireElevator && prop.has_elevator === false) return "此房源無電梯";
+    if (requireBalcony && prop.has_balcony === false) return "此房源無陽台";
+    if (requireWindow && prop.has_window === false) return "此房源無對外窗";
+    if (requireParking && prop.has_parking === false) return "此房源無車位";
+    if (requireWaste && prop.has_waste_disposal === false) return "此房源無垃圾代收";
+    // 可開伙:無 bool 欄,看 notes 是否含「可開伙」;含禁炊字樣或完全沒提 → 不符。
+    if (requireCooking) {
+        const canCook = (prop.notes || []).some(n => n.includes('可開伙'))
+            || pText.includes('可開伙') || pText.includes('可開火');
+        const banCook = pText.includes('禁開伙') || pText.includes('不可開伙')
+            || pText.includes('不可開火') || pText.includes('禁炊');
+        if (banCook || !canCook) return "此房源不可開伙";
+    }
+
     return null;
 }
 
