@@ -82,7 +82,7 @@ $$R = \frac{\text{已滿足維度數}}{\text{已指定維度數}}$$
 
 ## 6. 雙來源欄位對齊（租租通 vs 興大）
 
-`property_data.json` 共 704 筆，無顯式 `source` 欄，以 `url` 區分：租租通（dd-room）**559 筆**、興大官網（nchu）**145 筆**。兩來源由不同 crawler 抓取不同欄位子集，造成排序系統性偏袒租租通。
+`property_data.json` 共 704 筆（其中 3 筆為爬蟲空殼：`address` 空 / `rent=0`，前端 `initData` 載入時過濾，有效 **701** 筆），無顯式 `source` 欄，以 `url` 區分：租租通（dd-room）**559 筆**、興大官網（nchu）**145 筆**。兩來源由不同 crawler 抓取不同欄位子集，造成排序系統性偏袒租租通。
 
 ### 根因：crawler 解析不完整（非缺資料）
 
@@ -100,7 +100,29 @@ $$R = \frac{\text{已滿足維度數}}{\text{已指定維度數}}$$
 
 **實作 / 重跑**：`pipeline/data_prep/audit_expansion_tokens.py`
 
-## 7. 雜訊測試集生成（Group D 評估用）
+## 7. 房源文字富化（C 組，2026-06-16）
+
+訓練／打分用的房源文字由舊基底（`generate_dataset.py` 的 furniture[:5] + notes 只留含「寵物/限」）
+切換為 **`property_to_text_enriched`**：
+
+- **全 notes**（保留完整備註描述）
+- **全 furniture**（不再截斷為前 5 項）
+
+讓「採光」「隔音」等須房源描述細節才匹配得到的語意得以保留。富化後文字較長
+（約 98 token），訓練 `MAX_LENGTH` 由 64 提高至 128。C 組 A/B 評測見
+[ABLATION_STUDY.md](ABLATION_STUDY.md)。
+
+**實作**：
+
+1. `pipeline/data_prep/augment_with_expansion_map.py` — 產生 `property_to_text_enriched`
+   富化文字（全 notes + 全 furniture），供訓練與打分使用。
+2. `pipeline/data_prep/precompute_ce_text.py` — 將富化文字 **byte-exact** 預算進前端
+   `property_data.json` 的 `ce_text` 欄；以 **`address` + `rent` 為鍵**對齊房源（704/704），
+   確保前端 Cross-Encoder 推論所用文字與訓練文字完全一致。
+
+---
+
+## 8. 雜訊測試集生成（Group D 評估用）
 
 `pipeline/data_prep/noise_generator.py` 生成 `data/processed/noisy_test.json`：
 

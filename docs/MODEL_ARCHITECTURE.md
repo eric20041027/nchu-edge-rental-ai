@@ -4,7 +4,7 @@
 
 ### 為什麼使用蒸餾？
 
-直接訓練 rbt3（3 層，57 MB INT8）排序上限約 NDCG@5 ≈ 0.72–0.75。由 rbt6（6 層）作 teacher 教導 rbt3，可讓小模型學到超越其容量限制的排序知識。
+直接訓練 rbt3（3 層，38.7 MB INT8）排序上限約 NDCG@5 ≈ 0.72–0.75。由 rbt6（6 層）作 teacher 教導 rbt3，可讓小模型學到超越其容量限制的排序知識。
 
 ### 兩階段訓練
 
@@ -19,9 +19,16 @@
   資料  : 同一份訓練資料 + 凍結的 rbt6 teacher
   損失  : (1-α)·L_task + α·T²·KL + FGM  ← v3.0: R-Drop 已移除（消融研究）
   存檔  : metric_for_best_model = "f1"
-  結果  : v3.0 Dev F1=85.4%，預期 NDCG@5 ≈ 0.879
-  導出  : FP32 → Dynamic INT8 per_channel（57 MB）→ 同步至 frontend/
+  結果  : v3.0 Dev F1=85.4%，預期 NDCG@5 ≈ 0.879（非富化基準）
+  導出  : FP32 → Dynamic INT8 per_channel（38.7 MB）→ 同步至 frontend/
 ```
+
+> **Production 現況（2026-06-16）**：部署模型已換為 **C 組房源富化 rbt3**。
+> 模型基底改用富化文字訓練（`property_to_text_enriched`：全 notes + 全 furniture，
+> `MAX_LENGTH=128`）。C 組 A/B 評測：**NDCG@5 = 0.9475 / F1 = 0.854**。
+> 本檔下方各處 0.877（FP32）/ 0.809（INT8）/ 0.879 等數值為 **v3.0 非富化基準**，
+> 保留作歷史對照（評測 query 集與富化版不同，NDCG 數量級不可直接比較）。
+> 量化後體積由舊 57/60 MB 降至 **38.7 MB**（舊檔備份為 `*.PREV-20260616.onnx`）。
 
 ### 蒸餾損失
 
@@ -56,7 +63,7 @@ $$\alpha_{\min} = 0.12, \quad \alpha_{\max} = 0.38, \quad T_{\text{epoch}} = 10$
 
 **為何比直接訓練 student 好**：one-hot 標籤只告訴模型「這個是 Match」；而 teacher 的 soft label [0.02, 0.98] 還隱含了「這個配對雖然是 Match，但只有 98% 把握，有 2% 可能是邊界案例」，這個邊界資訊對排序任務尤為關鍵。
 
-**本專案設定**：rbt6（6 層，228 MB FP32）→ rbt3（3 層，57 MB INT8，Dynamic per_channel），capacity 壓縮約 75%，NDCG@5 從 0.818 提升至 0.877（FP32）/ 0.809（INT8 部署）（student 超越 teacher，歸因於 v3.0 移除 R-Drop 與困難負樣本訓練）。
+**本專案設定**：rbt6（6 層，228 MB FP32）→ rbt3（3 層，38.7 MB INT8，Dynamic per_channel），capacity 壓縮約 75%，NDCG@5 從 0.818 提升至 0.877（FP32）/ 0.809（INT8 部署）（student 超越 teacher，歸因於 v3.0 移除 R-Drop 與困難負樣本訓練）。以上為 v3.0 非富化基準；production 現為 C 組房源富化模型（NDCG@5 0.9475 / F1 0.854，見上方說明）。
 
 ---
 

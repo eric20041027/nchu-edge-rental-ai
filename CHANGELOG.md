@@ -2,6 +2,39 @@
 
 ---
 
+## [2026.06.16] - C 組房源富化 Cross-Encoder 接回 production、字卡提示擴充、空殼房源過濾
+
+### C 組房源富化 Cross-Encoder（核心，root cause 修復）
+
+- **重訓並接回 production**：3 層 rbt3 student，以房源富化文字（`property_to_text_enriched`：全 notes + 全 furniture）訓練，取代舊版 `property_to_text`（只取 furniture 前 5、不含 notes）
+- **指標提升**：NDCG@5 **0.9351 → 0.9475**、F1 **0.833 → 0.854**（A baseline → C 組富化）
+- **解鎖高頻需求**：富化文字讓採光（對外窗 93%）、安全（保全 97%）、隔音（水泥隔間 79%）、電梯（84%）進入 CE 視野
+- **模型大小**：`my_custom_model_quant.onnx` 由 60 MB 降至 **38.7 MB**（38,721,068 bytes）；舊版備份為 `my_custom_model_quant.PREV-20260616.onnx`
+- **推翻 2026-06-14 的 CE enriched NO-GO 決策**：當時以非富化 CE 直接改餵 enriched 文字因 OOD 退步；本次改採「訓練與線上打分一致」直接重訓 student，根治興大文字層偏誤
+
+### 前端打分文字一致化
+
+- `property_data.json` 新增 `ce_text` 欄，由 `pipeline/data_prep/precompute_ce_text.py` 預先計算
+- 前端 `scorePair` 改餵 `prop.ce_text`，確保線上打分與訓練文字格式一致
+- **MAX_LENGTH 64 → 128**：富化文字平均約 98 token，64 會截斷
+
+### 字卡不符條件提示標籤
+
+- `checkConflicts` 擴充：偵測電梯/陽台/對外窗/車位/垃圾代收/可開伙等條件
+- 房源不符使用者指定條件時，卡片半透明 + 顯示紅色 ⚠️ 警示標籤
+
+### Bug 修復
+
+- 修「希望房間明亮一點」字卡空白 bug：中文數字被誤判成預算
+- 過濾爬蟲空殼房源（3 筆 `address` 空 / `rent=0`）
+- **寵物否定意圖修正**：「不要養寵物 / 禁養寵物」不再推可養寵物房源（`excludePet`）
+
+### 快取
+
+- Service Worker 快取版號更新至 **v20260616d**
+
+---
+
 ## [2026.06.14] - 資料來源對齊、語意層審查、OSRM 距離、兩項 NO-GO 決策
 
 ### 雙來源欄位對齊（根因修復）
