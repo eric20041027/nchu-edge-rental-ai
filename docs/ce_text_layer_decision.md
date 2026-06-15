@@ -1,8 +1,26 @@
-# CE 文字層偏誤修正 — 餵 enriched 文字給 cross-encoder (NO-GO)
+# CE 文字層偏誤修正 — 餵 enriched 文字給 cross-encoder (NO-GO — 已於 2026-06-16 被 C 組重訓方案取代)
 
 **日期**: 2026-06-14
 **結論**: ❌ **NO-GO**。cross-encoder 維持餵 `prop.text`,不改餵 buildCEText/enriched 文字。
 **重跑**: `python pipeline/data_prep/eval_ce_text_enrichment.py [--sample N]`
+
+> ⚠️ **此 NO-GO 已被取代** — 見下方「## 後記(2026-06-16):NO-GO 已被取代」。本 NO-GO 僅適用於「沿用舊 prop.text-trained 模型」的前提,該前提已不存在。以下原文保留作歷史記錄。
+
+## 後記(2026-06-16):NO-GO 已被取代
+
+本 doc 第 44-46 行自己預言的「唯一正解」——**重訓 CE on enriched 文字、訓練語料 property 端改用同款 enriched 文字、使線上線下一致**——已由 **C 組重訓方案實作落地**,當初的 NO-GO 因此解除。
+
+**C 組做了什麼(訓練 + 推論皆改用富化文字,消除 OOD)**:
+- 訓練與打分統一改用 `property_to_text_enriched`(納入全部 notes + 全部 furniture,不砍前 5),訓練語料 property 端與線上一致。
+- 推論側不靠前端組裝,而是用 `pipeline/data_prep/precompute_ce_text.py` 在 Python 端 byte-exact 把 `ce_text` 預算進 `property_data.json`;前端 `scorePair(text, prop.ce_text || prop.text)` 直接讀預算欄。
+- `MAX_LENGTH` 由 64 改 **128**(富化文字平均 ~98 token,64 會截斷)。
+- 模型換為 C 組富化 rbt3 student(38.7 MB,舊模型已備份 `.PREV-20260616.onnx`)。
+
+**為什麼這次不再 OOD**:當初 NO-GO 的成因是「拿舊 prop.text-trained 模型去吃加長/改格式的文字」屬分佈外輸入,分數崩壞(「要有陽台」+7.9 → +0.5)。C 組訓練端與推論端**同款 enriched 文字**,線上線下一致,當初記錄的崩壞不復存在。
+
+**結果**:NDCG@5 0.9351 → **0.9475**;「想要採光好」per-query 0 → **1**。
+
+**結論**:此 NO-GO 只適用於「沿用舊 prop.text-trained 模型」前提,前提已不存在。原文(含 A/B 數據與 OOD 診斷)保留作歷史記錄,不刪除。
 
 ## 背景:想修什麼
 `data_source_misalignment` 殘餘偏誤:最終分 = `rms*35 + CE*65`,CE(`scorePair`)只讀

@@ -3,6 +3,11 @@
 > 針對 Cross-Encoder v2.9 的五個核心設計選擇進行系統性消融，
 > 驗證每個組件的實際貢獻，並以實驗數據支撐設計決策。
 
+> **註（2026-06-16）**：下方 v2.9 / v3.0 消融（NDCG@5 0.87x 量級）為**歷史結果**，
+> 仍有效保留。Production 已換為 **C 組房源富化模型**，其消融見最末
+> 「C 組房源富化消融（2026-06-16）」章節。兩者 NDCG 數量級不同，
+> 因 query／test 集不同，**不可直接相減比較**。
+
 ## 實驗設計
 
 共 11 個訓練 run（10 + V3.0），分為四組：
@@ -105,6 +110,29 @@ R-Drop        +0.0068         ❌ 移除（有害）
 KD alpha      +0.0050         ✅ 改為 fixed 0.12
 噪聲增強       −0.0030 on V30  ⚠️  需加大比例才有效
 ```
+
+---
+
+## C 組房源富化消融（2026-06-16）
+
+驗證「房源文字富化」（`property_to_text_enriched`：全 notes + 全 furniture，`MAX_LENGTH=128`）
+相對舊基底文字的排序貢獻。此為 production 現用模型的依據。
+
+| 組別 | 房源文字 | NDCG@5 | F1 |
+|:---|:---|---:|---:|
+| **A baseline** | 舊基底（furniture[:5] + 部分 notes）| 0.9351 | 0.833 |
+| **C 富化** | `property_to_text_enriched`（全 notes + 全 furniture）| **0.9475** | **0.854** |
+| Δ | — | **+0.0125** | **+0.021** |
+
+**per-query 案例**：「想要採光好」由 **0 → 1**（富化前房源文字無「採光」相關描述，CE 無從匹配；
+富化納入全 notes 後得以命中）。
+
+**誠實註記**：+0.0125 的差距**混入了「C 組換用富化後 test 集相對較易」的成分**，
+並非純粹的模型能力提升。此結果**足以證明富化方向正確**（per-query 0→1 為直接證據），
+但**不宜宣稱為大幅提升**。
+
+**來源**：[docs/property_enrichment_value.md](property_enrichment_value.md)、
+`notebooks/ce_expansion_augment_experiment.ipynb`。
 
 ---
 
