@@ -9,9 +9,6 @@ from __future__ import annotations
 # 15+ lifestyle clusters (query phrase → implied property features)
 LIFESTYLE_CLUSTERS: dict[str, list[str]] = {
     # >>> GENERATED: semantic rules (sync_semantic_rules.py) >>>
-    "潔癖":      ["獨洗", "禁菸"],
-    "愛乾淨":     ["獨洗", "禁菸"],
-    "稍微潔癖":    ["獨洗", "禁菸"],
     "想在家煮飯":   ["可伙", "廚房", "流理台", "瓦斯爐", "電磁爐", "開火"],
     "想自己煮飯":   ["可伙", "廚房", "流理台", "瓦斯爐", "開火"],
     "在家開伙":    ["可伙", "廚房", "抽油煙機", "流理台", "瓦斯", "開火", "自炊", "電磁爐", "排油煙機"],
