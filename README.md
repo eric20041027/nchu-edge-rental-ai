@@ -1,15 +1,17 @@
 # 興大 AI 租屋推薦系統 (NCHU AI Rental Recommendation)
 
-本專案為針對中興大學學生設計之 **Edge AI 租屋推薦系統**。透過微調並蒸餾的中文 RoBERTa 模型（NER 37 MB + Cross-Encoder 57 MB，共 **94 MB** INT8）在瀏覽器端進行即時語意匹配，解決傳統篩選器過於僵硬的侷限，提供具備深層語意理解的搜尋體驗。
+本專案為針對中興大學學生設計之 **Edge AI 租屋推薦系統**。透過微調並蒸餾的中文 RoBERTa 模型（NER 37 MB + Cross-Encoder 38.7 MB，共 **約 76 MB** INT8）在瀏覽器端進行即時語意匹配，解決傳統篩選器過於僵硬的侷限，提供具備深層語意理解的搜尋體驗。
 
 ---
 
 ## 系統核心亮點
 
-- **Edge AI 零伺服器**：Cross-Encoder（rbt3 INT8，57 MB）+ NER（rbt6 INT8，37 MB），完全在瀏覽器端執行（ONNX Runtime Web + WASM）
-- **知識蒸餾**：rbt6 teacher（59.74M 參數）→ rbt3 student（59.74M 參數），NDCG@5 = **0.877**（FP32）/ **0.809**（INT8 部署）
+- **Edge AI 零伺服器**：Cross-Encoder（rbt3 INT8，38.7 MB）+ NER（rbt6 INT8，37 MB），完全在瀏覽器端執行（ONNX Runtime Web + WASM）
+- **知識蒸餾**：rbt6 teacher（6 層）→ 3 層 rbt3 student（C 組房源富化），NDCG@5 = **0.9475**、F1 **0.854**（INT8 部署）
+- **房源文字富化（核心）**：CE 訓練與線上打分改用富化文字（全 notes + 全 furniture），解鎖採光（對外窗 93%）、安全（保全 97%）、隔音（水泥隔間 79%）、電梯（84%）等高頻需求，根治舊版只取 furniture 前 5、不含 notes 的偏誤
 - **雙層語意理解**：NER 抽取地點/預算/設施（F1=0.9941 INT8 per_channel）→ Cross-Encoder 深度重排
 - **硬性約束一票否決**：預算、性別、寵物、電梯、開伙、台電計費，必要條件違反損失 ×2
+- **字卡不符條件提示**：偵測電梯/陽台/對外窗/車位/垃圾代收/可開伙等條件，房源不符時卡片半透明 + 紅色 ⚠️ 警示
 - **真實路網通勤時間**：OSRM 計算步行/機車實際路網時間作為排序核心因子（704/704 房源預計算）
 - **生活型態推論**：105 條語意擴展規則，「不想追垃圾車」→ 子母車設施，「自炊族」→ 瓦斯廚房
 - **資料來源對齊**：租租通 559 + 興大 145 兩來源欄位品質差距大，以爬蟲補抓 + 同義橋接消除排序偏袒
@@ -28,7 +30,7 @@
 | **大小** | **37 MB** (INT8) | hfl/rbt6 98 MB → 37 MB（−62%）|
 | **參數量** | **37.89M** | hfl/rbt6 INT8 量化後 |
 
-### 2. Cross-Encoder 語意匹配（v3.0，INT8 量化）
+### 2. Cross-Encoder 語意匹配（C 組房源富化 rbt3 KD，INT8 量化）
 
 #### Phase 1：單對分類正確率
 
@@ -42,7 +44,9 @@
 | **0.7** | **排序引擎實際使用** ✅ | **88.0%** | **82.7%** | 75.0% | **78.7%** |
 | 0.9 | 高信心過濾（極嚴格）| 85.6% | 94.5% | 54.3% | 68.9% |
 
-**模型大小**：hfl/rbt3 228 MB → **57 MB** INT8（−75%），參數量 **59.74M**
+**模型大小**：3 層 rbt3 student，**38.7 MB** INT8（舊版 60 MB 已備份為 `.PREV-20260616.onnx`）
+
+> 上方 Phase 1 三閾值表為 v3.0 非富化基準（NDCG@5 0.877），保留供對照；production 現用 C 組房源富化模型（NDCG@5 **0.9475**、F1 **0.854**），詳見「模型版本演進」。
 
 - **0.5**：幾乎不遺漏任何好房源（Recall 98%），適合作為「寧可多選也不遺漏」的粗篩
 - **0.7**：精準與召回的平衡點，是 Top-30 重排的實際運作閾值
@@ -52,11 +56,11 @@
 
 **測試目標**：給定一個查詢，從 30 個候選房源中重排，模型能否把最相關的放在最前面？以 500 個查詢模擬真實推薦場景，評估 Top-5 排名品質。
 
-| 指標 | **v3.0** | v2.3（舊紀錄）| 說明 |
-|:---|:---|:---|:---|
-| **Graded NDCG@5** | **0.877**（FP32）/ **0.809**（INT8）✅ | 0.818 | 4 級相關性（0-3）指數增益 NDCG；FP32 Bootstrap CI ±0.014（n=1000）|
+| 指標 | **C 組富化（production）** | A baseline | v3.0 非富化基準 | 說明 |
+|:---|:---|:---|:---|:---|
+| **Graded NDCG@5** | **0.9475** ✅ | 0.9351 | 0.877（FP32 基準）| 4 級相關性（0-3）指數增益 NDCG |
 
-**NDCG@5 = 0.877** 代表：在 Top-30 候選房源中，Top-5 的排列順序與理想排序的相似度為 87.7%。分母採指數增益 ($2^{rel} - 1$)，使 Perfect match（rel=3）的排名效益是 Partial（rel=1）的 7 倍。
+**NDCG@5 = 0.9475** 代表：在 Top-30 候選房源中，Top-5 的排列順序與理想排序的相似度為 94.75%。分母採指數增益 ($2^{rel} - 1$)，使 Perfect match（rel=3）的排名效益是 Partial（rel=1）的 7 倍。
 
 $$NDCG_k = \frac{DCG_k}{IDCG_k}, \quad DCG_k = \sum_{i=1}^{k} \frac{2^{rel_i} - 1}{\log_2(i+2)}$$
 
@@ -70,9 +74,10 @@ $$NDCG_k = \frac{DCG_k}{IDCG_k}, \quad DCG_k = \sum_{i=1}^{k} \frac{2^{rel_i} - 
 | rbt3 KD v1 (v2.3) | 57 MB | 84.1% | 84.8% | 0.818 |
 | rbt3 R-Drop (v2.4) | 57 MB | — | 76.9% | 0.727 |
 | rbt3 KD v2 (v2.5) | 57 MB | — | 76.4% | 0.760 |
-| **rbt3 KD v3.0** | **57 MB** | **84.1%** | **84.8%** | **0.877** ✅ |
+| rbt3 KD v3.0（非富化，歷史）| 57 MB | 84.1% | 84.8% | 0.877 |
+| **rbt3 KD（C 組富化，production）** | **38.7 MB** | — | **85.4%** | **0.9475** ✅ |
 
-v2.4–v2.8 退步的根本原因：負樣本採樣 bug（見[知識蒸餾架構](#知識蒸餾架構knowledge-distillation)）。
+v2.4–v2.8 退步的根本原因：負樣本採樣 bug（見[知識蒸餾架構](#知識蒸餾架構knowledge-distillation)）。C 組富化版的 NDCG@5 躍升（0.9351→0.9475）來自房源文字富化（CE 改餵 `property_to_text_enriched`：全 notes + 全 furniture），解鎖採光/安全/隔音/電梯等高頻需求；MAX_LENGTH 由 64 提升至 128 以容納富化文字（平均約 98 token）。
 
 ---
 
@@ -87,14 +92,14 @@ graph TD
     B -->|"實體標注資料"| NER_T("ner_model 訓練\nbert-base-chinese → INT8")
     NER_T --> NER_M["ner_model.onnx\n(INT8, 37 MB)"]
     B --> C("commute\nOSRM 路網時間計算")
-    C -->|"前端資料"| J["property_data.json\n(含預計算通勤時間)"]
+    C -->|"前端資料"| J["property_data.json\n(含預計算通勤時間 + ce_text 富化文字)"]
     C -->|"訓練資料"| D("generate\n樣本合成\n多級相關性標記 −1 / 0–3")
     D --> E("augment\nLLM 語意增強")
     E --> F("mine\n困難樣本挖掘\nJaccard hard negatives")
     F --> G1("train_teacher.py\nrbt6 teacher 訓練")
     G1 --> G2("train_and_export_onnx.py\nrbt6 → rbt3 蒸餾 + ONNX + INT8")
     G2 --> EVAL("evaluate_model.py\nNDCG@5 / Bootstrap CI")
-    EVAL --> H["my_custom_model_quant.onnx\n(INT8, 57 MB)"]
+    EVAL --> H["my_custom_model_quant.onnx\n(rbt3 INT8, 38.7 MB)"]
 ```
 
 ### 2. 推論流程
@@ -112,7 +117,7 @@ graph TD
     C -- "Top 30 候選" --> W2
 
     subgraph WK2["Web Worker 2（非阻塞）"]
-        CE["my_custom_model_quant.onnx\n(rbt3 INT8, 57 MB)"] --> W2("Stage 3: AI 語意重排\nONNX Runtime Web")
+        CE["my_custom_model_quant.onnx\n(rbt3 INT8, 38.7 MB)"] --> W2("Stage 3: AI 語意重排\nONNX Runtime Web\n餵 prop.ce_text 富化文字")
     end
 
     W2 --> F["最終推薦清單"]
@@ -122,7 +127,7 @@ graph TD
 
 ## 知識蒸餾架構（Knowledge Distillation）
 
-本專案以固定 α=0.12、T=4.0 的 Soft-Label BCE 蒸餾損失（`0.5×CE + 0.5×weighted_BCE(soft_labels)`）將 rbt6 的排序知識壓縮至 rbt3（57 MB INT8）；v3.0 依消融實驗移除 R-Drop（+0.0068），保留 CE + KD + FGM 組合，必要條件違反樣本（rel=−1）損失加倍懲罰。詳細的 KL 散度公式、溫度縮放原理與蒸餾架構設計，請參考 [模型架構與蒸餾設計](docs/MODEL_ARCHITECTURE.md)。
+本專案以固定 α=0.12、T=4.0 的 Soft-Label BCE 蒸餾損失（`0.5×CE + 0.5×weighted_BCE(soft_labels)`）將 rbt6 的排序知識壓縮至 3 層 rbt3（38.7 MB INT8）；依消融實驗移除 R-Drop（+0.0068），保留 CE + KD + FGM 組合，必要條件違反樣本（rel=−1）損失加倍懲罰。production C 組更進一步以房源富化文字（`property_to_text_enriched`，MAX_LENGTH=128）訓練 student。詳細的 KL 散度公式、溫度縮放原理與蒸餾架構設計，請參考 [模型架構與蒸餾設計](docs/MODEL_ARCHITECTURE.md)。
 
 ---
 
@@ -139,6 +144,8 @@ Student 損失函數：`0.5×CE(label smoothing ε=0.05) + 0.5×weighted_BCE(sof
 **雙來源欄位對齊**：租租通（559 筆）與興大官網（145 筆）爬蟲抓取的欄位子集不同，導致排序系統性偏袒。修法為（1）crawler 補抓興大現成但漏解析的二級表格（租金包含/安全管理/消防逃生），衍生 canonical 特徵標籤（興大特色項 avg 1.6→5.32、has_window 0→70%）；（2）bool 設施欄改三態判定（崩塌欄 false 視為未知而非「無」，避免誤殺）；（3）前端同義橋接，讓擴展詞對上兩來源不同用詞。
 
 **語意擴展層可驗證性審查**：105 條口語意圖規則的擴展詞逐一對 704 房源實據（含 bool 欄、結構欄、同義橋）比對，剔除 0-backing 臆測詞（無任何資料支撐者），救援可橋接者（禁菸→無菸、採光→對外窗、台水→電費結構欄…），確保每個擴展詞都有落地。
+
+**房源文字富化（CE 訓練／打分一致）**：CE 的房源側文字改用 `property_to_text_enriched`（全 notes + 全 furniture），取代舊版 `property_to_text`（只取 furniture 前 5、不含 notes）。富化後採光（對外窗 93%）、安全（保全 97%）、隔音（水泥隔間 79%）、電梯（84%）等高頻需求得以進入 CE 視野。前端 `scorePair` 改餵 `prop.ce_text`，由 `pipeline/data_prep/precompute_ce_text.py` 預先算進 `property_data.json`，確保線上打分與訓練文字格式一致；MAX_LENGTH 由 64 提升至 128（富化文字平均約 98 token，64 會截斷）。
 
 詳細的相關性評分公式、查詢生成策略、來源對齊與 OSRM 通勤整合，請參考 [資料管道與標記設計](docs/DATA_PIPELINE.md)。
 
@@ -209,7 +216,7 @@ npx serve frontend -p 8080
 
 1. **步驟一（無快取）**：點擊 🧊「無快取測試」
    - benchmark 會自動清除 SW Cache Storage，模擬首次訪問
-   - 量測從網路下載模型的時間（NER 37 MB + Cross-Encoder 57 MB）
+   - 量測從網路下載模型的時間（NER 37 MB + Cross-Encoder 38.7 MB）
 
 2. **步驟二（有快取）**：點擊 ♻️「有快取測試」
    - 直接接著步驟一執行（無需手動操作）
@@ -222,7 +229,7 @@ npx serve frontend -p 8080
 |:---|:---|
 | **實測下載速度** | Cloudflare 外部測速（Mbps）|
 | **NER 模型載入** | hfl/rbt6 INT8，37 MB，首次 vs 快取後（ms）|
-| **Cross-Encoder 載入** | hfl/rbt3 INT8，57 MB（原 228 MB），首次 vs 快取後（ms）|
+| **Cross-Encoder 載入** | 3 層 rbt3 INT8，38.7 MB，首次 vs 快取後（ms）|
 | **推論延遲 P95** | 5 次暖機 + 10 次計時，取 P95（ms）|
 
 > **注意**：推論延遲取決於裝置 CPU 效能，與網速無關；模型載入時間則受網速影響（首次）或磁碟讀取速度影響（快取後）。
@@ -234,14 +241,16 @@ npx serve frontend -p 8080
 - **向量檢索升級**：房源規模擴增至萬筆時引入 ANN 向量索引（FAISS/Annoy）
 - **即時地圖互動**：推薦結果直接標註於互動式地圖
 - **使用者反饋微調**：利用 localStorage 累積的 👍/👎 反饋進行線上學習
-- **興大文字層偏誤根治**：需重訓 Cross-Encoder on 結構欄 enriched 文字（見下方工程決策）
+
+### 已實作：CE 房源文字富化（推翻先前 NO-GO）
+
+2026-06-14 的 **CE 文字層 enriched 餵入 NO-GO** 決策已被本次 C 組重訓推翻。當時 A/B 驗證以舊（非富化）CE 直接改餵 enriched 文字，因 CE 對訓練時的短結構文字格式 OOD 敏感而退步；本次改採「訓練與線上打分一致」的做法——直接以富化文字（全 notes + 全 furniture，MAX_LENGTH=128）重訓 student，並讓前端 `scorePair` 餵 `prop.ce_text`，NDCG@5 由 0.9351 升至 **0.9475**、F1 由 0.833 升至 **0.854**。興大文字層偏誤至此根治。
 
 ### 已驗證的工程決策（負面結果）
 
-以下兩條方向經離線量化驗證為 **NO-GO**，避免投入不成比例的成本，決策文件保留供日後參考：
+以下方向經離線量化驗證為 **NO-GO**，避免投入不成比例的成本，決策文件保留供日後參考：
 
 - **Bi-encoder 意圖層 fallback**：擬用 text2vec 語意相似度接住字面規則表漏接的口語查詢。離線對 2093 條口語 query 驗證，thr=0.55 下正確路由僅 49%、誤路由 28%（傷 NDCG），各向異性 0.294 使精準與覆蓋無法兼得 → 不值 205 MB 前端成本。詳見 [`docs/encoder_fallback_offline_decision.md`](docs/encoder_fallback_offline_decision.md)。
-- **CE 文字層 enriched 餵入**：擬把結構欄補齊的特徵詞餵給 Cross-Encoder 以修正興大文字層偏誤。A/B 驗證顯示 CE 對訓練時的短結構文字格式 OOD 敏感（含「有陽台」的 enriched 文字反而比無陽台的 raw 文字得分更低），改餵會破壞排序 → 維持餵 `prop.text`，根治需重訓。詳見 [`docs/ce_text_layer_decision.md`](docs/ce_text_layer_decision.md)。
 
 ---
 
