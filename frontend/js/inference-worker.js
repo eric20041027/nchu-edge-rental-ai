@@ -12,7 +12,10 @@ let ort = null;
 
 let tokenizer = null;
 let session = null;
-const MAX_LENGTH = 64;
+// MAX_LENGTH 128:C 組富化房源文字(query + ce_text)實測平均 ~98 token,64 會截斷
+// 99% 把 notes 特徵(採光/安全/隔音/電梯)從尾部砍掉 → 富化白做。模型 max_position
+// _embeddings=512,128 有充裕 headroom。代價:每筆打分稍慢(見 frontend-runtime-speedup)。
+const MAX_LENGTH = 128;
 
 async function init(localOrigin, noCache = false) {
     try {
