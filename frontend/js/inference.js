@@ -95,9 +95,14 @@ async function fetchWithRetry(url, { retries = 3, backoff = 600 } = {}) {
 }
 
 export async function initData() {
-    const response = await fetchWithRetry('assets/property_data.json?v=20260616a');
-    propertyData = await response.json();
-    console.log(`Loaded ${propertyData.length} property descriptions`);
+    const response = await fetchWithRetry('assets/property_data.json?v=20260616c');
+    const raw = await response.json();
+    // 過濾爬蟲空殼房源:來源網站有少數房源 address/rent 全空(只有 url+img,連價格地址都
+    // 沒有),對使用者完全無用,且軟性 query(如「希望房間明亮一點」)下無條件扣分反而會被
+    // 排成 TOP 1 → 卡片價格/標題空白(NT$ 與標題皆空)。在載入階段剔除根治。
+    propertyData = raw.filter(p => p && p.address && p.rent > 0);
+    const dropped = raw.length - propertyData.length;
+    console.log(`Loaded ${propertyData.length} property descriptions${dropped ? ` (剔除 ${dropped} 筆無效房源)` : ''}`);
 }
 
 // --- NLP Engine Initialization via Web Worker ---
@@ -289,9 +294,20 @@ function parseConstraintsFromText(text) {
             let m3 = rt.match(/(\d+)/);
             if (m3) {
                 let val = parseInt(m3[1]);
-                if (val < 100) budget = val * 1000;
-                else if (val >= 1000) budget = val;
-                hasBudgetMention = true;
+                if (val >= 1000) {
+                    // 4 位數以上幾乎必為租金本身,直接採用。
+                    budget = val;
+                    hasBudgetMention = true;
+                } else if (val < 100) {
+                    // 小數字(如「3」「8」)解讀成「3千/8千」風險高:中文數字正規化會把
+                    // 「一點(明亮一點)」「三樓」「住一下」的『一/三』也轉成數字,誤判成預算 →
+                    // 把全部房源篩掉(此 bug 來源)。僅在有明確預算語境詞時才採用。
+                    const hasBudgetCue = /預算|月租|租金|房租|元|塊|[kK]|千|萬|以下|以內|以上/.test(text);
+                    if (hasBudgetCue) {
+                        budget = val * 1000;
+                        hasBudgetMention = true;
+                    }
+                }
             }
         }
     }
