@@ -137,9 +137,6 @@ function semanticExpandQuery(query) {
     // 與 pipeline/data_prep/lifestyle_mapper.py LIFESTYLE_CLUSTERS 保持同步
     const expansionMap = {
         // >>> GENERATED: semantic rules (sync_semantic_rules.py) >>>
-        "潔癖":      "獨洗 禁菸",
-        "愛乾淨":     "獨洗 禁菸",
-        "稍微潔癖":    "獨洗 禁菸",
         "想在家煮飯":   "可伙 廚房 流理台 瓦斯爐 電磁爐 開火",
         "想自己煮飯":   "可伙 廚房 流理台 瓦斯爐 開火",
         "在家開伙":    "可伙 廚房 抽油煙機 流理台 瓦斯 開火 自炊 電磁爐 排油煙機",
