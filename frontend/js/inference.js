@@ -95,7 +95,7 @@ async function fetchWithRetry(url, { retries = 3, backoff = 600 } = {}) {
 }
 
 export async function initData() {
-    const response = await fetchWithRetry('assets/property_data.json?v=20260616c');
+    const response = await fetchWithRetry('assets/property_data.json?v=20260616d');
     const raw = await response.json();
     // 過濾爬蟲空殼房源:來源網站有少數房源 address/rent 全空(只有 url+img,連價格地址都
     // 沒有),對使用者完全無用,且軟性 query(如「希望房間明亮一點」)下無條件扣分反而會被
@@ -317,12 +317,20 @@ function parseConstraintsFromText(text) {
     else if (text.includes('雅房')) { hasRoomTypeMention = true; wantsRoomType = '雅房'; }
     else if (text.includes('工作室')) { hasRoomTypeMention = true; wantsRoomType = '工作室'; }
 
+    // 寵物意圖:區分「要養」vs「不要養」。舊版 wantsPet 只要含『寵物/養貓/養狗』就 true,
+    // 把「不要養寵物 / 禁養寵物 / 討厭寵物」誤判成想養 → 反而推可養寵物房源(語意相反)。
+    // 偵測否定詞修飾寵物關鍵字 → excludePet(排除可養寵物房源),且此時 wantsPet 不成立。
+    const petMention = text.includes('養貓') || text.includes('養狗') || text.includes('寵物') || text.includes('毛小孩') || text.includes('毛孩');
+    const petNegated = /(不要|不想|不可|沒有|別|禁|討厭|避免|謝絕|拒絕|怕)[^。！？\n]{0,4}(養貓|養狗|養寵|寵物|毛小孩|毛孩|貓|狗)/.test(text);
+    const excludePet = petMention && petNegated;
+    const wantsPet = petMention && !petNegated;
+
     return {
         budget, minBudget, maxBudget, limit, genderUnrestricted, hasGenderMention, hasBudgetMention, hasRoomTypeMention, wantsRoomType,
         wantsUtilityBilling, maxElectricityPrice, requireBalcony, requireWindow, requireParking, requireWaste,
-        requireSubsidy, isSocialHousing,
+        requireSubsidy, isSocialHousing, excludePet,
         excludeRooftop, excludeWooden, excludeHaunted, maxWalkMins, maxScooterMins,
-        wantsPet: (text.includes('養貓') || text.includes('養狗') || text.includes('寵物')),
+        wantsPet,
         requireElevator: (text.includes('電梯') || text.includes('升降梯') || text.includes('不爬樓') || text.includes('不用爬') || text.includes('不想爬') || text.includes('不要爬') || text.includes('腿不好') || text.includes('膝蓋不好')),
         requireCooking: (text.includes('開伙') || text.includes('開火') || text.includes('自炊') || text.includes('煮飯') || text.includes('炒菜') || text.includes('在家煮') || text.includes('自己煮')),
         requireWaterDispenser: (text.includes('飲水機')),
@@ -612,7 +620,7 @@ function filterHardExclusions(properties, constraints) {
         excludeRooftop, excludeWooden, maxElectricityPrice, wantsUtilityBilling,
         maxWalkMins, maxScooterMins,
         requireSubsidy, isSocialHousing, requireBalcony, requireWindow, requireParking, requireWaste,
-        wantsPet, requireElevator, requireCooking
+        wantsPet, excludePet, requireElevator, requireCooking
     } = constraints;
     const candidates = [];
 
@@ -626,6 +634,12 @@ function filterHardExclusions(properties, constraints) {
         // 1b. Documented hard constraints (一票否決): exclude only EXPLICIT conflicts,
         // leave unstated properties for AI to judge so the candidate pool isn't over-pruned.
         if (wantsPet && (prop.text.includes('禁養') || prop.text.includes('不可養') || prop.text.includes('不可寵') || prop.text.includes('謝絕寵物'))) continue;
+        // 「不要養寵物」:排除明確可養寵物的房源(notes/text 含「可養」)。使用者要避開寵物房,
+        // 把可養寵物者一票否決;未提及寵物政策的房源留給 AI 判斷(不過度刪減候選池)。
+        if (excludePet) {
+            const petText = buildPropText(prop);
+            if (petText.includes('可養') || petText.includes('寵物友善')) continue;
+        }
         // 電梯：只信「文字明確寫無電梯」。has_elevator===false 在興大來源不可靠（爬蟲常未抓到，
         // false 可能代表「未知」而非「真的沒有」），不可作為硬篩依據，否則誤殺興大房源。
         if (requireElevator && (prop.text.includes('無電梯') || prop.text.includes('沒有電梯') || prop.text.includes('沒電梯'))) continue;
