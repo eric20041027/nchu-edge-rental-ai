@@ -95,7 +95,7 @@ async function fetchWithRetry(url, { retries = 3, backoff = 600 } = {}) {
 }
 
 export async function initData() {
-    const response = await fetchWithRetry('assets/property_data.json?v=20260614i');
+    const response = await fetchWithRetry('assets/property_data.json?v=20260616a');
     propertyData = await response.json();
     console.log(`Loaded ${propertyData.length} property descriptions`);
 }
@@ -731,12 +731,12 @@ function buildPropText(prop) {
     }
     return parts.join(" ");
 }
-// 註:曾嘗試把 buildPropText(去重後)餵給 cross-encoder 以補興大文字層偏誤,經離線
-// A/B 驗證為 NO-GO(見 pipeline/data_prep/eval_ce_text_enrichment.py 與
-// docs/ce_text_layer_decision.md):CE 只認訓練時的短結構 prop.text 格式,餵較長的
-// enriched 文字屬 OOD,分數崩壞(「要有陽台」query:含「有陽台」的 enriched 文字反而
-// 從 +7.9 掉到 +0.5,連 raw+「有陽台」都掉到 −1.8)。故 scorePair 維持餵 prop.text。
-// 文字層根治需重訓 CE(超出本次範圍,且既往重訓會回歸 — 見 retrain_jun13_result)。
+// 註(2026-06-16 更新):2026-06-14 曾驗證「不重訓、直接餵 enriched 文字」= NO-GO
+// (docs/ce_text_layer_decision.md:舊 CE 只認短 prop.text 格式,餵長文字 OOD 崩壞,
+// 「要有陽台」+7.9→+0.5)。**根治方案已落地**:C 組重訓 CE on 富化文字
+// (notebooks/ce_expansion_augment_experiment.ipynb),訓練+推論都用富化文字 → 消除
+// OOD。故 scorePair 現餵 prop.ce_text(預算於 property_data.json,見
+// precompute_ce_text.py),非 prop.text。buildPropText 仍只供 rule-based 35% 層使用。
 
 // 房源是否含某特徵詞(含同義歸一): 直接命中, 或任一同義詞命中。
 function propHasFeature(propText, feature) {
@@ -1275,7 +1275,11 @@ export async function recommend(text, top_k = 20, onPartialResult = null) {
 
             const { prop, rms } = topCandidates[i];
             try {
-                const aiScore = await scorePair(text, prop.text);
+                // C 組 cross-encoder 用富化房源文字訓練 → 必須餵 prop.ce_text(預算於
+                // property_data.json,= property_to_text_enriched:全 notes + 全 furniture)。
+                // 餵舊的短 prop.text 會 OOD(訓練/推論不一致)。ce_text 缺失時 fallback
+                // prop.text 以防舊快取 JSON,但正常情況 704 筆皆有。
+                const aiScore = await scorePair(text, prop.ce_text || prop.text);
                 
                 // RoBERTa scores are well-calibrated (0.0 ~ 1.0), apply light rescaling
                 const normalizedAiScore = Math.max(0, Math.min(1.0, (aiScore - 0.01) / 0.89));
