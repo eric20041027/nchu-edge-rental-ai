@@ -95,7 +95,7 @@ async function fetchWithRetry(url, { retries = 3, backoff = 600 } = {}) {
 }
 
 export async function initData() {
-    const response = await fetchWithRetry('assets/property_data.json?v=20260614i');
+    const response = await fetchWithRetry('assets/property_data.json?v=20260616a');
     propertyData = await response.json();
     console.log(`Loaded ${propertyData.length} property descriptions`);
 }
