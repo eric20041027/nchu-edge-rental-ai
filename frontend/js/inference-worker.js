@@ -246,9 +246,23 @@ function semanticExpandQuery(query) {
     };
 
     let expanded = query;
+
+    // 否定守衛:略過「被否定詞緊鄰修飾」的命中,避免子字串碰撞把反義句帶偏。
+    // 例:「不開車」含「開車」、「不怕熱」含「怕熱」→ 否則會把使用者明確不要的設施
+    // (車位 / 冷氣)擴展進去餵 CE,反而把那類房源推高。比對 key 前一字是否為否定詞。
+    // 與 inference.js 的 expandQueryIntent 守衛保持同款邏輯(markers 外,sync 腳本不覆寫)。
+    // 限制:只擋「否定詞緊貼 key」,隔字否定(如「不想養貓」)仍漏接,需 bi-encoder fallback 根治。
+    const NEGATORS = '不沒無非免勿';
     for (const [key, expansion] of Object.entries(expansionMap)) {
-        if (query.includes(key)) {
-            expanded += " " + expansion;
+        let from = 0, idx;
+        while ((idx = query.indexOf(key, from)) !== -1) {
+            // 注意:''.includes 對空字串恆為 true,故句首(idx===0)須明確視為「無否定詞」。
+            const negated = idx > 0 && NEGATORS.includes(query[idx - 1]);
+            if (!negated) {
+                expanded += " " + expansion;
+                break;  // 命中一次即擴展,與原行為一致
+            }
+            from = idx + 1;  // 此處被否定,繼續找下一個非否定出現位置
         }
     }
     return expanded;
