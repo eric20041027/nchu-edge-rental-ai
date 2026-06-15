@@ -29,7 +29,7 @@ python -m pipeline.model_training.train_and_export_onnx
 輸出：
 - `saved_models/rbt6_teacher/` — Teacher checkpoint（永不被 student 覆蓋）
 - `saved_models/rbt3_finetuned/` — Student PyTorch checkpoint
-- `frontend/models/custom_onnx_model_dir/my_custom_model_quant.onnx` — 部署模型
+- `frontend/models/custom_onnx_model_dir/my_custom_model_quant.onnx` — 部署模型（現為 C 組房源富化模型，38.7 MB；舊版備份 `*.PREV-20260616.onnx`）
 
 ---
 
@@ -101,6 +101,8 @@ cd frontend && python -m http.server 8000
 ├── pipeline/
 │   ├── crawlers/            # 多源爬蟲
 │   ├── data_prep/           # 6 步資料流水線
+│   │   ├── augment_with_expansion_map.py  # C 組房源富化（property_to_text_enriched）
+│   │   └── precompute_ce_text.py          # 把 C 組富化 ce_text 預算進前端 JSON
 │   ├── model_training/
 │   │   ├── train_teacher.py          # rbt6 teacher 訓練
 │   │   ├── train_and_export_onnx.py  # rbt3 student 蒸餾 + ONNX + INT8
@@ -131,5 +133,8 @@ cd frontend && python -m http.server 8000
 | rbt3 KD v2 (v2.5) | 36.8 MB | 78.7% | 76.4% | 0.760 | 同 bug |
 | **rbt3 KD v3 (v2.9)** | **38.6 MB** | **85.9%** | **85.5%** | **0.833** | Bug 修復 + 全功能 |
 | **rbt3 v3.0** | **36.8 MB** | **85.9%** | **85.4%** | **~0.879** | R-Drop 移除（消融）|
+| **rbt3 C 組富化** | **38.7 MB** | — | **85.4%** | **0.9475** | 房源文字富化（`property_to_text_enriched`，`MAX_LENGTH=128`）；NDCG@5 +0.0125 / F1 +0.021 vs A baseline，數據見 [property_enrichment_value.md](property_enrichment_value.md) |
+
+> C 組富化的 NDCG@5（0.9475）與上方 v3.0（~0.879）數量級不同，因評測 query 集不同，不可直接比較。
 
 v2.4–v2.8 退步根本原因：Teacher 路徑被 student 覆蓋，pre-trained rbt6 random head 作為 teacher → soft label 噪聲。

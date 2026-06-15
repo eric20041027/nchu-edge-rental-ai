@@ -11,6 +11,21 @@
 | **metric = "loss"（teacher）** | 多任務損失在 F1 收斂後仍持續下降，loss metric 捕捉更好的排序校準點 |
 | **隨機負樣本採樣** | `random.sample(neg_all, n)` 自然混合 ~69% rel=0（硬衝突）+ ~31% rel=-1（輕度不符），維持軟邊界學習信號 |
 | **物件級切割** | Train/Dev/Test 按房源分割，測試集房源訓練期間完全未見 |
+| **房源富化文字（C 組，2026-06-16）** | 訓練/打分文字來源改用 `property_to_text_enriched`（全 notes + 全 furniture），取代舊基底 `generate_dataset.py` 的 furniture[:5] + notes 只留含「寵物/限」 |
+
+---
+
+## 房源富化文字來源（C 組，2026-06-16）
+
+訓練與打分使用的房源文字已由舊基底切換為 **`property_to_text_enriched`**：
+
+- **全 notes**（不再只保留含「寵物/限」的片段）
+- **全 furniture**（不再截斷為 furniture[:5]）
+
+富化後文字更長（約 98 token），因此 `MAX_LENGTH` 由 64 提高至 **128**。
+此切換讓「想安靜→隔音」「想要採光好→採光」這類需房源描述細節才學得到的語意得以保留。
+富化腳本：`pipeline/data_prep/augment_with_expansion_map.py`。
+C 組 A/B 評測結果見 [ABLATION_STUDY.md](ABLATION_STUDY.md)。
 
 ---
 
@@ -99,7 +114,7 @@ $$y_{\text{smooth}} = (1 - \varepsilon)\,y + \frac{\varepsilon}{K}$$
 | max_grad_norm | 1.0 | 梯度裁剪 |
 | hidden_dropout_prob | 0.15 | student Dropout |
 | attention_dropout | 0.15 | student Attention Dropout |
-| MAX_LENGTH | 64 | tokenizer 最大長度 |
+| MAX_LENGTH | 128 | tokenizer 最大長度（C 組富化後文字較長，~98 token，由 64 提高）|
 | DISTILL_TEMPERATURE | 4.0 | KD 溫度 |
 | LABEL_SMOOTHING | 0.05 | CE 標籤平滑 |
 | FGM ε | 1.0 | 對抗擾動幅度 |
