@@ -331,8 +331,17 @@ async function measureNetworkSpeed(useCache) {
       const ms   = performance.now() - t0;
       const mb   = buf.byteLength / 1024 / 1024;
       const mbps = (mb * 8) / (ms / 1000);
-      log(`✅ ${mb.toFixed(1)} MB（Cloudflare），${Math.round(ms)} ms → ${mbps.toFixed(1)} Mbps`, 'ok');
-      return { ms, mbps, mb, source: 'cloudflare' };
+      // force-cache(二次)命中瀏覽器磁碟快取時,fetch 不走網路 → 量到的是磁碟讀取速度,非網速。
+      // 偵測快取命中(方案 2,標 cloudflare-cache → UI 顯示「快取讀取(非網速)」):
+      //   注意 speed.cloudflare.com 跨來源無 Timing-Allow-Origin,transferSize 對 cold/warm
+      //   都被遮罩成 0,不可用來判定。改用「速度相對 cold 基準暴增」判定(最穩健):快取讀取比
+      //   真實網路快一個數量級;cold 基準可用時要求 warm ≥ 5× cold,否則退回絕對門檻 >1 Gbps。
+      const coldMbps = (typeof results !== 'undefined' && results.cold && results.cold.net && results.cold.net.source === 'cloudflare')
+        ? results.cold.net.mbps : null;
+      const fromCache = useCache && (coldMbps ? mbps >= coldMbps * 5 : mbps > 1000);
+      const source = fromCache ? 'cloudflare-cache' : 'cloudflare';
+      log(`✅ ${mb.toFixed(1)} MB（Cloudflare${fromCache ? ' 快取讀取，非網速' : ''}），${Math.round(ms)} ms → ${mbps.toFixed(1)} Mbps`, fromCache ? 'warn' : 'ok');
+      return { ms, mbps, mb, source };
     } catch (_) { /* try next */ }
   }
   log('⚠️ Cloudflare 測速失敗，改用 localhost（數值僅反映磁碟速度）', 'warn');
@@ -529,8 +538,13 @@ function applyCards(r, mode) {
   speedVal.textContent = net.mbps.toFixed(1);
   speedVal.className = 'card-value';
   speedCard.className = 'card ' + doneClass;
+  const SPEED_SOURCE_LABEL = {
+    'cloudflare':       'Cloudflare 外部測速',
+    'cloudflare-cache': '⚠️ 快取讀取（非網速）',   // force-cache 命中,反映磁碟讀取非網路
+    'localhost':        '⚠️ localhost（非真實網速）',
+  };
   document.getElementById(`${prefix}-sub-speed`).textContent =
-    `${net.mb.toFixed(1)} MB，${fmtMs(net.ms)}｜${net.source === 'cloudflare' ? 'Cloudflare 外部測速' : '⚠️ localhost（非真實網速）'}`;
+    `${net.mb.toFixed(1)} MB，${fmtMs(net.ms)}｜${SPEED_SOURCE_LABEL[net.source] || net.source}`;
 
   // NER
   if (nerMs !== null) {
