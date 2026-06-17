@@ -7,7 +7,8 @@
  *
  * Sequential inference to avoid ONNX "Session already started" error.
  */
-import { AutoTokenizer, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1';
+// 註:主執行緒不直接用 transformers.js — 推論在 inference-worker.js / ner-worker.js(各自 import)。
+// encoder fallback 骨架啟用時於該處動態 import(見下方 initEncoderFallback 的 TODO),故此處不需頂層 import。
 
 let worker = null;
 let propertyData = [];
@@ -95,7 +96,7 @@ async function fetchWithRetry(url, { retries = 3, backoff = 600 } = {}) {
 }
 
 export async function initData() {
-    const response = await fetchWithRetry('assets/property_data.json?v=20260616d');
+    const response = await fetchWithRetry('assets/property_data.json?v=20260616e');
     const raw = await response.json();
     // 過濾爬蟲空殼房源:來源網站有少數房源 address/rent 全空(只有 url+img,連價格地址都
     // 沒有),對使用者完全無用,且軟性 query(如「希望房間明亮一點」)下無條件扣分反而會被
@@ -615,11 +616,11 @@ function checkConflicts(prop, constraints) {
 
 // --- Hard Exclusion Filtering ---
 function filterHardExclusions(properties, constraints) {
-    const { 
-        budget, minBudget, maxBudget, limit, genderUnrestricted, hasGenderMention, hasBudgetMention,
+    const {
+        budget, maxBudget, limit, genderUnrestricted, hasGenderMention, hasBudgetMention,
         excludeRooftop, excludeWooden, maxElectricityPrice, wantsUtilityBilling,
         maxWalkMins, maxScooterMins,
-        requireSubsidy, isSocialHousing, requireBalcony, requireWindow, requireParking, requireWaste,
+        requireSubsidy, isSocialHousing,
         wantsPet, excludePet, requireElevator, requireCooking
     } = constraints;
     const candidates = [];
@@ -1038,9 +1039,9 @@ function extractKeywords(text) {
 
 // --- Rule-based Pre-Scoring ---
 function calculateRuleBasedScore(candidates, queryKeywords, text, constraints) {
-    const { 
+    const {
         budget: userBudget, minBudget, maxBudget, hasBudgetMention, hasRoomTypeMention, wantsUtilityBilling,
-        requireBalcony, requireWindow, requireParking, requireWaste, maxWalkMins, maxScooterMins
+        maxWalkMins, maxScooterMins
     } = constraints;
 
 

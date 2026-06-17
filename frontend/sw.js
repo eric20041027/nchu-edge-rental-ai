@@ -9,7 +9,7 @@
  * Version key: bump CACHE_VERSION when deploying new model weights or major JS changes.
  */
 
-const CACHE_VERSION  = 'v20260616d';
+const CACHE_VERSION  = 'v20260616e';
 const STATIC_CACHE   = `rental-static-${CACHE_VERSION}`;
 const MODEL_CACHE    = `rental-models-${CACHE_VERSION}`;
 const CDN_CACHE      = `rental-cdn-${CACHE_VERSION}`;
@@ -69,7 +69,7 @@ self.addEventListener('fetch', (event) => {
     // Only handle GET requests
     if (req.method !== 'GET') return;
 
-    // 1. ONNX model files — cache-first (57 MB + 37 MB, never changes without deploy)
+    // 1. ONNX model files — cache-first (38.7 MB + 37 MB, never changes without deploy)
     if (url.pathname.endsWith('.onnx')) {
         event.respondWith(cacheFirst(req, MODEL_CACHE));
         return;

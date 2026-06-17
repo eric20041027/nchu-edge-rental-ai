@@ -1,5 +1,8 @@
 import { initData, initNLP, initNER, recommend } from './inference.js';
 
+// 查無結果時的提示(兩處共用:無候選 / 渲染空陣列)
+const NO_RESULTS_HTML = `<div style="text-align: center; color: white; padding: 2rem;">找不到符合條件的房屋，試著放寬預算或是區域限制吧！</div>`;
+
 // --- NCHU furniture/feature normalisation ---
 const FURNITURE_NORM = {
     '（電）熱水器': '熱水器', '冷氣機': '冷氣', '書桌椅': '書桌',
@@ -305,9 +308,7 @@ async function fetchRecommendations(inputText) {
             visibleCount = 0;
             renderCards(true);
         } else if (data && data.length === 0) {
-            recommendationList.innerHTML = `<div style="text-align: center; color: white; padding: 2rem;">
-                找不到符合條件的房屋，試著放寬預算或是區域限制吧！
-            </div>`;
+            recommendationList.innerHTML = NO_RESULTS_HTML;
         } else if (!partialShown) {
             throw new Error("回傳格式不正確");
         }
@@ -334,7 +335,7 @@ function renderCards(reset = false) {
     }
 
     if (allRecommendedHouses.length === 0) {
-        recommendationList.innerHTML = `<div style="text-align: center; color: white; padding: 2rem;">找不到符合條件的房屋，試著放寬預算或是區域限制吧！</div>`;
+        recommendationList.innerHTML = NO_RESULTS_HTML;
         return;
     }
 
