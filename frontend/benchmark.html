@@ -336,8 +336,8 @@ async function measureNetworkSpeed(useCache) {
       //   注意 speed.cloudflare.com 跨來源無 Timing-Allow-Origin,transferSize 對 cold/warm
       //   都被遮罩成 0,不可用來判定。改用「速度相對 cold 基準暴增」判定(最穩健):快取讀取比
       //   真實網路快一個數量級;cold 基準可用時要求 warm ≥ 5× cold,否則退回絕對門檻 >1 Gbps。
-      const coldMbps = (typeof results !== 'undefined' && results.cold && results.cold.net && results.cold.net.source === 'cloudflare')
-        ? results.cold.net.mbps : null;
+      const coldNet = results.cold?.net;
+      const coldMbps = coldNet?.source === 'cloudflare' ? coldNet.mbps : null;
       const fromCache = useCache && (coldMbps ? mbps >= coldMbps * 5 : mbps > 1000);
       const source = fromCache ? 'cloudflare-cache' : 'cloudflare';
       log(`✅ ${mb.toFixed(1)} MB（Cloudflare${fromCache ? ' 快取讀取，非網速' : ''}），${Math.round(ms)} ms → ${mbps.toFixed(1)} Mbps`, fromCache ? 'warn' : 'ok');
