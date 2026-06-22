@@ -137,7 +137,15 @@
     spec 狀態 → 已落地。零行為變更(僅註解 + 文件)。
   - **Verify:** ✅ node --check 通過;邏輯未動(向量 primary + rule-based fallback 皆如 T5/T6 實測)。
   - **Files:** `frontend/js/inference.js`(註解)、`docs/spec/vector-retrieval.md`(狀態)。
-  - **待辦(B,另開):** 57MB bi-encoder 瘦身(int4 / 共享 CE base)—— 已 GO 值得做,可能需 Colab。
+- [x] **Task(B):** 57MB bi-encoder 瘦身評估 + repo dead-weight 清理。
+  - **調查結論:** bi-encoder 57MB **已是最優 int8 量化**(= CE 同尺寸:40MB int8 + 16MB embedding
+    uint8 + 0.4MB fp32,無漏量化層可撿)。**int4 是死路** —— NER int4 先例 76MB **比 int8 quant 36MB 還大**。
+    要再降只剩傷準度的路(l2h128 蒸餾 / 共享 base),已 GO 不急,先不做。
+  - **首載 +57MB:** 接受為語意召回大勝(Recall 0.007→0.547)的合理代價;SW 快取後僅首次下載。
+  - **做了:** 刪除 repo 內唯一追蹤的 dead model `my_custom_model_quant.PREV-20260616.onnx`(57MB backup,
+    0 引用)。其餘 fp32/int4/backup ~621MB 為 **gitignored 本機 clutter**(不在 repo/deploy,不影響首載),
+    需要的話本機 `git gc` 或手動清。
+  - **Files:** 刪 `frontend/models/custom_onnx_model_dir/my_custom_model_quant.PREV-20260616.onnx`。
 
 ---
 
