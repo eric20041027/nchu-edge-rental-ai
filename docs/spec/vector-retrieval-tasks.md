@@ -128,12 +128,16 @@
 
 ---
 
-## 收尾(僅在 T7 通過後)
+## 收尾(T7=GO 後) ✅ A 完成 2026-06-22
 
-- [ ] **Task:** A/B 過關後移除/封存 rule-based 召回路徑,更新 spec 狀態為已落地。
-  - **Acceptance:** rule-based 召回路徑移除或明確封存;spec/CHANGELOG 同步。
-  - **Verify:** 全測試綠;前端正常。
-  - **Files:** `frontend/js/inference.js`、`docs/spec/vector-retrieval.md`、`CHANGELOG.md`
+- [x] **Task(A):** 封存 rule-based A/B 框架,向量召回轉正為 primary。
+  - **決策:** rule-based **不刪** —— 它是 worker 未就緒/編碼逾時時的 fallback(刪了那些情況會零結果)。
+    T7 證明向量贏的是「primary」角色;rule-based 從「對等 A/B 分支」降級為「安全網 fallback」。
+  - **Acceptance:** ✅ `VECTOR_RECALL_ENABLED` 註解轉為 kill-switch 語義;recall/fallback 註解更新;
+    spec 狀態 → 已落地。零行為變更(僅註解 + 文件)。
+  - **Verify:** ✅ node --check 通過;邏輯未動(向量 primary + rule-based fallback 皆如 T5/T6 實測)。
+  - **Files:** `frontend/js/inference.js`(註解)、`docs/spec/vector-retrieval.md`(狀態)。
+  - **待辦(B,另開):** 57MB bi-encoder 瘦身(int4 / 共享 CE base)—— 已 GO 值得做,可能需 Colab。
 
 ---
 

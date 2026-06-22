@@ -2,7 +2,7 @@
 
 > 來源意圖:[docs/intent/vector-retrieval-roadmap.md](../intent/vector-retrieval-roadmap.md)
 > 階段:中長期路線 ① 向量檢索(② 反饋微調為後續,不在本 spec)
-> 狀態:**待審核**(spec-driven-development Phase 1)
+> 狀態:**已落地**(T0–T7 完成;T7 A/B GO;向量召回為 primary,rule-based 留作 fallback)
 
 ## Objective
 

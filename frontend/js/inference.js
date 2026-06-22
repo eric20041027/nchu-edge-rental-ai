@@ -21,9 +21,10 @@ let pendingNER  = new Map();
 let nerIdCounter = 0;
 let nerReady    = false;
 
-// --- Vector recall (T5) ------------------------------------------------------
-// 旗標:true = 用 bi-encoder 向量相似度取代 rule-based recall 評分;
-// 翻成 false 即回退原本的關鍵字 rule-based recall (T7 A/B 用,兩條路都保留)。
+// --- Vector recall (T5;T7 A/B 已採用為 primary) ------------------------------
+// 向量召回已是正式召回路徑(T7 A/B GO:semantic Recall@30 0.007→0.547、整體皆贏)。
+// 此旗標保留為 kill-switch:出事翻 false 可秒回退關鍵字 rule-based recall。
+// rule-based 不再是對等 A/B 分支,但仍當 worker 未就緒/編碼逾時時的 fallback(見下方)。
 const VECTOR_RECALL_ENABLED = true;
 
 // bi-encoder worker 狀態 (鏡像 NER worker)
@@ -1403,7 +1404,7 @@ export async function recommend(text, top_k = 20, onPartialResult = null) {
         const candidates = filterHardExclusions(propertyData, constraints);
 
         // 2. Recall stage — 產出 topCandidates: [{prop, rms}],供 step-3 CE rerank 消費。
-        //    向量召回 (flag 開 + 向量/worker 就緒) 取代 rule-based 評分;否則回退 rule-based。
+        //    向量召回為 primary(T7 採用);worker 未就緒/編碼逾時/kill-switch 關 → fallback rule-based。
         let topCandidates = null;
 
         if (VECTOR_RECALL_ENABLED && propertyEmbeddings && biEncoderReady) {
@@ -1428,7 +1429,8 @@ export async function recommend(text, top_k = 20, onPartialResult = null) {
             }
         }
 
-        // 回退:flag 關 / 向量未就緒 / 編碼逾時 → 原本的 rule-based recall (不變)。
+        // Fallback (非對等 A/B 分支,僅安全網):kill-switch 關 / 向量未就緒 / 編碼逾時
+        //   → 原本的關鍵字 rule-based recall,避免零結果。T7=GO 後保留此路徑當 degradation。
         if (topCandidates === null) {
             const queryKeywords = extractKeywords(text);
             // Augment keywords with NER-detected features and locations
