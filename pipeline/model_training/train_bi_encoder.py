@@ -61,6 +61,7 @@ The encoder + tokenizer are saved via ``save_pretrained`` to
 from __future__ import annotations
 
 import argparse
+import contextlib
 import json
 import os
 import random
@@ -165,6 +166,8 @@ class BiEncoderTrainer(BaseTrainer):
         max_length: int,
         sample: Optional[int] = None,
         output_dir: Optional[Path] = None,
+        bf16: bool = False,
+        tf32: bool = False,
     ):
         super().__init__(config)
         self.epochs = epochs
@@ -173,6 +176,15 @@ class BiEncoderTrainer(BaseTrainer):
         self.max_length = max_length
         self.sample = sample
         self.output_dir = Path(output_dir) if output_dir else config.bi_encoder_saved_dir
+
+        # A100 pure-acceleration (speed only; training dynamics unchanged).
+        # bf16 engages only if the GPU supports it -> T4 falls back to fp32.
+        if tf32 and torch.cuda.is_available():
+            torch.backends.cuda.matmul.allow_tf32 = True
+            torch.backends.cudnn.allow_tf32 = True
+        self.use_bf16 = bool(
+            bf16 and torch.cuda.is_available() and torch.cuda.is_bf16_supported()
+        )
 
         self.tokenizer = None
         self.model: Optional[BiEncoder] = None
@@ -351,14 +363,21 @@ class BiEncoderTrainer(BaseTrainer):
                 hard_pool = hard_pool[: 2 * len(batch)]  # cap candidate growth
 
                 self.model.train()
-                q_emb = self.model(**self._encode_texts(queries))          # (B, H)
-                cand_texts = positives + hard_pool
-                cand_emb = self.model(**self._encode_texts(cand_texts))    # (B+H, H)
+                # bf16 autocast on A100 (no GradScaler needed for bf16); fp32 otherwise.
+                actx = (
+                    torch.autocast(device_type="cuda", dtype=torch.bfloat16)
+                    if self.use_bf16
+                    else contextlib.nullcontext()
+                )
+                with actx:
+                    q_emb = self.model(**self._encode_texts(queries))          # (B, H)
+                    cand_texts = positives + hard_pool
+                    cand_emb = self.model(**self._encode_texts(cand_texts))    # (B+H, H)
 
-                # sim[i, j] = cos(q_i, cand_j) / T ; target = own positive column i
-                sim = (q_emb @ cand_emb.t()) / temperature                  # (B, B+H)
-                targets = torch.arange(len(batch), device=self.device)
-                loss = F.cross_entropy(sim, targets)
+                    # sim[i,j] = cos(q_i, cand_j) / T ; target = own positive column i
+                    sim = (q_emb @ cand_emb.t()) / temperature                  # (B, B+H)
+                    targets = torch.arange(len(batch), device=self.device)
+                    loss = F.cross_entropy(sim, targets)
 
                 optimizer.zero_grad()
                 loss.backward()
@@ -476,6 +495,8 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--max-length", type=int, default=64, help="max token length")
     parser.add_argument("--sample", type=int, default=None, help="use only N anchors (quick sanity run)")
     parser.add_argument("--output-dir", type=str, default=None, help="where to save encoder + tokenizer")
+    parser.add_argument("--bf16", action="store_true", help="bf16 autocast (A100; T4 auto-fallback to fp32)")
+    parser.add_argument("--tf32", action="store_true", help="enable TF32 matmul/cudnn (A100 speed)")
     return parser
 
 
@@ -490,6 +511,8 @@ def main(argv: Optional[List[str]] = None) -> int:
         max_length=args.max_length,
         sample=args.sample,
         output_dir=args.output_dir,
+        bf16=args.bf16,
+        tf32=args.tf32,
     )
     result = trainer.run()
 
