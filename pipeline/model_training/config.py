@@ -30,6 +30,17 @@ class ModelTrainingConfig:
         # Model checkpoint paths
         self.model_checkpoint = self._env_string("MODEL_CHECKPOINT", "hfl/rbt6")
         self.saved_model_dir = self._env_path("SAVED_MODEL_DIR", self.saved_models_dir / "rbt6_finetuned")
+
+        # Bi-encoder (T2) paths/settings — CE 同源 base, separate save dir so the
+        # cross-encoder checkpoint above is never overwritten. The query encoder
+        # exported by T3 reads from bi_encoder_saved_dir.
+        self.bi_encoder_saved_dir = self._env_path(
+            "BI_ENCODER_SAVED_DIR", self.saved_models_dir / "rbt6_bi_encoder"
+        )
+        # Contrastive-learning temperature for the InfoNCE / MNRL objective.
+        # Lower temperature = sharper softmax over candidates. 0.05 is the
+        # sentence-transformers MNRL default scaled cosine convention (scale=20).
+        self.bi_encoder_temperature = self._env_float("BI_ENCODER_TEMPERATURE", 0.05)
         self.onnx_output_path = self._env_path("ONNX_OUTPUT_PATH", self.frontend_models_dir / "my_custom_model.onnx")
         self.quantized_model_path = self._env_path("QUANTIZED_MODEL_PATH", self.frontend_models_dir / "my_custom_model_quant.onnx")
 
