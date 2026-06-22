@@ -106,14 +106,25 @@
 
 ---
 
-## T7 — A/B 評估(go/no-go gate,依賴 T5 + T1)
+## T7 — A/B 評估(go/no-go gate,依賴 T5 + T1) ✅ 完成 2026-06-22 — 判決 GO(本地實跑)
 
-- [ ] **Task:** 寫 `tests/eval_vector_vs_rulebased.py`:用 T1 query 集比
-  向量召回 vs rule-based 的 **Recall@K** + 端到端 **NDCG@5**;並模擬 ~1萬筆量可擴展性。
-  - **Acceptance:** 產出 A/B 數字表(兩種召回 × Recall@K/NDCG@5),含語意類 query 分項。
-  - **Verify:** CP5 —— 對照 Success #1/#2/#3/#4。**這是 go/no-go:**
-    過 → 進「移除 rule-based 路徑」收尾;不過 → 保留切換、記錄結論、回頭調 T2/T4。
-  - **Files:** `tests/eval_vector_vs_rulebased.py`(新)
+- [x] **Task:** `tests/eval_vector_vs_rulebased.py` —— 用 T1 query 集比向量召回 vs rule-based
+  的 Recall@15/@30 + NDCG@5,per-bucket(semantic/keyword/all),印 GO/NO-GO verdict。
+  - **Acceptance:** ✅ harness 完成 —— 複用 T0(metrics/loaders/rule_based_recall/hard-filter)+
+    T1 fixture;vector 路徑**忠實鏡像 T5 production**(rbt6 tokenizer max64 單句、ONNX embedding、
+    cosineTopK、filterHardExclusions 交集);GO/NO-GO 自動判決(exit 0 GO / 2 NO-GO)。
+  - **Verify(已做,rule-based 半邊 + 內部一致性):** ✅ py_compile;`--check` 實跑 rule-based 欄:
+    semantic Recall@30 = **0.007**、keyword = 0.077。**獨立驗證這不是 bug 是設計:**
+    自跑確認 78 semantic 僅 2/78 在 rule-based top-30 有相關(T1 blind-spot gate 本就如此篩),
+    故 rule-based 在 semantic 近零是預期floor —— vector 要打的就是這個。
+  - **Verify(已本地實跑,GO ✅):** `python tests/eval_vector_vs_rulebased.py`(python3.12 venv +
+    onnxruntime/transformers)。結果 **GO**(exit 0),三條件全 PASS:
+    semantic Recall@30 **0.007 → 0.547**(+0.540)、Recall@15 0.000→0.506、NDCG@5 0.000→0.325;
+    keyword Recall@30 0.077→0.359;all Recall@30 0.057→0.412。向量召回不只補語意洞,
+    連 keyword 控制組也贏 —— 整體召回全面優於關鍵字。**專案前提被數字證實。**
+  - **Files:** `tests/eval_vector_vs_rulebased.py`(新)。
+  - **判決規則:** GO = vector Recall@K ≥ rule-based(overall + semantic)且 semantic@30 明顯更高。
+    GO → 收尾(移除 rule-based + 57MB 瘦身);NO-GO → 保留 flag、記結論、回調 T2/T4。
 
 ---
 
