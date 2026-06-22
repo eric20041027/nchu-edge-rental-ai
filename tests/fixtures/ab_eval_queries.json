@@ -1,0 +1,3384 @@
+{
+  "meta": {
+    "created": "2026-06-22",
+    "source": "recommendation_train.json",
+    "join": "T0 fuzzy-join (token-set)",
+    "join_match_rate": 0.2445,
+    "notes": "Semantic bucket = PROVEN recall blind spots: query carries a colloquial trigger (data/semantic_rules.json `rules` key, feature word absent from query) AND the T0 rule-based recall (INTENT_MAP expansion included -- the real A/B baseline) misses >=1 relevant listing at K=30, so vector recall has room to win. Empirical gate matters because every `rules` key is also in the baseline's INTENT_MAP, so trigger-membership alone is not enough. Keyword bucket = control (literal feature/location/budget, no qualifying trigger). relevant_idxs are property_data idx from T0 build_ground_truth (relevance>=1); no re-join needed in T7. trigger-bearing queries=160, of which semantic(blind)=78; keyword=200 (capped at 200 from 5006 available)."
+  },
+  "queries": [
+    {
+      "query": "3700元以上 大智路7 怕熱 大里區",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        280
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "一心街台中東區想租小套房9800元以上怕熱",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        380
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "七千以內五權五街台中西區怕熱套",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        508
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "上網方便 元正路8 公寓大樓 300元以上 大里 想租雅",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        258
+      ],
+      "semantic_trigger": "上網"
+    },
+    {
+      "query": "不想出門買水",
+      "bucket": "semantic",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        97,
+        189,
+        399
+      ],
+      "semantic_trigger": "不想出門"
+    },
+    {
+      "query": "不想追垃圾車",
+      "bucket": "semantic",
+      "n_relevant": 16,
+      "relevant_idxs": [
+        108,
+        121,
+        194,
+        226,
+        259,
+        295,
+        340,
+        351,
+        366,
+        371,
+        528,
+        540,
+        594,
+        615,
+        652,
+        662
+      ],
+      "semantic_trigger": "不想追垃圾車"
+    },
+    {
+      "query": "南區 有機車位",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        169
+      ],
+      "semantic_trigger": "機車"
+    },
+    {
+      "query": "南區近 單人套房 怕熱",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        199
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "南區附近 怕熱",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        180
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "台中東區 有怕熱",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        392
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "台中東區 要一間套房 怕熱",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        416
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "喜歡自己煮",
+      "bucket": "semantic",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        528,
+        547
+      ],
+      "semantic_trigger": "喜歡自己煮"
+    },
+    {
+      "query": "單人套房 限女生 不想出門 5k以下",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        102
+      ],
+      "semantic_trigger": "不想出門"
+    },
+    {
+      "query": "天 有怕熱",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        202
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "幫我找搬東西方便",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        53
+      ],
+      "semantic_trigger": "搬東西"
+    },
+    {
+      "query": "怕悶熱",
+      "bucket": "semantic",
+      "n_relevant": 9,
+      "relevant_idxs": [
+        56,
+        121,
+        356,
+        420,
+        461,
+        532,
+        545,
+        649,
+        656
+      ],
+      "semantic_trigger": "怕悶熱"
+    },
+    {
+      "query": "怕熱 勤美附近 四維街 二萬八千",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        503
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "怕熱 台中南區 套房 預算11千 復興路二段",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        147
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "怕熱 國光路 19K 台中南區",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        92
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "怕熱 工學北路1台中南區",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        124
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "怕熱 有中山四段",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        336
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "怕熱 樂群街4 要一間套房 九千以內 勤美附近",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        619
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "怕熱 要一間套房 預算11千",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        343
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "怕熱的找套房",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        120
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "想住南區 怕熱 找套房",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        122
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "想住怕熱 有電梯大樓",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        52
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "想找不想出門",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        155
+      ],
+      "semantic_trigger": "不想出門"
+    },
+    {
+      "query": "想找預算7900以下 怕熱 台中西區",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        613
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "想租夏天 有找雅",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        306
+      ],
+      "semantic_trigger": "夏天"
+    },
+    {
+      "query": "想租套房 怕熱 精誠三十一街 西區附近",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        657
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "想租套預算10500勤附近怕熱",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        601
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "想租怕熱",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        209
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "想要14000以內 懶人 家庭式",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        183
+      ],
+      "semantic_trigger": "懶人"
+    },
+    {
+      "query": "想要9500以內 套房 怕熱",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        341
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "想要不想出門女生宿舍高工路1",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        242
+      ],
+      "semantic_trigger": "不想出門"
+    },
+    {
+      "query": "想要怕熱",
+      "bucket": "semantic",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        230,
+        385
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "想要懶人",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        258
+      ],
+      "semantic_trigger": "懶人"
+    },
+    {
+      "query": "想要有床",
+      "bucket": "semantic",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        474,
+        493
+      ],
+      "semantic_trigger": "要有床"
+    },
+    {
+      "query": "懶人首選",
+      "bucket": "semantic",
+      "n_relevant": 22,
+      "relevant_idxs": [
+        43,
+        137,
+        148,
+        154,
+        191,
+        236,
+        299,
+        335,
+        349,
+        364,
+        378,
+        424,
+        441,
+        446,
+        466,
+        476,
+        484,
+        495,
+        509,
+        519,
+        525,
+        559
+      ],
+      "semantic_trigger": "懶人"
+    },
+    {
+      "query": "我要找復興路二段 怕熱",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        147
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "我要找怕熱",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        482
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "找六千的夏天",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        267
+      ],
+      "semantic_trigger": "夏天"
+    },
+    {
+      "query": "找小套房 七千以內 台中大里 新義路怕熱",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        297
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "找怕熱",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        522
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "找想租套房 而且怕熱",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        536
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "找明德街8 上網方便 2000元以上",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        191
+      ],
+      "semantic_trigger": "上網"
+    },
+    {
+      "query": "找男生宿舍 要搬東西方便",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        61
+      ],
+      "semantic_trigger": "搬東西"
+    },
+    {
+      "query": "振福路預算15000以下 怕熱",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        365
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "月租10500內 要一間套房 怕熱",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        677
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "有推薦新福路 預算10999以下 怕熱",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        369
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "有沒有8000以內 怕熱 想租套房",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        23
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "有沒有大里 而且怕熱",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        256
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "有沒有怕熱",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        392
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "東區要怕熱",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        415
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "求不想出門 600以內",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        268
+      ],
+      "semantic_trigger": "不想出門"
+    },
+    {
+      "query": "求單人套房 要有床",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        349
+      ],
+      "semantic_trigger": "要有床"
+    },
+    {
+      "query": "求復興路二段 南區附近 怕熱",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        148
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "求怕熱",
+      "bucket": "semantic",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        325,
+        467
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "求怕熱 9K 樹德路",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        371
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "求打報告",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        181
+      ],
+      "semantic_trigger": "打報告"
+    },
+    {
+      "query": "求透天 上網方便 南區附近",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        82
+      ],
+      "semantic_trigger": "上網"
+    },
+    {
+      "query": "淺眠怕吵",
+      "bucket": "semantic",
+      "n_relevant": 14,
+      "relevant_idxs": [
+        39,
+        56,
+        86,
+        244,
+        325,
+        342,
+        384,
+        413,
+        462,
+        538,
+        560,
+        587,
+        649,
+        695
+      ],
+      "semantic_trigger": "怕吵"
+    },
+    {
+      "query": "西區附近 想租套房 怕熱",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        536
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "要一間套房 怕熱",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        291
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "要不想出門 有套房",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        213
+      ],
+      "semantic_trigger": "不想出門"
+    },
+    {
+      "query": "要怕熱",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        638
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "要有床 要16700元以上",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        245
+      ],
+      "semantic_trigger": "要有床"
+    },
+    {
+      "query": "要租夏天",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        267
+      ],
+      "semantic_trigger": "夏天"
+    },
+    {
+      "query": "要租怕熱",
+      "bucket": "semantic",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        304,
+        318,
+        434
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "請問有不想爬樓梯",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        7
+      ],
+      "semantic_trigger": "不想爬樓梯"
+    },
+    {
+      "query": "請問有大智路7 有不想爬樓梯",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        280
+      ],
+      "semantic_trigger": "不想爬樓梯"
+    },
+    {
+      "query": "請問有套房怕熱南區",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        229
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "遠距上班 白天在家 希望安靜且有網路",
+      "bucket": "semantic",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        36,
+        59,
+        189
+      ],
+      "semantic_trigger": "安靜"
+    },
+    {
+      "query": "需要怕熱",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        311
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "需要有床的中山路三段",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        333
+      ],
+      "semantic_trigger": "要有床"
+    },
+    {
+      "query": "需要預算六千以下 仁和二街5 機車位",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        8
+      ],
+      "semantic_trigger": "機車"
+    },
+    {
+      "query": "預算4千 找套房 南和路1 上網方便 透天厝",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        40
+      ],
+      "semantic_trigger": "上網"
+    },
+    {
+      "query": "預算6300以上的怕熱",
+      "bucket": "semantic",
+      "n_relevant": 1,
+      "relevant_idxs": [
+        107
+      ],
+      "semantic_trigger": "怕熱"
+    },
+    {
+      "query": "希望有門禁或保全 住得安心",
+      "bucket": "keyword",
+      "n_relevant": 44,
+      "relevant_idxs": [
+        0,
+        34,
+        83,
+        91,
+        92,
+        125,
+        168,
+        174,
+        185,
+        187,
+        231,
+        256,
+        259,
+        266,
+        327,
+        335,
+        350,
+        371,
+        381,
+        404,
+        409,
+        441,
+        444,
+        475,
+        483,
+        501,
+        514,
+        520,
+        522,
+        548,
+        550,
+        561,
+        585,
+        588,
+        597,
+        608,
+        642,
+        644,
+        645,
+        662,
+        680,
+        683,
+        689,
+        703
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "養了一隻小狗 找可以帶寵物的房",
+      "bucket": "keyword",
+      "n_relevant": 42,
+      "relevant_idxs": [
+        10,
+        92,
+        105,
+        152,
+        153,
+        158,
+        171,
+        195,
+        245,
+        262,
+        294,
+        297,
+        303,
+        313,
+        329,
+        335,
+        345,
+        349,
+        365,
+        366,
+        377,
+        396,
+        400,
+        418,
+        430,
+        431,
+        455,
+        460,
+        495,
+        540,
+        545,
+        556,
+        583,
+        590,
+        597,
+        612,
+        614,
+        619,
+        648,
+        651,
+        662,
+        673
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "一個人住怕不安全 有門禁比較好",
+      "bucket": "keyword",
+      "n_relevant": 41,
+      "relevant_idxs": [
+        9,
+        28,
+        47,
+        88,
+        131,
+        144,
+        151,
+        164,
+        185,
+        231,
+        245,
+        247,
+        256,
+        282,
+        286,
+        310,
+        353,
+        355,
+        395,
+        427,
+        436,
+        444,
+        447,
+        448,
+        457,
+        463,
+        472,
+        485,
+        519,
+        560,
+        569,
+        576,
+        584,
+        586,
+        610,
+        615,
+        624,
+        630,
+        641,
+        646,
+        679
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "有一隻貓 請問可以養嗎",
+      "bucket": "keyword",
+      "n_relevant": 35,
+      "relevant_idxs": [
+        9,
+        14,
+        70,
+        85,
+        86,
+        87,
+        126,
+        152,
+        174,
+        177,
+        183,
+        185,
+        198,
+        205,
+        245,
+        282,
+        295,
+        312,
+        331,
+        340,
+        369,
+        374,
+        402,
+        455,
+        462,
+        466,
+        488,
+        493,
+        504,
+        533,
+        536,
+        586,
+        610,
+        613,
+        624
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "女生單獨住 安全最重要",
+      "bucket": "keyword",
+      "n_relevant": 34,
+      "relevant_idxs": [
+        18,
+        49,
+        92,
+        122,
+        133,
+        147,
+        187,
+        197,
+        221,
+        226,
+        247,
+        277,
+        291,
+        298,
+        353,
+        354,
+        368,
+        380,
+        382,
+        436,
+        439,
+        451,
+        462,
+        475,
+        536,
+        571,
+        589,
+        600,
+        606,
+        625,
+        652,
+        658,
+        668,
+        689
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "毛孩子跟我一起住 求寵物友善房東",
+      "bucket": "keyword",
+      "n_relevant": 33,
+      "relevant_idxs": [
+        41,
+        79,
+        115,
+        137,
+        160,
+        176,
+        197,
+        199,
+        215,
+        227,
+        229,
+        243,
+        261,
+        277,
+        295,
+        346,
+        357,
+        364,
+        423,
+        475,
+        504,
+        516,
+        535,
+        554,
+        561,
+        582,
+        593,
+        607,
+        614,
+        625,
+        676,
+        689,
+        693
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想在中興大學附近租房",
+      "bucket": "keyword",
+      "n_relevant": 21,
+      "relevant_idxs": [
+        42,
+        101,
+        111,
+        123,
+        155,
+        160,
+        171,
+        241,
+        247,
+        264,
+        324,
+        341,
+        375,
+        449,
+        484,
+        487,
+        534,
+        588,
+        640,
+        651,
+        700
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "不離不棄",
+      "bucket": "keyword",
+      "n_relevant": 19,
+      "relevant_idxs": [
+        38,
+        100,
+        182,
+        202,
+        293,
+        301,
+        316,
+        362,
+        369,
+        376,
+        396,
+        397,
+        491,
+        502,
+        506,
+        518,
+        577,
+        638,
+        698
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "有主子",
+      "bucket": "keyword",
+      "n_relevant": 19,
+      "relevant_idxs": [
+        26,
+        40,
+        62,
+        131,
+        139,
+        176,
+        199,
+        262,
+        372,
+        398,
+        416,
+        498,
+        499,
+        526,
+        527,
+        532,
+        681,
+        683,
+        701
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "衣服要乾",
+      "bucket": "keyword",
+      "n_relevant": 19,
+      "relevant_idxs": [
+        1,
+        14,
+        31,
+        77,
+        83,
+        110,
+        128,
+        249,
+        283,
+        331,
+        392,
+        415,
+        478,
+        495,
+        538,
+        550,
+        578,
+        614,
+        621
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "寵物友善",
+      "bucket": "keyword",
+      "n_relevant": 17,
+      "relevant_idxs": [
+        183,
+        187,
+        198,
+        206,
+        221,
+        283,
+        313,
+        381,
+        418,
+        430,
+        442,
+        460,
+        496,
+        553,
+        564,
+        585,
+        675
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "有空房嗎",
+      "bucket": "keyword",
+      "n_relevant": 17,
+      "relevant_idxs": [
+        18,
+        37,
+        61,
+        82,
+        202,
+        268,
+        282,
+        315,
+        361,
+        419,
+        436,
+        490,
+        563,
+        582,
+        599,
+        634,
+        679
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "需要對外窗",
+      "bucket": "keyword",
+      "n_relevant": 17,
+      "relevant_idxs": [
+        8,
+        31,
+        34,
+        66,
+        243,
+        261,
+        287,
+        407,
+        447,
+        480,
+        516,
+        520,
+        531,
+        601,
+        661,
+        662,
+        678
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "學校旁邊有沒有房子",
+      "bucket": "keyword",
+      "n_relevant": 15,
+      "relevant_idxs": [
+        19,
+        50,
+        74,
+        140,
+        241,
+        246,
+        330,
+        331,
+        354,
+        356,
+        375,
+        393,
+        450,
+        475,
+        646
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "帶毛小孩",
+      "bucket": "keyword",
+      "n_relevant": 15,
+      "relevant_idxs": [
+        9,
+        78,
+        83,
+        248,
+        318,
+        374,
+        377,
+        441,
+        467,
+        496,
+        500,
+        509,
+        537,
+        632,
+        689
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "房間要通風",
+      "bucket": "keyword",
+      "n_relevant": 13,
+      "relevant_idxs": [
+        92,
+        129,
+        213,
+        278,
+        372,
+        378,
+        441,
+        450,
+        467,
+        527,
+        590,
+        653,
+        656
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想找便宜的租屋",
+      "bucket": "keyword",
+      "n_relevant": 11,
+      "relevant_idxs": [
+        51,
+        194,
+        259,
+        267,
+        307,
+        346,
+        359,
+        369,
+        423,
+        440,
+        560
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "沒時間倒垃圾",
+      "bucket": "keyword",
+      "n_relevant": 11,
+      "relevant_idxs": [
+        158,
+        286,
+        289,
+        327,
+        349,
+        458,
+        480,
+        506,
+        540,
+        607,
+        608
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "在家工作 網路速度很重要",
+      "bucket": "keyword",
+      "n_relevant": 9,
+      "relevant_idxs": [
+        4,
+        19,
+        23,
+        40,
+        69,
+        97,
+        109,
+        213,
+        307
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "生活機能要好",
+      "bucket": "keyword",
+      "n_relevant": 9,
+      "relevant_idxs": [
+        136,
+        189,
+        324,
+        345,
+        579,
+        581,
+        594,
+        602,
+        624
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "求找套房",
+      "bucket": "keyword",
+      "n_relevant": 8,
+      "relevant_idxs": [
+        53,
+        75,
+        294,
+        417,
+        468,
+        615,
+        634,
+        679
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想租套房",
+      "bucket": "keyword",
+      "n_relevant": 7,
+      "relevant_idxs": [
+        139,
+        144,
+        221,
+        404,
+        422,
+        529,
+        685
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "需要台中南區",
+      "bucket": "keyword",
+      "n_relevant": 7,
+      "relevant_idxs": [
+        47,
+        59,
+        61,
+        132,
+        152,
+        165,
+        187
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想找套房",
+      "bucket": "keyword",
+      "n_relevant": 6,
+      "relevant_idxs": [
+        211,
+        251,
+        506,
+        523,
+        534,
+        608
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想找找套房",
+      "bucket": "keyword",
+      "n_relevant": 6,
+      "relevant_idxs": [
+        42,
+        237,
+        277,
+        347,
+        621,
+        624
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想租單人套房",
+      "bucket": "keyword",
+      "n_relevant": 6,
+      "relevant_idxs": [
+        17,
+        130,
+        195,
+        391,
+        627,
+        676
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "有沒有要一間套房",
+      "bucket": "keyword",
+      "n_relevant": 6,
+      "relevant_idxs": [
+        120,
+        136,
+        254,
+        277,
+        307,
+        668
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "求要一間套房",
+      "bucket": "keyword",
+      "n_relevant": 6,
+      "relevant_idxs": [
+        84,
+        97,
+        335,
+        444,
+        491,
+        599
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "要勤美附近",
+      "bucket": "keyword",
+      "n_relevant": 6,
+      "relevant_idxs": [
+        504,
+        510,
+        514,
+        538,
+        571,
+        583
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "幫我找套房",
+      "bucket": "keyword",
+      "n_relevant": 5,
+      "relevant_idxs": [
+        136,
+        205,
+        403,
+        437,
+        514
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "幫我找要一間套房",
+      "bucket": "keyword",
+      "n_relevant": 5,
+      "relevant_idxs": [
+        190,
+        288,
+        357,
+        435,
+        664
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想租想租套房",
+      "bucket": "keyword",
+      "n_relevant": 5,
+      "relevant_idxs": [
+        198,
+        451,
+        467,
+        518,
+        553
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "找要一間套房",
+      "bucket": "keyword",
+      "n_relevant": 5,
+      "relevant_idxs": [
+        113,
+        251,
+        417,
+        598,
+        639
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "搬家方便 大樓優先",
+      "bucket": "keyword",
+      "n_relevant": 5,
+      "relevant_idxs": [
+        5,
+        53,
+        110,
+        136,
+        237
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "有沒有勤美附近",
+      "bucket": "keyword",
+      "n_relevant": 5,
+      "relevant_idxs": [
+        518,
+        547,
+        606,
+        632,
+        687
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "有沒有單人套房",
+      "bucket": "keyword",
+      "n_relevant": 5,
+      "relevant_idxs": [
+        90,
+        331,
+        358,
+        452,
+        562
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "求台中西區",
+      "bucket": "keyword",
+      "n_relevant": 5,
+      "relevant_idxs": [
+        530,
+        579,
+        599,
+        630,
+        658
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "要租西區附近",
+      "bucket": "keyword",
+      "n_relevant": 5,
+      "relevant_idxs": [
+        506,
+        515,
+        584,
+        599,
+        644
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "需要套房",
+      "bucket": "keyword",
+      "n_relevant": 5,
+      "relevant_idxs": [
+        49,
+        278,
+        356,
+        681,
+        698
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "幫我找獨洗",
+      "bucket": "keyword",
+      "n_relevant": 4,
+      "relevant_idxs": [
+        280,
+        288,
+        525,
+        592
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想住台中南區",
+      "bucket": "keyword",
+      "n_relevant": 4,
+      "relevant_idxs": [
+        42,
+        87,
+        192,
+        222
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想住單人套房",
+      "bucket": "keyword",
+      "n_relevant": 4,
+      "relevant_idxs": [
+        47,
+        152,
+        560,
+        675
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想住想租套房",
+      "bucket": "keyword",
+      "n_relevant": 4,
+      "relevant_idxs": [
+        197,
+        330,
+        606,
+        664
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想住有冷氣",
+      "bucket": "keyword",
+      "n_relevant": 4,
+      "relevant_idxs": [
+        240,
+        275,
+        356,
+        563
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想在NCHU附近租房",
+      "bucket": "keyword",
+      "n_relevant": 4,
+      "relevant_idxs": [
+        91,
+        446,
+        530,
+        636
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想要南區",
+      "bucket": "keyword",
+      "n_relevant": 4,
+      "relevant_idxs": [
+        22,
+        79,
+        185,
+        243
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想要找套房",
+      "bucket": "keyword",
+      "n_relevant": 4,
+      "relevant_idxs": [
+        96,
+        205,
+        331,
+        400
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想要採光好",
+      "bucket": "keyword",
+      "n_relevant": 4,
+      "relevant_idxs": [
+        5,
+        63,
+        179,
+        191
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "我要找西區",
+      "bucket": "keyword",
+      "n_relevant": 4,
+      "relevant_idxs": [
+        495,
+        619,
+        641,
+        673
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "打工族 月租盡量壓在3300以下",
+      "bucket": "keyword",
+      "n_relevant": 4,
+      "relevant_idxs": [
+        36,
+        101,
+        140,
+        306
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "找台中南區",
+      "bucket": "keyword",
+      "n_relevant": 4,
+      "relevant_idxs": [
+        4,
+        70,
+        124,
+        399
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "找單人套房",
+      "bucket": "keyword",
+      "n_relevant": 4,
+      "relevant_idxs": [
+        133,
+        333,
+        701,
+        703
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "找想租套房",
+      "bucket": "keyword",
+      "n_relevant": 4,
+      "relevant_idxs": [
+        430,
+        481,
+        509,
+        638
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "找找套房",
+      "bucket": "keyword",
+      "n_relevant": 4,
+      "relevant_idxs": [
+        290,
+        320,
+        336,
+        630
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "有推薦南區",
+      "bucket": "keyword",
+      "n_relevant": 4,
+      "relevant_idxs": [
+        18,
+        111,
+        197,
+        204
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "有推薦想租套房",
+      "bucket": "keyword",
+      "n_relevant": 4,
+      "relevant_idxs": [
+        400,
+        404,
+        582,
+        701
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "有推薦找套房",
+      "bucket": "keyword",
+      "n_relevant": 4,
+      "relevant_idxs": [
+        149,
+        341,
+        385,
+        439
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "有推薦要一間套房",
+      "bucket": "keyword",
+      "n_relevant": 4,
+      "relevant_idxs": [
+        292,
+        398,
+        637,
+        673
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "有沒有追劇",
+      "bucket": "keyword",
+      "n_relevant": 4,
+      "relevant_idxs": [
+        187,
+        287,
+        498,
+        556
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "求單人套房",
+      "bucket": "keyword",
+      "n_relevant": 4,
+      "relevant_idxs": [
+        380,
+        486,
+        587,
+        595
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "求想租套房",
+      "bucket": "keyword",
+      "n_relevant": 4,
+      "relevant_idxs": [
+        229,
+        437,
+        519,
+        550
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "求西區",
+      "bucket": "keyword",
+      "n_relevant": 4,
+      "relevant_idxs": [
+        515,
+        581,
+        630,
+        676
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "要想租套房",
+      "bucket": "keyword",
+      "n_relevant": 4,
+      "relevant_idxs": [
+        16,
+        231,
+        318,
+        407
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "要找套房",
+      "bucket": "keyword",
+      "n_relevant": 4,
+      "relevant_idxs": [
+        197,
+        264,
+        625,
+        631
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "要租南區附近",
+      "bucket": "keyword",
+      "n_relevant": 4,
+      "relevant_idxs": [
+        33,
+        100,
+        160,
+        201
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "要租台中南區",
+      "bucket": "keyword",
+      "n_relevant": 4,
+      "relevant_idxs": [
+        12,
+        69,
+        100,
+        202
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "要租單人套房",
+      "bucket": "keyword",
+      "n_relevant": 4,
+      "relevant_idxs": [
+        202,
+        215,
+        294,
+        572
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "要西區",
+      "bucket": "keyword",
+      "n_relevant": 4,
+      "relevant_idxs": [
+        634,
+        657,
+        675,
+        678
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "請問有不想共用洗衣機",
+      "bucket": "keyword",
+      "n_relevant": 4,
+      "relevant_idxs": [
+        325,
+        362,
+        539,
+        625
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "請問有西區附近",
+      "bucket": "keyword",
+      "n_relevant": 4,
+      "relevant_idxs": [
+        507,
+        516,
+        628,
+        687
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "需要南區附近",
+      "bucket": "keyword",
+      "n_relevant": 4,
+      "relevant_idxs": [
+        18,
+        76,
+        131,
+        134
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "需要找套房",
+      "bucket": "keyword",
+      "n_relevant": 4,
+      "relevant_idxs": [
+        97,
+        128,
+        178,
+        310
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "需要要一間套房",
+      "bucket": "keyword",
+      "n_relevant": 4,
+      "relevant_idxs": [
+        116,
+        206,
+        369,
+        443
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "女單獨住 安全最重要",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        173,
+        426,
+        494
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "幫我找想租套房",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        241,
+        395,
+        403
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "幫我找找套房",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        193,
+        383,
+        475
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "幫我找收藏控",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        17,
+        357,
+        378
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "幫我找有冰箱",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        160,
+        497,
+        524
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "平價租屋",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        72,
+        219,
+        229
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想住勤美附近",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        553,
+        586,
+        652
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想住找套房",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        17,
+        222,
+        581
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想住西區附近",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        498,
+        534,
+        684
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想找便宜租屋",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        365,
+        402,
+        486
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想找南區",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        62,
+        100,
+        195
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想找南區附近",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        96,
+        107,
+        133
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想找台中南區",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        34,
+        79,
+        207
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想找台中西區",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        507,
+        519,
+        619
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想找單人套房",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        10,
+        115,
+        393
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想找大里",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        245,
+        255,
+        295
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想找想租套房",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        100,
+        244,
+        536
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想租不想共用洗衣機",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        326,
+        460,
+        675
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想租勤美附近",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        545,
+        615,
+        617
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想租台中西區",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        516,
+        533,
+        668
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想租找套房",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        182,
+        191,
+        291
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想租要一間套房",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        392,
+        471,
+        615
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想要勤美附近",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        534,
+        564,
+        575
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想要南區附近",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        62,
+        185,
+        209
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想要套房",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        107,
+        559,
+        600
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想要要一間套房",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        255,
+        524,
+        601
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想要要冷氣",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        277,
+        499,
+        626
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "我要找台中東區",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        383,
+        396,
+        413
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "我要找找套房",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        12,
+        483,
+        661
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "我要找有洗衣機",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        118,
+        150,
+        612
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "找南區附近",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        17,
+        165,
+        169
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "找台中西區",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        497,
+        545,
+        577
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "有一隻貓請問可以養嗎",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        213,
+        255,
+        400
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "有推薦要冷氣",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        372,
+        559,
+        641
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "有沒有大里",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        254,
+        267,
+        326
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "有沒有獨洗獨曬",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        33,
+        130,
+        513
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "求吹冷氣",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        290,
+        312,
+        587
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "求大里區",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        251,
+        266,
+        304
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "求套房",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        397,
+        406,
+        700
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "求打電動",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        186,
+        495,
+        624
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "求洗澡",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        18,
+        204,
+        581
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "腿不好 想住有電梯的大樓",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        68,
+        113,
+        235
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "要台中南區",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        0,
+        40,
+        68
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "要台中西區",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        595,
+        626,
+        688
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "要吹冷氣",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        50,
+        343,
+        466
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "要套房",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        43,
+        262,
+        545
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "要租勤美附近",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        496,
+        577,
+        631
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "要租想租套房",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        12,
+        121,
+        627
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "要租愛乾淨",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        190,
+        275,
+        343
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "要租有冷氣",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        20,
+        358,
+        485
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "要租有熱水器",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        308,
+        376,
+        398
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "要租東區",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        407,
+        441,
+        458
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "要租西區",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        497,
+        547,
+        683
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "要租要冷氣",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        148,
+        261,
+        414
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "請問有南區附近",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        90,
+        176,
+        184
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "請問有台中南區",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        28,
+        41,
+        120
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "請問有台中西區",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        529,
+        637,
+        666
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "請問有想租套房",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        22,
+        275,
+        368
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "請問有找套房",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        109,
+        343,
+        447
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "請問有獨立洗衣",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        40,
+        192,
+        400
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "需要單人套房",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        254,
+        428,
+        536
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "需要大里",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        256,
+        289,
+        316
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "需要小套房",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        21,
+        199,
+        658
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "需要東區",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        406,
+        411,
+        436
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "需要西區",
+      "bucket": "keyword",
+      "n_relevant": 3,
+      "relevant_idxs": [
+        535,
+        601,
+        653
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "一個人住怕不安全 有門比較好",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        443,
+        461
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "一個人住怕安全有門禁比較好",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        340,
+        508
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "一個人怕不安全 有門禁比較好",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        486,
+        559
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "剛畢業薪水不高 想找5000左右的",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        4,
+        314
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "單人套房 台中南區",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        2,
+        14
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "存錢中 希望房租不超過5700",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        102,
+        192
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "希望有門禁或保全住得安心",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        392,
+        462
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "幫我找不想共用洗衣機",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        186,
+        280
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "幫我找公寓大樓",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        74,
+        140
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "幫我找南區",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        8,
+        160
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "幫我找南區附近",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        22,
+        79
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "幫我找單人小套房",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        147,
+        337
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "幫我找大樓",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        41,
+        155
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "幫我找存糧",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        495,
+        640
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "幫我找東區",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        450,
+        468
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "幫我找洗澡",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        17,
+        246
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "幫我找獨立洗衣",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        563,
+        666
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "幫我找睡覺",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        442,
+        531
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "幫我找西區",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        562,
+        639
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "幫我找需要冰東西",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        1,
+        88
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "幫我找預算11000以下",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        200,
+        667
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想住南區",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        17,
+        63
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想住套房",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        51,
+        624
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想住打電動",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        435,
+        608
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想住收藏控",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        523,
+        656
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想住有洗衣機",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        397,
+        628
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想住獨洗獨曬",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        422,
+        442
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想住睡覺",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        294,
+        337
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想住要一間套房",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        79,
+        383
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想住透天",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        98,
+        169
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想在中大學附近租房",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        40,
+        365
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想找台中大里",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        249,
+        259
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想找獨立洗衣",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        74,
+        424
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想找衣服很多",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        123,
+        703
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想找要一間套房",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        60,
+        78
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想找附床",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        316,
+        402
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想租11000元以上",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        58,
+        137
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想租台中南區",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        125,
+        138
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想租吹冷氣",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        150,
+        409
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想租有床",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        442,
+        703
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想租有洗衣機",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        272,
+        620
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想租有熱水器",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        101,
+        176
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想租有電視",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        478,
+        639
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想租睡覺",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        221,
+        645
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想租西區附近",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        499,
+        559
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想租附床",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        453,
+        555
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想租預算三千以下",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        59,
+        307
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想要九千",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        265,
+        465
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想要台中南區",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        162,
+        226
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想要喝冰水",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        265,
+        437
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想要大里",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        261,
+        292
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想要想租套房",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        280,
+        683
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "想要有冷氣",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        444,
+        501
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "我要找南區",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        77,
+        115
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "我要找台中南區",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        77,
+        151
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "我要找存糧",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        467,
+        628
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "我要找想租套房",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        149,
+        653
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "我要找有冷氣",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        164,
+        222
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "我要找有衣櫃",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        92,
+        598
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "我要找東區",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        396,
+        451
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "我要找睡覺",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        402,
+        539
+      ],
+      "semantic_trigger": null
+    },
+    {
+      "query": "我要找衣服很多",
+      "bucket": "keyword",
+      "n_relevant": 2,
+      "relevant_idxs": [
+        164,
+        679
+      ],
+      "semantic_trigger": null
+    }
+  ]
+}
