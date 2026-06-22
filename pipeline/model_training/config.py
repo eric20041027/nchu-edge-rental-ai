@@ -41,6 +41,16 @@ class ModelTrainingConfig:
         # Lower temperature = sharper softmax over candidates. 0.05 is the
         # sentence-transformers MNRL default scaled cosine convention (scale=20).
         self.bi_encoder_temperature = self._env_float("BI_ENCODER_TEMPERATURE", 0.05)
+        # T3 query-encoder ONNX output dir (FP32 + quantized + tokenizer). Kept
+        # SEPARATE from custom_onnx_model_dir (the cross-encoder) so the CE files
+        # are never touched. The frontend loads the query encoder from here; the
+        # tokenizer (tokenizer.json / vocab.txt) is co-located so on-device query
+        # encoding uses the SAME vocab the bi-encoder was trained against.
+        self.bi_encoder_onnx_dir = self._env_path(
+            "BI_ENCODER_ONNX_DIR", self.project_root / "frontend" / "models" / "bi_encoder_dir"
+        )
+        self.bi_encoder_onnx_path = self.bi_encoder_onnx_dir / "bi_encoder.onnx"
+        self.bi_encoder_quant_path = self.bi_encoder_onnx_dir / "bi_encoder_quant.onnx"
         self.onnx_output_path = self._env_path("ONNX_OUTPUT_PATH", self.frontend_models_dir / "my_custom_model.onnx")
         self.quantized_model_path = self._env_path("QUANTIZED_MODEL_PATH", self.frontend_models_dir / "my_custom_model_quant.onnx")
 
