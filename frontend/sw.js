@@ -9,7 +9,7 @@
  * Version key: bump CACHE_VERSION when deploying new model weights or major JS changes.
  */
 
-const CACHE_VERSION  = 'v20260616e';
+const CACHE_VERSION  = 'v20260622';
 const STATIC_CACHE   = `rental-static-${CACHE_VERSION}`;
 const MODEL_CACHE    = `rental-models-${CACHE_VERSION}`;
 const CDN_CACHE      = `rental-cdn-${CACHE_VERSION}`;
@@ -22,6 +22,7 @@ const PRECACHE_ASSETS = [
     '/js/inference.js',
     '/js/inference-worker.js',
     '/js/ner-worker.js',
+    '/js/bi-encoder-worker.js',
     '/assets/property_data.json',
     '/models/custom_onnx_model_dir/tokenizer.json',
     '/models/custom_onnx_model_dir/tokenizer_config.json',
@@ -29,6 +30,9 @@ const PRECACHE_ASSETS = [
     '/models/custom_onnx_model_dir/vocab.txt',
     '/models/custom_onnx_model_dir/config.json',
     '/models/ner_model_dir/tokenizer.json',
+    '/models/bi_encoder_dir/tokenizer.json',
+    '/models/bi_encoder_dir/tokenizer_config.json',
+    '/models/bi_encoder_dir/special_tokens_map.json',
 ];
 
 // ── Install: pre-cache static assets ─────────────────────────────────────────
