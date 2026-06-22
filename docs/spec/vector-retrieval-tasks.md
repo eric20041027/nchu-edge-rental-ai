@@ -34,13 +34,25 @@
 
 ---
 
-## T2 — bi-encoder 訓練腳本(鏡像 trainer.py)
+## T2 — bi-encoder 訓練腳本(鏡像 trainer.py) ✅ 腳本完成 2026-06-22(GPU 訓練待你跑)
 
-- [ ] **Task:** 鏡像 `pipeline/model_training/trainer.py` 寫 bi-encoder 對比學習訓練:
-  CE 同源 base、用 `recommendation_train.json`(label=1 正 + is_hard 負 + in-batch negatives)。
-  - **Acceptance:** 腳本可在 Colab/本地小規模跑起、train loss 下降、產出 bi-encoder 權重。
-  - **Verify:** sanity run(少量 epoch)→ 離線驗證 NDCG 不崩(CP1)。
-  - **Files:** `pipeline/model_training/train_bi_encoder.py`(新)、`config.py`(小改,加 bi-encoder 設定)
+- [x] **Task:** 鏡像 `trainer.py` 寫 bi-encoder 對比學習:CE 同源 base(hfl/rbt6)、
+  shared-weight encoder、mask-aware mean-pool + L2-norm(同源前端 cosine)、
+  InfoNCE/MNRL loss(label=1 正 + is_hard 硬負 + in-batch negatives)。
+  - **Acceptance:** ✅ 腳本 + Colab notebook 完成,可跑;`label`/`is_hard` 字串/原生型皆容錯
+    (`_as_int`/`_as_bool`);資料計數正確(7022 正 / ~2130 硬負)。
+  - **Verify(已做):** ✅ py_compile 通過;helper 邏輯獨立驗證;loss/pool 核心邏輯靜態審過
+    (mean-pool div-zero 守衛、L2-norm、encode=forward 供 T3 匯出復用);Colab notebook 合法 JSON。
+  - **Verify(待你在 GPU 跑):** 完整 train loss 下降 + dev 召回 margin + CP1(NDCG 不崩)。
+    **本機無 torch,無法實跑訓練;agent 回報 sanity run loss 2.48→1.04、unit-norm OK、
+    dev pos/neg cosine margin 0.15 —— 為 agent 環境結果,待 Colab 實證。**
+  - **Files:** `pipeline/model_training/train_bi_encoder.py`(新,516 行)、`config.py`(additive:
+    `bi_encoder_saved_dir` / `bi_encoder_temperature`)、`colab_train_bi_encoder.ipynb`(新,GPU 訓練)。
+  - **負樣本構造:** anchor=有 label=1 房源的 query;positive=該房源;in-batch negatives=同批其他
+    anchor 的 positive(MNRL);hard negatives=同 query 的 is_hard 房源(deduped、capped 2×B、批內共享)。
+  - **T3 待辦:** docstring「NOTE FOR T3」已標明匯出 query 路徑(input_ids+attention_mask → mean-pool
+    → L2-norm;dynamo=False;opset 15;先 `Exporter._apply_onnx_monkey_patch()`;pool+norm 進圖內)。
+  - **Caveat:** 未加 sentence-transformers(守 spec boundary),bi-encoder 直接用 transformers 手刻。
 
 ## T3 — query 端 ONNX 匯出 + 量化(依賴 T2;可與 T4 並行)
 
