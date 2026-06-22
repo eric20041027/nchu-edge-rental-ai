@@ -112,15 +112,28 @@ function cosineTopK(queryVec, propVecs, k) {
 
 ## Success Criteria
 
-具體、可測:
+具體、可測。**門檻已用 T0 現況基準定錨**(見 §T0 Baseline)。
 
-1. **召回不退化:** 向量召回 top-K 的 **Recall@K ≥** 現有 rule-based 召回(同 query 集、同 K),
-   且在「語意相符但用詞不同」的 query 上 **Recall 明顯較高**(A/B 量化)。
-2. **下游品質不退化:** 端到端 **NDCG@5 ≥** 現況(向量召回 + CE 精排 vs rule-based + CE 精排)。
+1. **召回不退化:** 向量召回的 **Recall@K ≥ 現況**(同 query 集、同 K、同 harness):
+   - Recall@15 ≥ **0.3846**(現況 production `.slice(0,15)`)
+   - Recall@30 ≥ **0.4495**(規劃 K)
+   且在「語意相符但用詞不同」的 query 上 **Recall 明顯較高**(A/B 分項量化)。
+2. **下游品質不退化:** 召回階段 ranking **NDCG@5 ≥ 0.2469**(現況,同 harness、同 graded-relevance 慣例);
+   端到端(+ CE 精排)NDCG@5 ≥ 現況(CE harness 另量)。
 3. **可擴展性:** 在模擬 ~1萬筆房源下,瀏覽器端「query encode + cosine 召回」端到端
-   **< 現有 rule-based 召回在同規模的耗時**,且無明顯卡頓(目標:召回階段 < ~200ms,Plan 階段定錨)。
+   **< 現有 rule-based 召回在同規模的耗時**,且無明顯卡頓(召回階段目標 < ~200ms)。
 4. **載入可接受:** bi-encoder query 端 ONNX(量化)+ 房源 embedding 靜態檔
-   不顯著拖垮前端首載(具體門檻 Plan 階段定)。
+   加入後,首載總量相對現況 **74.85 MB**(CE 36.93 + NER 36.44 + property_data 1.49)
+   增幅 **≤ ~5 MB**(embedding 檔走 float16/量化把關)。
+
+> **T0 Baseline(2026-06-22 量測,harness:`tests/eval_rule_based_baseline.py`):**
+> Recall@15 = 0.3846、Recall@30 = 0.4495、NDCG@5(召回階段)= 0.2469、首載 = 74.85 MB。
+> **重要 caveat:** Recall/NDCG 在 fuzzy-join 後的 query 集上量(訓練資料 property 為舊版 blob,
+> 與現行 704 筆 snapshot **join match-rate 僅 24.4%** —— 分佈 bimodal,2149 筆已不存在於現 snapshot、
+> ~700 筆完美對上)。**絕對值偏低主因是 join 覆蓋稀疏 + 召回階段未含 CE;作為基準無妨,
+> 因 T7 向量 A/B 會用同一 harness、同一 join、同一慣例對比**(相對差才是判準)。
+> 召回 port 未含 NER 增強(瀏覽器專屬),為刻意離線省略,已記於 harness docstring。
+
 5. **行為不回歸:** 否定意圖、字卡正確性等既有測試全綠。
 
 ## Resolved Decisions(2026-06-21 敲定)
