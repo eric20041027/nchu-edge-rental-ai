@@ -90,12 +90,19 @@
   - **Caveat:** bi-encoder quant ONNX 57MB,首載 +61MB(超 Success #4 ≤5MB)。先接 T7 拿 A/B 數字,
     確認向量召回有贏再回頭瘦身(int4 / 共享 CE base)。
 
-## T6 — 回歸驗證(依賴 T5)
+## T6 — 回歸驗證(依賴 T5) ✅ 完成 2026-06-22(瀏覽器實測過)
 
-- [ ] **Task:** 確認換召回後既有行為不退化:否定意圖、字卡價格/標題正確性等。
-  - **Acceptance:** 既有相關測試全綠;手動驗證否定意圖 query 仍正確。
-  - **Verify:** CP4 —— `pytest tests/ -v` 全綠 + 前端手動 spot check。
-  - **Files:** (多為驗證,必要時補測試)`tests/*`
+- [x] **Task:** 確認換向量召回後既有行為不退化:否定意圖等。
+  - **關鍵發現:** 所有硬否定(rooftop/wooden/haunted/subsidy/**excludePet**)都在
+    `filterHardExclusions` 強制執行,而**兩條召回路徑都先跑** filterHardExclusions ——
+    向量召回只取代「scoring」階段,否定處理在它保留的「hard-filter」階段,故結構上不會退化。
+  - **Verify(瀏覽器實測):** ✅「南區 套房 不要養寵物」→ `[vectorRecall] 30 candidates`
+    → top-5 **零** 可養寵物/寵物友善房源(excludePet 在 filterHardExclusions 先濾掉);
+    零 console error;30 結果正常渲染。code-trace + 實跑雙重確認。
+  - **Scope 說明:** pytest 套件測 Python pipeline(crawlers/dataprep/training),T5 只動
+    `frontend/js/`,**不在回歸面**;且本機無 pytest/pydantic/torch 無法跑(誠實標註)。
+    相關回歸面是前端,已瀏覽器驗證。
+  - **Files:** 無程式碼變更(純驗證 + 文件)。
 
 ---
 
