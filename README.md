@@ -1,6 +1,8 @@
 # 興大 AI 租屋推薦系統 (NCHU AI Rental Recommendation)
 
-本專案為針對中興大學學生設計之 **Edge AI 租屋推薦系統**。透過微調並蒸餾的中文 RoBERTa 模型（NER 37 MB + Cross-Encoder 38.7 MB，共 **約 76 MB** INT8）在瀏覽器端進行即時語意匹配，解決傳統篩選器過於僵硬的侷限，提供具備深層語意理解的搜尋體驗。
+本專案為針對中興大學學生設計之 **Edge AI 租屋推薦系統**。透過微調並蒸餾的中文 RoBERTa 模型在瀏覽器端進行即時語意匹配，解決傳統篩選器過於僵硬的侷限，提供具備深層語意理解的搜尋體驗。
+
+**召回架構（2026-06）**：召回階段已由關鍵字 rule-based 升級為 **bi-encoder 向量召回**（hfl/rbt6 同源、mean-pool + L2-norm、瀏覽器端暴力 cosine），Cross-Encoder 維持 Top-30 精排。A/B 實測語意 query 的 Recall@30 由 0.007（rule-based）躍升至 **0.547**（向量），整體召回全面優於關鍵字；rule-based 降為 worker 未就緒/逾時時的 fallback（`VECTOR_RECALL_ENABLED` kill-switch 可秒回退）。模型 INT8 footprint：NER 37 MB + Cross-Encoder 57 MB + bi-encoder 57 MB。詳見 [向量檢索 spec](docs/spec/vector-retrieval.md)。
 
 ---
 
@@ -113,7 +115,7 @@ graph TD
         NM["ner_model.onnx\n(INT8, 37 MB)"] --> W1("Stage 1: NER 抽取\nLOC / BGT / FEAT")
     end
 
-    W1 --> C("Stage 2: 粗篩\nJS Filter + 硬約束 + 通勤時間查表")
+    W1 --> C("Stage 2: 召回\n硬約束過濾 + bi-encoder 向量 cosine Top-30\n(rule-based fallback)")
     C -- "Top 30 候選" --> W2
 
     subgraph WK2["Web Worker 2（非阻塞）"]
