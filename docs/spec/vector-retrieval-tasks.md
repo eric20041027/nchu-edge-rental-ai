@@ -54,13 +54,34 @@
     → L2-norm;dynamo=False;opset 15;先 `Exporter._apply_onnx_monkey_patch()`;pool+norm 進圖內)。
   - **Caveat:** 未加 sentence-transformers(守 spec boundary),bi-encoder 直接用 transformers 手刻。
 
-## T3 — query 端 ONNX 匯出 + 量化(依賴 T2;可與 T4 並行)
+## T3 — query 端 ONNX 匯出 + 量化(依賴 T2;可與 T4 並行) ✅ 腳本完成 2026-06-22(待權重實跑)
 
-- [ ] **Task:** 沿用 `exporter.py`(dynamo=False)匯出 bi-encoder query 端 ONNX,
-  `quantize_model.py` 量化,放 `frontend/models/bi_encoder_dir/`。
-  - **Acceptance:** 量化 ONNX 產出;query encode 輸出與 PyTorch 數值一致(cosine sanity)。
-  - **Verify:** CP2 —— 同一 query 過 PyTorch vs ONNX,cosine ≈ 1。
-  - **Files:** `pipeline/model_training/exporter.py`(沿用/小改)、`frontend/models/bi_encoder_dir/*`(產出)
+- [x] **Task:** 鏡像 `exporter.py`(dynamo=False/opset15/monkey-patch)匯出 bi-encoder query 端 ONNX。
+  - **Acceptance:** ✅ `export_bi_encoder.py` 完成 —— 單句輸入(input_ids/attention_mask,**無**
+    token_type_ids)、匯出 `BiEncoder` 模組(pool+norm 進圖)、output=embedding、量化復用
+    `quantize_model.py`、CP2 sanity(unit-norm + cosine(PyTorch,ONNX)≈1,quant 容差放寬)、
+    tokenizer 一併存 `frontend/models/bi_encoder_dir/`、缺權重 guard。
+  - **Verify(已做):** ✅ py_compile;匯出邏輯靜態審(單句輸入、in-graph pool、dynamo=False)。
+  - **Verify(待 A100 權重後):** 實際匯出 + 量化 + CP2 數值一致。
+  - **Files:** `pipeline/model_training/export_bi_encoder.py`(新)、`config.py`(additive 路徑)。
+
+## T4 — 房源 embedding 預算(依賴 T2;擴充 embedder.py) ✅ 腳本完成 2026-06-22(待權重實跑)
+
+- [x] **Task:** 用訓好 bi-encoder 把房源編碼成前端靜態 JSON(同源:同 model/pool/L2-norm)。
+  - **Acceptance:** ✅ `build_property_embeddings.py` 完成 —— 輸出 `frontend/assets/property_embeddings.json`
+    `{model,dim,count,dtype,field,idxs,vecs}`(flat row-major、L2-norm、cosine=dot);
+    缺權重 guard、`--check` 免模型路徑。
+  - **文字欄選擇(獨立驗證):** 用 `text` 非 `ce_text` —— `text` 與訓練 blob exact-match **33/704**
+    (avg 51 字 vs 訓練 42),`ce_text` exact-match **0/704**(avg 134 字,加距離/通勤,OOD)。
+  - **dtype:** float16(704 筆 ~4.5 MB,守 Success #4 ≤5 MB;float32 ~6.2 MB 超標)。
+    **誠實 caveat:** ~1萬筆時 float16 JSON-of-floats 仍爆(~64 MB)→ 屆時需改 binary `.bin`(已記)。
+  - **Verify(已做):** ✅ py_compile;schema/欄選/size 投影/guard 獨立驗證。
+  - **Verify(待 A100 權重後):** 實際編碼 + 真實檔/大小 + unit-norm 重建。
+  - **Files:** `pipeline/data_prep/build_property_embeddings.py`(新)。
+
+> **A100 加速(2026-06-22,你用 A100 訓練):** `colab_train_bi_encoder.ipynb` + `train_bi_encoder.py`
+> 加 `--bf16`/`--tf32`(TF32 matmul/cudnn + bf16 autocast,gated on cuda/bf16 支援,T4 GPU 自動退回 fp32);
+> notebook runtime 指引改 A100。**純加速,不動 loss/lr/seed/batch/temperature 動態**(鏡像 84e8fa1 意圖)。
 
 ## T4 — 房源 embedding 預算(依賴 T2;擴充 embedder.py)
 

@@ -65,6 +65,7 @@ import json
 import os
 import random
 import warnings
+from contextlib import nullcontext as _nullcontext
 from pathlib import Path
 from typing import List, Optional, Tuple
 
@@ -165,6 +166,8 @@ class BiEncoderTrainer(BaseTrainer):
         max_length: int,
         sample: Optional[int] = None,
         output_dir: Optional[Path] = None,
+        bf16: bool = False,
+        tf32: bool = False,
     ):
         super().__init__(config)
         self.epochs = epochs
@@ -173,6 +176,12 @@ class BiEncoderTrainer(BaseTrainer):
         self.max_length = max_length
         self.sample = sample
         self.output_dir = Path(output_dir) if output_dir else config.bi_encoder_saved_dir
+        # A100 pure-acceleration knobs (SPEED ONLY — do NOT change training
+        # dynamics: same loss/lr/seed/batch). bf16 autocast for matmuls; TF32 for
+        # cuda matmul + cudnn. Both are safely gated on CUDA + bf16 support so the
+        # notebook still runs on T4 (T4 lacks bf16 -> falls back to fp32 silently).
+        self.bf16 = bf16
+        self.tf32 = tf32
 
         self.tokenizer = None
         self.model: Optional[BiEncoder] = None
@@ -321,11 +330,35 @@ class BiEncoderTrainer(BaseTrainer):
             "attention_mask": enc["attention_mask"].to(self.device),
         }
 
+    def _resolve_amp(self) -> bool:
+        """Configure A100 pure-acceleration; return whether bf16 autocast is active.
+
+        Speed-only: enables TF32 (matmul + cudnn) and reports whether bf16 autocast
+        will be used. All gated on CUDA + bf16 support so T4 falls back to fp32.
+        Does NOT touch loss / lr / seed / batch — training dynamics are unchanged.
+        """
+        on_cuda = self.device.type == "cuda"
+        if self.tf32 and on_cuda:
+            torch.backends.cuda.matmul.allow_tf32 = True
+            torch.backends.cudnn.allow_tf32 = True
+            self.log_result("TF32", "enabled (matmul + cudnn)")
+        bf16_ok = (
+            self.bf16
+            and on_cuda
+            and getattr(torch.cuda, "is_bf16_supported", lambda: False)()
+        )
+        if self.bf16 and not bf16_ok:
+            self.log_result("bf16", "requested but unsupported -> fp32 (e.g. T4)")
+        elif bf16_ok:
+            self.log_result("bf16 autocast", "enabled (A100)")
+        return bf16_ok
+
     def _train(self, anchors: List[dict]) -> List[float]:
         """Manual contrastive training loop. Returns list of step losses."""
         if not anchors:
             raise RuntimeError("No anchor pairs found — check label==1 rows in data.")
 
+        use_bf16 = self._resolve_amp()
         optimizer = torch.optim.AdamW(self.model.parameters(), lr=self.learning_rate)
         temperature = max(self.config.bi_encoder_temperature, 1e-6)
         step_losses: List[float] = []
@@ -351,14 +384,22 @@ class BiEncoderTrainer(BaseTrainer):
                 hard_pool = hard_pool[: 2 * len(batch)]  # cap candidate growth
 
                 self.model.train()
-                q_emb = self.model(**self._encode_texts(queries))          # (B, H)
-                cand_texts = positives + hard_pool
-                cand_emb = self.model(**self._encode_texts(cand_texts))    # (B+H, H)
+                # bf16 autocast on A100 (no GradScaler needed for bf16, unlike
+                # fp16). On T4/CPU use_bf16 is False -> autocast is a no-op.
+                amp_ctx = (
+                    torch.autocast(device_type="cuda", dtype=torch.bfloat16)
+                    if use_bf16
+                    else _nullcontext()
+                )
+                with amp_ctx:
+                    q_emb = self.model(**self._encode_texts(queries))          # (B, H)
+                    cand_texts = positives + hard_pool
+                    cand_emb = self.model(**self._encode_texts(cand_texts))    # (B+H, H)
 
-                # sim[i, j] = cos(q_i, cand_j) / T ; target = own positive column i
-                sim = (q_emb @ cand_emb.t()) / temperature                  # (B, B+H)
-                targets = torch.arange(len(batch), device=self.device)
-                loss = F.cross_entropy(sim, targets)
+                    # sim[i, j] = cos(q_i, cand_j) / T ; target = own positive col i
+                    sim = (q_emb @ cand_emb.t()) / temperature                  # (B, B+H)
+                    targets = torch.arange(len(batch), device=self.device)
+                    loss = F.cross_entropy(sim, targets)
 
                 optimizer.zero_grad()
                 loss.backward()
@@ -476,6 +517,10 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--max-length", type=int, default=64, help="max token length")
     parser.add_argument("--sample", type=int, default=None, help="use only N anchors (quick sanity run)")
     parser.add_argument("--output-dir", type=str, default=None, help="where to save encoder + tokenizer")
+    # A100 pure-acceleration (speed only; dynamics unchanged). Safe on T4: bf16
+    # auto-falls back to fp32 if unsupported.
+    parser.add_argument("--bf16", action="store_true", help="bf16 autocast (A100; auto-fallback to fp32)")
+    parser.add_argument("--tf32", action="store_true", help="enable TF32 matmul + cudnn (A100)")
     return parser
 
 
@@ -490,6 +535,8 @@ def main(argv: Optional[List[str]] = None) -> int:
         max_length=args.max_length,
         sample=args.sample,
         output_dir=args.output_dir,
+        bf16=args.bf16,
+        tf32=args.tf32,
     )
     result = trainer.run()
 
