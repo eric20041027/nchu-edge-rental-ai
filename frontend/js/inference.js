@@ -21,6 +21,22 @@ let pendingNER  = new Map();
 let nerIdCounter = 0;
 let nerReady    = false;
 
+// --- Vector recall (T5) ------------------------------------------------------
+// 旗標:true = 用 bi-encoder 向量相似度取代 rule-based recall 評分;
+// 翻成 false 即回退原本的關鍵字 rule-based recall (T7 A/B 用,兩條路都保留)。
+const VECTOR_RECALL_ENABLED = true;
+
+// bi-encoder worker 狀態 (鏡像 NER worker)
+let biEncoderWorker = null;
+let biEncoderReady  = false;
+let pendingBiEnc    = new Map();
+let biEncIdCounter  = 0;
+
+// 離線預算的房源向量 (loadPropertyData 載入):
+//   { dim, idxs:[704 個 property_data idx], vecs:Float32Array(704*768),
+//     byIdx:Map<property_data idx → row 起始 offset> }
+let propertyEmbeddings = null;
+
 // --- Bi-encoder intent fallback (SKELETON, default OFF) ----------------------
 // 字面意圖表 (expandQueryIntent) 只認列舉的口語講法;規則表沒有的講法 (例
 // 「黃金獵犬」「想養柯基」) 會字面零命中、整句不擴展。bi-encoder fallback 用
@@ -104,12 +120,42 @@ export async function initData() {
     propertyData = raw.filter(p => p && p.address && p.rent > 0);
     const dropped = raw.length - propertyData.length;
     console.log(`Loaded ${propertyData.length} property descriptions${dropped ? ` (剔除 ${dropped} 筆無效房源)` : ''}`);
+
+    // 向量召回:載入離線預算的房源向量 (flag 開時才載,省流量)。
+    // 傳入未過濾的 raw:embeddings 的 idxs 是針對「原始 704 筆 property_data.json」
+    // 的索引,而 propertyData 已剔除 3 筆空殼 → 不能用 propertyData[idx] 位置對映。
+    if (VECTOR_RECALL_ENABLED) {
+        loadPropertyEmbeddings(raw);
+    }
+}
+
+// 載入 property_embeddings.json,把 vecs 攤平成一條 Float32Array。
+// rawData = 原始(未過濾)property_data 陣列,embeddings 的 idxs 即其索引。
+// 建 idx → prop 物件的 Map (idxToProp) 直接對映,避開過濾後位置錯位。
+// 失敗為非致命:propertyEmbeddings 維持 null → recommend 自動 fallback 到 rule-based。
+async function loadPropertyEmbeddings(rawData) {
+    try {
+        const resp = await fetchWithRetry('assets/property_embeddings.json?v=20260622');
+        const emb = await resp.json();
+        const vecs = Float32Array.from(emb.vecs);   // 704*768 flat row-major,每列已 L2 norm
+        const idxToProp = new Map();
+        for (const idx of emb.idxs) {
+            if (rawData[idx]) idxToProp.set(idx, rawData[idx]);  // 對映到原始 prop 物件
+        }
+        propertyEmbeddings = { dim: emb.dim, idxs: emb.idxs, vecs, idxToProp };
+        console.log(`Loaded ${emb.count} property embeddings (dim ${emb.dim})`);
+    } catch (err) {
+        console.warn('[vectorRecall] 房源向量載入失敗,回退 rule-based recall:', err);
+        propertyEmbeddings = null;
+    }
 }
 
 // --- NLP Engine Initialization via Web Worker ---
 export async function initNLP(onProgress) {
     // 背景預載 bi-encoder fallback (flag 關時為 no-op,不阻塞主初始化)。
     initEncoderFallback();
+    // 背景預載向量召回 bi-encoder (flag 關時為 no-op,非阻塞)。
+    initBiEncoder();
     if (!worker) {
         return new Promise((resolve, reject) => {
             console.log("Initializing Inference Web Worker...");
@@ -186,6 +232,65 @@ async function nerExtract(query) {
         });
         nerWorker.postMessage({ type: 'ner_extract', data: { query, id } });
     });
+}
+
+// --- Bi-encoder Worker Initialization (向量召回) ---
+// 鏡像 initNER:flag 關閉時直接 no-op,不建立 worker。非阻塞、非致命。
+function initBiEncoder() {
+    if (!VECTOR_RECALL_ENABLED) return;
+    if (biEncoderWorker) return;
+    biEncoderWorker = new Worker('js/bi-encoder-worker.js', { type: 'module' });
+    biEncoderWorker.onmessage = (e) => {
+        const { type, embedding, id } = e.data;
+        if (type === 'bienc_ready') {
+            biEncoderReady = true;
+            console.log('Bi-encoder Worker Ready');
+        } else if (type === 'encodeResult') {
+            const cb = pendingBiEnc.get(id);
+            if (cb) { cb(embedding); pendingBiEnc.delete(id); }
+        } else if (type === 'bienc_error') {
+            console.warn('Bi-encoder worker error:', e.data.message);  // 非致命 → 回退 rule-based
+        } else if (type === 'bienc_status') {
+            console.log('[BiEnc]', e.data.message);
+        }
+    };
+    biEncoderWorker.postMessage({ type: 'bienc_init', data: { origin: window.location.origin } });
+}
+
+// --- Query 向量編碼 (800ms timeout,逾時/未就緒回 null → caller fallback) ---
+async function encodeQuery(text) {
+    if (!VECTOR_RECALL_ENABLED) return null;
+    if (!biEncoderWorker || !biEncoderReady) return null;
+    return new Promise((resolve) => {
+        const id = biEncIdCounter++;
+        const timer = setTimeout(() => {
+            pendingBiEnc.delete(id);
+            resolve(null);
+        }, 800);
+        pendingBiEnc.set(id, (embedding) => {
+            clearTimeout(timer);
+            resolve(embedding ? Float32Array.from(embedding) : null);
+        });
+        biEncoderWorker.postMessage({ type: 'encode', data: { query: text, id } });
+    });
+}
+
+// --- cosine top-k:queryVec 與房源向量皆 unit-norm → dot = cosine ---
+// 回傳 [{idx, score}] (idx = property_data idx),score 由高到低排序。
+// 704*768 純 JS 迴圈即可,無需向量化。
+function cosineTopK(queryVec, k) {
+    if (!propertyEmbeddings || !queryVec) return [];
+    const { dim, idxs, vecs } = propertyEmbeddings;
+    const rows = idxs.length;
+    const scored = new Array(rows);
+    for (let row = 0; row < rows; row++) {
+        const base = row * dim;
+        let dot = 0;
+        for (let j = 0; j < dim; j++) dot += queryVec[j] * vecs[base + j];
+        scored[row] = { idx: idxs[row], score: dot };
+    }
+    scored.sort((a, b) => b.score - a.score);
+    return scored.slice(0, Math.max(0, Math.min(k, rows)));
 }
 
 // --- Proxy to Worker for Scoring ---
@@ -1297,14 +1402,41 @@ export async function recommend(text, top_k = 20, onPartialResult = null) {
 
         const candidates = filterHardExclusions(propertyData, constraints);
 
-        // 2. Keyword & Rule-based Pre-scoring
-        const queryKeywords = extractKeywords(text);
+        // 2. Recall stage — 產出 topCandidates: [{prop, rms}],供 step-3 CE rerank 消費。
+        //    向量召回 (flag 開 + 向量/worker 就緒) 取代 rule-based 評分;否則回退 rule-based。
+        let topCandidates = null;
 
-        // Augment keywords with NER-detected features and locations
-        [...nerEntities.features, ...nerEntities.locations].forEach(k => {
-            if (k && k.length > 1 && !queryKeywords.includes(k)) queryKeywords.push(k);
-        });
-        const topCandidates = calculateRuleBasedScore(candidates, queryKeywords, text, constraints);
+        if (VECTOR_RECALL_ENABLED && propertyEmbeddings && biEncoderReady) {
+            const qVec = await encodeQuery(text);  // 逾時/失敗回 null → 下方回退
+            if (qVec) {
+                // hard exclusion 仍須遵守:先取得允許集 (頂加/木板/凶宅/預算硬篩),
+                // 再從 cosine top-k 取「在允許集內」的命中,維持 cosine 序,取前 30。
+                // 即:用向量相似度取代關鍵字 SCORING,但硬約束照樣 honor。
+                // candidates 與 idxToProp 皆指向同批 raw prop 物件 → 用物件參考做交集。
+                const allowed = new Set(candidates);
+                const hits = cosineTopK(qVec, propertyEmbeddings.idxs.length);
+                topCandidates = [];
+                for (const { idx, score } of hits) {
+                    const prop = propertyEmbeddings.idxToProp.get(idx);
+                    if (!prop || !allowed.has(prop)) continue;
+                    // rms (下游 rule-based blend + rms===1.0 boost 用) = cosine 夾到 0..1。
+                    const rms = Math.max(0, Math.min(1, score));
+                    topCandidates.push({ prop, rms });
+                    if (topCandidates.length >= 30) break;
+                }
+                console.log(`[vectorRecall] ${topCandidates.length} candidates via bi-encoder cosine`);
+            }
+        }
+
+        // 回退:flag 關 / 向量未就緒 / 編碼逾時 → 原本的 rule-based recall (不變)。
+        if (topCandidates === null) {
+            const queryKeywords = extractKeywords(text);
+            // Augment keywords with NER-detected features and locations
+            [...nerEntities.features, ...nerEntities.locations].forEach(k => {
+                if (k && k.length > 1 && !queryKeywords.includes(k)) queryKeywords.push(k);
+            });
+            topCandidates = calculateRuleBasedScore(candidates, queryKeywords, text, constraints);
+        }
 
         // 2.5 Progressive: Immediately yield rule-based top results so UI feels instant
         if (onPartialResult && topCandidates.length > 0) {
