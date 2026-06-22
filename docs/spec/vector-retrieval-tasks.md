@@ -18,13 +18,19 @@
     召回 port 未含 NER 增強(離線省略)。T7 用同 harness 對比,相對差為判準。
   - **效能基準待補:** 召回耗時(ms)為前端量測,留待 T5 接線後在瀏覽器量(離線 harness 不含 NER/onnx)。
 
-## T1 — 準備 A/B query 集(可與 T2 並行,離線)
+## T1 — 準備 A/B query 集(可與 T2 並行,離線) ✅ 完成 2026-06-22
 
-- [ ] **Task:** 整理評估用 query 集,**須含同義/口語/語意類** query(才測得出向量召回優勢),
-  附對應 ground-truth 相關房源(可從 `recommendation_train.json` label=1 取)。
-  - **Acceptance:** 一份固定 query 集檔(含關鍵字型 + 語意型兩類),每 query 有相關房源標註。
-  - **Verify:** 檔可被 T7 評估腳本載入;語意類 query 數量足夠(目標 ≥ 一定比例)。
-  - **Files:** `tests/fixtures/ab_eval_queries.json`(新)
+- [x] **Task:** 整理評估用 query 集,含語意型 + 關鍵字型兩 bucket,附 ground-truth(沿用 T0 join)。
+  - **Acceptance:** ✅ `tests/fixtures/ab_eval_queries.json` —— 278 query(semantic 78 / keyword 200),
+    每 query 有 `relevant_idxs`(T0 build_ground_truth 的 property_data idx,T7 免再 join)。
+  - **Verify:** ✅ 可被未來 harness 載入;builder 確定性(md5 穩定);78/78 semantic 經獨立驗證
+    在 K=30 確實 miss ≥1 相關(真實 blind spot)。
+  - **Files:** `tests/fixtures/ab_eval_queries.json`、`tests/build_ab_eval_queries.py`(可重跑 builder)。
+  - **關鍵發現(修正專案假設):** 召回階段**有** `expandQueryIntent`(INTENT_MAP,inference.js:1020
+    `extractKeywords` 內呼叫),並非無語意擴展;只有 `semanticExpandQuery`(semantic_rules.json)
+    是 CE 層才用。故 semantic bucket 用**經驗 blind-spot gate**:trigger 在 + INTENT_MAP 擴展後
+    baseline 仍 miss(K=30),才算真 blind spot。單純 trigger membership 不夠(會被 INTENT_MAP 蓋掉)。
+  - **Caveat:** semantic=78(達標下緣,未灌水);join match-rate 24.4%(沿用 T0);trigger 以「怕熱」為大宗。
 
 ---
 
