@@ -64,3 +64,4 @@ nchu-rental-ai.pptx
 簡報改進計劃.md
 簡報製作指引.pdf
 .venv_eval/
+tests/.rule_based_join_cache.json
