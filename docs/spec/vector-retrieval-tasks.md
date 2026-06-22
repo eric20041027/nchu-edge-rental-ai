@@ -74,13 +74,21 @@
 
 ---
 
-## T5 — 前端召回函式 + 接線(依賴 T3 + T4)
+## T5 — 前端召回函式 + 接線(依賴 T3 + T4) ✅ 完成 2026-06-22(瀏覽器實測過)
 
-- [ ] **Task:** `inference.js` 加 `cosineTopK`(鏡像現有同源 cosine),`recommend()` 召回階段
-  用 query ONNX encode → `cosineTopK(K=30)` 取代 `calculateRuleBasedScore` 的召回。
-  - **Acceptance:** 召回走向量;**rule-based 以 feature flag 保留可切換**(預設可先關)。
-  - **Verify:** CP4 —— happy-path + 邊界(空候選 / K>候選數);手動跑幾條 query 看推薦合理。
-  - **Files:** `frontend/js/inference.js`、(必要時)`frontend/js/inference-worker.js`
+- [x] **Task:** `inference.js` 加 `cosineTopK` + bi-encoder worker,`recommend()` 召回階段
+  用 query ONNX encode → `cosineTopK(30)` 取代 rule-based 召回,hard-exclusion 先過再取交集。
+  - **Acceptance:** ✅ 召回走向量;`VECTOR_RECALL_ENABLED` flag 保留 rule-based 可切換(預設 true)。
+  - **Verify:** ✅ CP4 瀏覽器實測 —— 語意 query「南區套房怕熱」→ `[vectorRecall] 30 candidates`
+    → TOP1 有冷氣房源(怕熱→冷氣 召回成功);關鍵字 query「預算8000 套房 有電梯」→ 同樣走向量、
+    81% top match;零 console error;fallback 路徑完整(worker 未就緒/逾時/flag off → rule-based)。
+  - **Files:** `frontend/js/inference.js`、`frontend/js/bi-encoder-worker.js`(新)、`frontend/sw.js`
+    (CACHE_VERSION bump + precache)、產物 `bi_encoder_dir/` + `property_embeddings.json`。
+  - **關鍵修正:** embeddings 的 idxs 指原始 704 筆,但 propertyData 過濾成 701 → 用 idxToProp Map
+    對映原始 prop 物件,hard-exclusion 交集用 reference identity,避開位置錯位 bug。
+  - **效能:** 端到端(向量召回 + CE 精排 30 筆)~4.5-4.7s;召回耗時待 T7 細量(spec Open #1)。
+  - **Caveat:** bi-encoder quant ONNX 57MB,首載 +61MB(超 Success #4 ≤5MB)。先接 T7 拿 A/B 數字,
+    確認向量召回有贏再回頭瘦身(int4 / 共享 CE base)。
 
 ## T6 — 回歸驗證(依賴 T5)
 
