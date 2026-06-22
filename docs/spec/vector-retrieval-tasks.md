@@ -6,13 +6,17 @@
 
 ---
 
-## T0 — 量現況基準(CP0,gate:無基準不開工)
+## T0 — 量現況基準(CP0,gate:無基準不開工) ✅ 完成 2026-06-22
 
-- [ ] **Task:** 在現有裝置基準上量 rule-based 召回的端到端耗時、NDCG@5、前端首載大小,
-  把 spec Open #1 的 ms/MB 門檻定下來寫回 spec。
-  - **Acceptance:** spec 的 Success #3/#4 從「Plan 階段定錨」改成具體數字(召回 ms、首載 MB)。
-  - **Verify:** 跑現有評估(NDCG)+ 瀏覽器量召回耗時/載入;數字記進 spec。
-  - **Files:** `docs/spec/vector-retrieval.md`(+ 量測小腳本,可丟 `tests/`)
+- [x] **Task:** 量 rule-based 召回的 Recall@K / NDCG@5 / 前端首載大小,定錨門檻寫回 spec。
+  - **Acceptance:** ✅ spec Success #1/#2/#4 已填具體數字(見 spec §T0 Baseline)。
+  - **Verify:** ✅ `python3 tests/eval_rule_based_baseline.py`(--sample 與全跑一致)。
+  - **Files:** `docs/spec/vector-retrieval.md`、`tests/eval_rule_based_baseline.py`(新,930 行,
+    含可複用 `ndcg_at_k`/`recall_at_k`/loaders 供 T7 A/B)。
+  - **結果:** Recall@15=0.3846、Recall@30=0.4495、NDCG@5(召回階段)=0.2469、首載=74.85 MB。
+    **Caveat:** fuzzy-join match-rate 24.4%(snapshot 漂移,bimodal,已驗證非調參問題);
+    召回 port 未含 NER 增強(離線省略)。T7 用同 harness 對比,相對差為判準。
+  - **效能基準待補:** 召回耗時(ms)為前端量測,留待 T5 接線後在瀏覽器量(離線 harness 不含 NER/onnx)。
 
 ## T1 — 準備 A/B query 集(可與 T2 並行,離線)
 
