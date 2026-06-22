@@ -2,6 +2,33 @@
 
 ---
 
+## [2026.06.22] - 向量檢索召回:bi-encoder 取代 rule-based(A/B GO)
+
+### 召回架構升級(核心)
+
+- **bi-encoder 向量召回轉正為 primary**:召回階段由關鍵字 rule-based（`calculateRuleBasedScore`）升級為向量相似度召回。query 經 bi-encoder ONNX 編碼 → mean-pool + L2-norm → 瀏覽器端暴力 cosine 對房源 embedding → Top-30 交 Cross-Encoder 精排。
+- **CE 同源**:bi-encoder 用與 Cross-Encoder 相同的 hfl/rbt6 base + tokenizer 重訓（InfoNCE/MNRL 對比學習,label=1 正樣本 + is_hard 硬負 + in-batch negatives）。
+- **動機**:房源規模拓展時,rule-based 關鍵字召回每次掃全部房源且漏召語意相符但用詞不同的房源;向量召回解可擴展性 + 語意召回。
+
+### A/B 評估(go/no-go gate,本地實跑 GO)
+
+- **語意 query Recall@30:0.007 → 0.547**（+0.540）、Recall@15 0.000 → 0.506、NDCG@5 0.000 → 0.325
+- **關鍵字 query Recall@30:0.077 → 0.359**;整體（278 query）Recall@30 0.057 → 0.412
+- 向量召回不只補語意 blind-spot,連關鍵字控制組也贏 —— 整體召回全面優於 rule-based
+- harness:`tests/eval_vector_vs_rulebased.py`（複用 T0 基準 + T1 query 集,忠實鏡像前端召回）
+
+### 落地與收尾
+
+- **rule-based 保留為 fallback**:worker 未就緒（首載期間）/ 編碼逾時（800ms）/ kill-switch 關時回退,避免零結果。`VECTOR_RECALL_ENABLED` 為 kill-switch。
+- **否定意圖不退化**:硬否定（頂加/木板/凶宅/補助/不要養寵物）在 `filterHardExclusions` 強制執行,兩條召回路徑都先跑,瀏覽器實測確認。
+- **新增產物**:`frontend/models/bi_encoder_dir/bi_encoder_quant.onnx`（57 MB INT8）+ tokenizer、`frontend/assets/property_embeddings.json`（704×768 float16,4.3 MB,同源 L2-norm）。
+- **首載 +57MB**:bi-encoder 已最優 int8 量化（int4 反而更大,死路）;接受為語意召回大勝的代價,SW 快取後僅首次下載。
+- **清理**:刪除 repo 內未用的 `my_custom_model_quant.PREV-20260616.onnx`（57 MB backup）。
+- **A100 訓練**:`colab_train_bi_encoder.ipynb` + `train_bi_encoder.py --bf16/--tf32`（純加速,不動訓練動態）。
+- **完整 spec-driven 流程**:[spec](docs/spec/vector-retrieval.md) / [plan](docs/spec/vector-retrieval-plan.md) / [tasks](docs/spec/vector-retrieval-tasks.md) / [意圖](docs/intent/vector-retrieval-roadmap.md)。
+
+---
+
 ## [2026.06.16] - C 組房源富化 Cross-Encoder 接回 production、字卡提示擴充、空殼房源過濾
 
 ### C 組房源富化 Cross-Encoder（核心，root cause 修復）
