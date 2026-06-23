@@ -21,26 +21,29 @@ Or use individual processors:
     merged_data = merger.run()
 """
 
-from .config import DataPrepConfig
-from .models import (
-    MergedRental,
-    QueryPropertyPair,
-    TrainingDataset,
-    PropertyEmbedding,
-    EmbeddingBatch,
-    HardNegativeExample,
-    BudgetTrap,
-)
-from .base import BaseProcessor
-from .merger import DataMerger
-from .generator import DatasetGenerator
-from .augmenter import SemanticAugmenter
-from .miner import HardNegativeMiner
-from .labeler import SilverLabeler
-from .commute_updater import CommuteDataUpdater
-from .budget_generator import BudgetTrapGenerator
-from .embedder import EmbeddingPrecomputer
-from .pipeline import DataPipeline
+from .config import DataPrepConfig  # 純 stdlib,輕量,保留 eager
+
+# Lazy import(PEP 562):models(pydantic)與各 processor 延遲載入,讓無 pydantic 的
+# 本機 dev box 仍能用輕量子模組(如 precompute_embeddings,純 stdlib)。
+_LAZY = {
+    "MergedRental": ".models", "QueryPropertyPair": ".models", "TrainingDataset": ".models",
+    "PropertyEmbedding": ".models", "EmbeddingBatch": ".models",
+    "HardNegativeExample": ".models", "BudgetTrap": ".models",
+    "BaseProcessor": ".base", "DataMerger": ".merger", "DatasetGenerator": ".generator",
+    "SemanticAugmenter": ".augmenter", "HardNegativeMiner": ".miner", "SilverLabeler": ".labeler",
+    "CommuteDataUpdater": ".commute_updater", "BudgetTrapGenerator": ".budget_generator",
+    "EmbeddingPrecomputer": ".embedder", "DataPipeline": ".pipeline",
+}
+
+
+def __getattr__(name: str):  # PEP 562
+    module_path = _LAZY.get(name)
+    if module_path is None:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    import importlib
+    module = importlib.import_module(module_path, __name__)
+    return getattr(module, name)
+
 
 __all__ = [
     "DataPrepConfig",
