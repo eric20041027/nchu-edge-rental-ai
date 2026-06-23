@@ -134,6 +134,36 @@ KD alpha      +0.0050         ✅ 改為 fixed 0.12
 **來源**：[docs/property_enrichment_value.md](property_enrichment_value.md)、
 `notebooks/ce_expansion_augment_experiment.ipynb`。
 
+
+---
+
+## 召回階段消融：bi-encoder 向量召回 vs rule-based（T7 A/B，2026-06-22）
+
+上述 Group A–D 消融針對 **Cross-Encoder 精排階段**。本節記錄**召回階段**的 go/no-go 消融:以 bi-encoder 向量召回取代原本的關鍵字 rule-based 召回(`calculateRuleBasedScore`)。
+
+### 動機 — 直接源自 Group D 結論
+
+Group D 證明 noisy test 崩潰(NDCG@5 −64.8%)的根因是**離散詞彙分佈偏移**:縮寫/錯字/口語化使 tokenization 結果完全不同,FGM(連續嵌入擾動)與小比例資料增強都無法修復。**rule-based 關鍵字召回正是此問題的極端形式** —— 口語需求(「怕熱」)與房源用詞(「冷氣」)字面不重疊就召不到。bi-encoder 把 query 與房源編到同一語意向量空間,以 cosine 比對,結構性繞過字面比對,正是 Group D「未來方向」的對症解法。
+
+### 實驗設計
+
+- **評估集**:`tests/fixtures/ab_eval_queries.json` —— 278 query(78 語意 + 200 關鍵字)。語意 bucket 經「rule-based 在 K=30 會 miss ≥1 相關」的經驗 gate 篩選,構成可量測的召回 blind-spot。
+- **harness**:`tests/eval_vector_vs_rulebased.py`,複用 T0 基準 harness 的 metrics/loaders,忠實鏡像前端召回路徑(query→bi-encoder ONNX→cosine→Top-30,與 hard-exclusion 取交集)。
+- **指標**:Recall@15 / Recall@30 / NDCG@5,per-bucket。
+
+### 結果(判定 GO)
+
+| 分組 | 指標 | rule-based | bi-encoder 向量 | Δ |
+|:---|:---|:---:|:---:|:---:|
+| 語意 (78) | Recall@30 | 0.007 | **0.547** | +0.540 |
+| 語意 (78) | Recall@15 | 0.000 | **0.506** | +0.506 |
+| 語意 (78) | NDCG@5 | 0.000 | **0.325** | +0.325 |
+| 關鍵字 (200) | Recall@30 | 0.077 | **0.359** | +0.282 |
+| 全部 (278) | Recall@30 | 0.057 | **0.412** | +0.354 |
+
+向量召回不只補語意 blind-spot,連關鍵字控制組也勝出 —— 整體召回全面優於 rule-based,判定 **GO**,轉正為 primary(rule-based 降為 fallback)。
+
+> **方法 caveat**:評估集房源標註來自舊版訓練資料,與現行 704 筆 snapshot 經 token fuzzy-join(match-rate 24.4%,分佈 bimodal),故絕對值偏低;harness 兩邊同 join / 同慣例,**相對 Δ 才是判準**。
 ---
 
 ## 結果檔案

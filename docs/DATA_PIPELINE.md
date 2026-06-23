@@ -137,3 +137,42 @@ $$R = \frac{\text{已滿足維度數}}{\text{已指定維度數}}$$
 python -m pipeline.data_prep.noise_generator
 # 輸出：data/processed/noisy_test.json
 ```
+
+---
+
+## 9. 向量召回的資料管道（bi-encoder,2026-06-22）
+
+向量召回(bi-encoder)沿用既有訓練資料,並新增兩項資料產物。
+
+### 9.1 bi-encoder 訓練資料(複用,不另標)
+
+bi-encoder 對比學習**直接複用** `data/processed/recommendation_train.json`(29,443 對,欄位 `{query, property, label, relevance, is_hard}`),不重組正負樣本:
+
+- **正樣本**:`label == 1` 的(query, 房源)對。
+- **困難負樣本**:`is_hard == true` 的同 query 房源(即本管道 §4 Jaccard 困難樣本挖掘的產物)。
+- **in-batch negatives**:同批其他 anchor 的正樣本(MNRL 慣例)。
+
+亦即 §4 為 Cross-Encoder 挖的困難負樣本,在 bi-encoder 對比學習裡同時擔任 hard negatives —— 同一份資料雙模型共用。
+
+### 9.2 房源向量離線預算(新產物)
+
+`pipeline/data_prep/build_property_embeddings.py` 以訓好的 bi-encoder 把 704 筆房源編碼成靜態向量,供前端線上 cosine 召回:
+
+- 輸入文字:房源 `text` 欄(與 bi-encoder 訓練時 `property` 對應一致;非 `ce_text` 富化文字 —— 後者較長且與 bi-encoder 訓練分佈不符)。
+- 輸出:`frontend/assets/property_embeddings.json`,704 × 768 **float16**(~4.3 MB),已 L2-normalize,內積即 cosine。
+- 同源保證:與前端 query 編碼器(`export_bi_encoder.py` 匯出的 ONNX)同 model / 同 mean-pool / 同 L2-norm,否則 cosine 無意義。
+
+```bash
+python -m pipeline.data_prep.build_property_embeddings
+# 輸出：frontend/assets/property_embeddings.json
+```
+
+### 9.3 A/B 評估查詢集(新產物)
+
+`tests/build_ab_eval_queries.py` 從 `recommendation_train.json` 構建召回 A/B 評估集 `tests/fixtures/ab_eval_queries.json`(278 query:78 語意 + 200 關鍵字):
+
+- **語意 bucket**:含口語意圖 trigger 且 rule-based 在 K=30 仍 miss ≥1 相關的 query(經驗 blind-spot gate)。
+- **關鍵字 bucket**:無 trigger 的字面型 query(控制組)。
+- 每 query 附 `relevant_idxs`(經 fuzzy-join 對映到 `property_data.json` idx),供 `tests/eval_vector_vs_rulebased.py` 直接計算 Recall@K / NDCG@5。
+
+> fuzzy-join match-rate 24.4%(舊訓練資料 property blob 與現行 snapshot 漂移,分佈 bimodal);A/B 以相對 Δ 為判準,詳見 [ABLATION_STUDY.md](ABLATION_STUDY.md) 召回階段消融。
