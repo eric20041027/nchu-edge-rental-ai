@@ -192,8 +192,23 @@ class BiEncoderTrainer(BaseTrainer):
         self.used_fallback = False  # True if random-init fallback was used
 
     # ----------------------------- pipeline ------------------------------- #
+    def _seed_everything(self) -> None:
+        """固定 python/torch/cuda seed → 消除 run 間品質波動(可重現)。
+
+        原本只 random.seed(資料 shuffle),torch/cuda 未固定 → 每次重訓權重初始化、
+        dropout、CUDA 非確定運算不同,造成同資料 run 間總分波動(0.652 vs 0.677)。
+        固定後同資料同結果,改超參的效果才測得準。
+        """
+        seed = self.config.random_seed
+        random.seed(seed)
+        torch.manual_seed(seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(seed)
+        self.log_result("Seeded (python/torch/cuda)", seed)
+
     def run(self) -> dict:
         """Execute the full bi-encoder training pipeline."""
+        self._seed_everything()
         self.log_step("Loading and preparing contrastive pairs")
         anchors = self._load_pairs(self.config.train_data_path)
         self.log_result("Anchor (query, positive) rows", len(anchors))
