@@ -164,15 +164,71 @@ def recall(k: int, eval_path: Path = EVAL_SET) -> int:
     return 0
 
 
+UNIFIED_SET = ROOT / "tests" / "fixtures" / "unified_eval.json"
+
+
+def unified(k: int) -> int:
+    """統一評估集:每筆按 metric 算對的指標,終結三評估集假矛盾。
+
+    metric="recall"(小桶距離/價格/複合)→ Recall@K(召回率)。
+    metric="precision"(大桶設施)→ Precision@K(TOP K 命中該特徵比例 = 純度)。
+    報 recall 均值 + precision 均值 + 總分(兩者均值),總分越高越平衡。
+    """
+    try:
+        import numpy as np
+        import onnxruntime as ort  # noqa: F401
+        from transformers import BertTokenizerFast  # noqa: F401
+    except ImportError as e:
+        print(f"[unified] 缺依賴 {e.name}:venv(pip install onnxruntime transformers)或 Colab 跑。")
+        return 1
+
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from eval_vector_vs_rulebased import build_query_encoder, build_property_matrix  # noqa: E402
+    from eval_rule_based_baseline import recall_at_k  # noqa: E402
+
+    data = _load(UNIFIED_SET)
+    if data is None:
+        raise SystemExit(f"[fatal] {UNIFIED_SET} 不存在 — 先 python tests/gen_unified_eval.py")
+    queries = data["queries"]
+    encode = build_query_encoder()
+    emb_data = _load(EMBEDDINGS)
+    if emb_data is None:
+        raise SystemExit(f"[fatal] {EMBEDDINGS} 不存在")
+    mat, idx_order = build_property_matrix(emb_data, {})
+
+    rec, prec = [], []
+    for q in queries:
+        qvec = encode(q["query"])
+        sims = mat @ qvec
+        top = [idx_order[i] for i in np.argsort(-sims)[:k]]
+        relevant = set(q["relevant_idxs"])
+        if q["metric"] == "recall":
+            rec.append(recall_at_k(top, relevant, k))
+        else:  # precision@k: TOP k 命中該特徵的比例(設施類純度)
+            hit = sum(1 for idx in top if idx in relevant)
+            prec.append(hit / k if k else 0.0)
+    rmean = sum(rec) / len(rec) if rec else 0.0
+    pmean = sum(prec) / len(prec) if prec else 0.0
+    overall = (rmean + pmean) / 2
+    print(f"[unified] Recall@{k}(小桶 n={len(rec)})     = {rmean:.4f}")
+    print(f"[unified] Precision@{k}(設施 n={len(prec)}) = {pmean:.4f}")
+    print(f"[unified] 總分(兩者均值)             = {overall:.4f}  ← 越高越平衡")
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="階段④ 泛化評估 harness")
     ap.add_argument("--check", action="store_true", help="純 stdlib 自我驗(本機跑)")
     ap.add_argument("--k", type=int, default=DEFAULT_K, help="Recall@K 的 K(預設 30)")
     ap.add_argument("--eval-set", type=str, default=None,
                     help="評估集 JSON 路徑(預設 generalization_eval;真 GT 用 tests/fixtures/true_gt_eval.json)")
+    ap.add_argument("--unified", action="store_true",
+                    help="統一評估集(單訴求+複合混合,按 metric 算 recall/precision,終結假矛盾)")
     args = ap.parse_args()
     if args.check:
         return check()
+    if args.unified:
+        return unified(args.k)
     eval_path = Path(args.eval_set) if args.eval_set else EVAL_SET
     return recall(args.k, eval_path)
 
