@@ -65,6 +65,11 @@ def _zhengceng() -> list[int]:
 def _geo(tier: str) -> list[int]:
     return [p["idx"] for p in PD if p.get("geo_tier") == tier]
 
+def _text_has(kw: str) -> list[int]:
+    """文字含關鍵詞當 GT(冷氣/網路/保全等無布林欄位,但文字可靠)。"""
+    return [p["idx"] for p in PD
+            if kw in (str(p.get("features", "")) + str(p.get("text", "")) + str(p.get("ce_text", "")))]
+
 
 # ── 特徵維度:gt(客觀 GT)+ templates(多 gen_type 口語表達,零標點)──────────
 # templates 每條 = (query 文字, gen_type)。表達刻意涵蓋口語/隱喻/跨域/生活推理/negation。
@@ -186,6 +191,35 @@ FEATURES: dict[str, dict] = {
             ("遠離喧鬧的安靜角落", "隱喻"),
         ],
     },
+    # 第三輪補:語意觸發詞維度(模仿階段① A/B「怕熱→冷氣」風格,拉回 vs baseline 退步)。
+    # GT 用文字關鍵詞算(冷氣/網路/垃圾無布林欄位但文字可靠)。
+    "aircon": {
+        "gt": lambda: _text_has("冷氣"),
+        "templates": [
+            ("怕熱一定要冷氣", "語意觸發"),
+            ("夏天熱到受不了要有空調", "生活推理"),
+            ("房間沒冷氣會中暑", "隱喻"),
+            ("超怕熱的要涼一點", "口語"),
+        ],
+    },
+    "internet": {
+        "gt": lambda: _text_has("網路"),
+        "templates": [
+            ("上網方便要有網路", "語意觸發"),
+            ("在家追劇打遊戲網路要好", "生活推理"),
+            ("遠距上課需要穩定網路", "生活推理"),
+            ("不能斷網的要有寬頻", "口語"),
+        ],
+    },
+    "waste": {
+        "gt": lambda: _flag("has_waste_disposal"),
+        "templates": [
+            ("不想追垃圾車要有人收", "語意觸發"),
+            ("垃圾有地方丟不用等車", "生活推理"),
+            ("懶得追垃圾車的", "口語"),
+            ("有代收垃圾的房子", "口語"),
+        ],
+    },
 }
 
 # ── 硬負樣本配對:對某維度 query 配「表面相似但硬衝突」的房源 idx ────────────
@@ -232,6 +266,32 @@ HOLDOUT_TEMPLATES = [
 ]
 
 
+# ── 第三輪:複合多訴求 query(模仿階段① A/B 多訴求混雜 + 拉高真 GT 多條件交集召回)──
+# 每條 = (query 多訴求自然說法, [多條件 predicates 取交集當 GT])。交集小桶 → 訓練
+# 模型學「多個硬條件同時滿足」的精確召回。GT 全資料算。零標點。
+# 每條至少含一個距離骨幹(walk/scooter)讓交集收斂小桶 —— 同真 GT 評估集原則。
+# (距離是稀缺特徵:walk≤7 僅 43 間;設施太普遍 556+ 間,光靠設施交集收不斂。)
+COMPOUND = [
+    ("走路五分內又便宜八千的套房", [lambda: _walk(5), _cheap]),
+    ("騎車三分到校預算七千", [lambda: _scooter(3), lambda: [p["idx"] for p in PD if 0 < p.get("rent", 0) <= 7000]]),
+    ("走路五分又要有電梯不爬樓", [lambda: _walk(5), lambda: _flag("has_elevator")]),
+    ("走路七分便宜又有陽台可以曬衣服", [lambda: _walk(7), _cheap, lambda: _flag("has_balcony")]),
+    ("騎車五分安靜又便宜好唸書", [lambda: _scooter(5), lambda: _geo("quiet"), _cheap]),
+    ("騎車三分怕熱要冷氣又要便宜", [lambda: _scooter(3), lambda: _text_has("冷氣"), _cheap]),
+    ("走路五分的透天厝", [lambda: _walk(5), lambda: _btype("透天")]),
+    ("騎車五分有網路又安靜遠距上課", [lambda: _scooter(5), lambda: _text_has("網路"), lambda: _geo("quiet")]),
+    ("走路七分有停車位又平價", [lambda: _walk(7), lambda: _flag("has_parking"), _cheap]),
+    ("騎車三分電梯又要便宜有保全", [lambda: _scooter(3), lambda: _flag("has_elevator"), _cheap, lambda: _text_has("保全")]),
+]
+
+
+def _compound_gt(preds: list) -> list[int]:
+    """多條件交集 GT(小桶):取所有 predicate 結果的 idx 交集。"""
+    sets = [set(p()) for p in preds]
+    inter = set.intersection(*sets) if sets else set()
+    return sorted(inter)
+
+
 def _resolve_eval(key: str) -> list[int]:
     if key == "_walk5":
         return _walk(5)
@@ -259,6 +319,16 @@ def build_train(target_n: int) -> list[dict]:
                 continue
             seen_q.add(q)
             units.append((feat, q, gt))
+
+    # 第三輪複合多訴求 query:GT 為多條件交集(小桶),綁交集房源。
+    for q, preds in COMPOUND:
+        if q in seen_q or q in hold_q:
+            continue
+        gt = _compound_gt(preds)
+        if not gt:
+            continue
+        seen_q.add(q)
+        units.append(("compound", q, gt))
 
     # per_q:每條 query 綁幾間 GT 房源(扣掉硬負樣本配額後均攤)。
     per_q = max(1, target_n // max(1, len(units)))
