@@ -10,6 +10,9 @@
 // 註:主執行緒不直接用 transformers.js — 推論在 inference-worker.js / ner-worker.js(各自 import)。
 // encoder fallback 骨架啟用時於該處動態 import(見下方 initEncoderFallback 的 TODO),故此處不需頂層 import。
 
+// 階段② 反饋重排(CE 精排後的純後處理,可關)。spec: docs/spec/feedback-rerank.md
+import { readFeedbackLog, loadFeedbackScores, applyFeedbackRerank } from './feedback.js';
+
 let worker = null;
 let propertyData = [];
 let pendingInference = new Map();
@@ -26,6 +29,9 @@ let nerReady    = false;
 // 此旗標保留為 kill-switch:出事翻 false 可秒回退關鍵字 rule-based recall。
 // rule-based 不再是對等 A/B 分支,但仍當 worker 未就緒/編碼逾時時的 fallback(見下方)。
 const VECTOR_RECALL_ENABLED = true;
+
+// 階段② kill-switch:翻 false 即停用回饋重排,排序逐位元組回到階段①。
+const FEEDBACK_RERANK_ENABLED = true;
 
 // bi-encoder worker 狀態 (鏡像 NER worker)
 let biEncoderWorker = null;
@@ -1456,7 +1462,7 @@ export async function recommend(text, top_k = 20, onPartialResult = null) {
         await new Promise(resolve => setTimeout(resolve, 50));
 
         // 3. AI Re-ranking (runs after partial results are shown)
-        const scoredResults = [];
+        let scoredResults = [];  // let:階段② ON 時 applyFeedbackRerank 回新陣列需重新賦值
         for (let i = 0; i < topCandidates.length; i++) {
             // If a newer query has arrived, abort this one immediately
             if (isCancelled()) return null;
@@ -1496,7 +1502,12 @@ export async function recommend(text, top_k = 20, onPartialResult = null) {
 
         // 4. Return final AI-ranked results
         if (isCancelled()) return null;
-        scoredResults.sort((a, b) => b.score - a.score);
+        // 階段②:CE 精排後的回饋重排(可關)。OFF 時為原地 sort,逐位元組回到階段①。
+        if (FEEDBACK_RERANK_ENABLED) {
+            scoredResults = applyFeedbackRerank(scoredResults, loadFeedbackScores(readFeedbackLog()));
+        } else {
+            scoredResults.sort((a, b) => b.score - a.score);
+        }
         console.log(`Inference complete: ${scoredResults.length} results in ${(performance.now() - startTime).toFixed(0)}ms`);
 
         if (scoredResults.length > 0) {
