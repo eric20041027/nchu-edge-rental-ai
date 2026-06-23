@@ -120,7 +120,7 @@ def check() -> int:
 # Recall 半 — 需 onnxruntime + tokenizers(本機當前無 → guard)
 # =====================================================================
 
-def recall(k: int) -> int:
+def recall(k: int, eval_path: Path = EVAL_SET) -> int:
     try:
         import numpy as np
         import onnxruntime as ort  # noqa: F401
@@ -135,10 +135,11 @@ def recall(k: int) -> int:
     from eval_vector_vs_rulebased import build_query_encoder, build_property_matrix  # noqa: E402
     from eval_rule_based_baseline import recall_at_k, ndcg_at_k  # noqa: E402
 
-    eval_data = _load(EVAL_SET)
+    eval_data = _load(eval_path)
     if eval_data is None:
-        raise SystemExit(f"[fatal] {EVAL_SET} 不存在 — 先生成評估集")
+        raise SystemExit(f"[fatal] {eval_path} 不存在 — 先生成評估集")
     queries = eval_data["queries"] if isinstance(eval_data, dict) else eval_data
+    label = eval_path.stem
 
     encode = build_query_encoder()
     emb_data = _load(EMBEDDINGS)
@@ -158,8 +159,8 @@ def recall(k: int) -> int:
         ndcgs.append(ndcg_at_k(rels, 5))
     rmean = sum(recalls) / len(recalls) if recalls else 0.0
     nmean = sum(ndcgs) / len(ndcgs) if ndcgs else 0.0
-    print(f"[recall] generalization_eval Recall@{k} = {rmean:.4f}  (n={len(queries)})")
-    print(f"[ndcg]   generalization_eval NDCG@5 (binary) = {nmean:.4f}  (n={len(queries)})")
+    print(f"[recall] {label} Recall@{k} = {rmean:.4f}  (n={len(queries)})")
+    print(f"[ndcg]   {label} NDCG@5 (binary) = {nmean:.4f}  (n={len(queries)})")
     return 0
 
 
@@ -167,8 +168,13 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="階段④ 泛化評估 harness")
     ap.add_argument("--check", action="store_true", help="純 stdlib 自我驗(本機跑)")
     ap.add_argument("--k", type=int, default=DEFAULT_K, help="Recall@K 的 K(預設 30)")
+    ap.add_argument("--eval-set", type=str, default=None,
+                    help="評估集 JSON 路徑(預設 generalization_eval;真 GT 用 tests/fixtures/true_gt_eval.json)")
     args = ap.parse_args()
-    return check() if args.check else recall(args.k)
+    if args.check:
+        return check()
+    eval_path = Path(args.eval_set) if args.eval_set else EVAL_SET
+    return recall(args.k, eval_path)
 
 
 if __name__ == "__main__":
