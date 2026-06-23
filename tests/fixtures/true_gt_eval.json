@@ -1,0 +1,239 @@
+{
+ "meta": {
+  "created": "2026-06-23",
+  "purpose": "客觀衡量 bi-encoder 召回:小桶 GT(多條件交集)+ 非同源 query",
+  "gt_method": "property_data 欄位/OSRM 客觀交集算",
+  "query_source": "手寫自然口語(刻意與訓練 query 不同源,破 selection bias)",
+  "metric": "Recall@K only(排序非 bi-encoder 職責)"
+ },
+ "queries": [
+  {
+   "query": "走路五分鐘到學校又要便宜八千內",
+   "bucket": "true_gt",
+   "n_relevant": 10,
+   "relevant_idxs": [
+    6,
+    7,
+    8,
+    45,
+    46,
+    77,
+    78,
+    82,
+    240,
+    401
+   ],
+   "note": "近+平價"
+  },
+  {
+   "query": "走路七分內有車位停機車",
+   "bucket": "true_gt",
+   "n_relevant": 14,
+   "relevant_idxs": [
+    6,
+    7,
+    8,
+    13,
+    14,
+    19,
+    25,
+    58,
+    82,
+    169,
+    213,
+    214,
+    399,
+    401
+   ],
+   "note": "近+停車"
+  },
+  {
+   "query": "騎車三分鐘到校預算七千",
+   "bucket": "true_gt",
+   "n_relevant": 11,
+   "relevant_idxs": [
+    6,
+    7,
+    8,
+    45,
+    77,
+    82,
+    133,
+    134,
+    135,
+    240,
+    401
+   ],
+   "note": "騎車近+平價"
+  },
+  {
+   "query": "走路三分鐘超近的房",
+   "bucket": "true_gt",
+   "n_relevant": 12,
+   "relevant_idxs": [
+    6,
+    7,
+    8,
+    9,
+    10,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82,
+    240
+   ],
+   "note": "極近"
+  },
+  {
+   "query": "走路五分內想找最便宜",
+   "bucket": "true_gt",
+   "n_relevant": 7,
+   "relevant_idxs": [
+    6,
+    7,
+    45,
+    77,
+    82,
+    240,
+    401
+   ],
+   "note": "近+很便宜"
+  },
+  {
+   "query": "騎車三分內要有電梯又便宜七千",
+   "bucket": "true_gt",
+   "n_relevant": 8,
+   "relevant_idxs": [
+    7,
+    8,
+    45,
+    77,
+    133,
+    134,
+    135,
+    240
+   ],
+   "note": "騎車近+電梯+平價"
+  },
+  {
+   "query": "走路七分內透天又要便宜六千",
+   "bucket": "true_gt",
+   "n_relevant": 11,
+   "relevant_idxs": [
+    6,
+    7,
+    13,
+    24,
+    25,
+    45,
+    82,
+    133,
+    134,
+    169,
+    401
+   ],
+   "note": "近+透天+很平價"
+  },
+  {
+   "query": "走路七分有陽台可以曬衣服七千內",
+   "bucket": "true_gt",
+   "n_relevant": 17,
+   "relevant_idxs": [
+    6,
+    8,
+    13,
+    14,
+    25,
+    45,
+    77,
+    82,
+    133,
+    134,
+    135,
+    136,
+    162,
+    169,
+    214,
+    240,
+    401
+   ],
+   "note": "近+陽台+平價"
+  },
+  {
+   "query": "騎車五分內安靜好唸書八千內",
+   "bucket": "true_gt",
+   "n_relevant": 6,
+   "relevant_idxs": [
+    237,
+    413,
+    422,
+    626,
+    627,
+    628
+   ],
+   "note": "騎車近+安靜+平價"
+  },
+  {
+   "query": "走路五分內有電梯不想爬樓",
+   "bucket": "true_gt",
+   "n_relevant": 10,
+   "relevant_idxs": [
+    7,
+    8,
+    45,
+    46,
+    47,
+    48,
+    77,
+    78,
+    79,
+    240
+   ],
+   "note": "近+電梯+中價"
+  },
+  {
+   "query": "走路七分有停車位又平價八千",
+   "bucket": "true_gt",
+   "n_relevant": 13,
+   "relevant_idxs": [
+    6,
+    7,
+    8,
+    13,
+    14,
+    19,
+    25,
+    82,
+    169,
+    213,
+    214,
+    399,
+    401
+   ],
+   "note": "近+停車+平價"
+  },
+  {
+   "query": "騎車三分內的透天厝",
+   "bucket": "true_gt",
+   "n_relevant": 13,
+   "relevant_idxs": [
+    6,
+    7,
+    8,
+    45,
+    46,
+    47,
+    78,
+    80,
+    82,
+    133,
+    134,
+    135,
+    401
+   ],
+   "note": "騎車很近+透天"
+  }
+ ]
+}
