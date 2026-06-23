@@ -9,7 +9,8 @@ spec: docs/spec/generalization-data.md
     - 完整性:eval/holdout 的 relevant_idxs 無懸空(都對得上 property_data idx)
     - 零標點:生成 query 全無標點符號
   Recall 半(需 onnxruntime + tokenizers,本機當前無 → guard + exit 1):
-    - 編碼 eval query → cosineTopK(30) vs property_embeddings → Recall@30
+    - 編碼 eval query → cosineTopK(30) vs property_embeddings → Recall@30 + NDCG@5
+    - NDCG@5 用 binary relevance,與階段① ablation(ABLATION_STUDY.md 語意桶 0.325)同定義
     - 重訓前後各跑一次比 Δ(本機 venv 或 Colab)
 
 Usage:
@@ -132,7 +133,7 @@ def recall(k: int) -> int:
 
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     from eval_vector_vs_rulebased import build_query_encoder, build_property_matrix  # noqa: E402
-    from eval_rule_based_baseline import recall_at_k  # noqa: E402
+    from eval_rule_based_baseline import recall_at_k, ndcg_at_k  # noqa: E402
 
     eval_data = _load(EVAL_SET)
     if eval_data is None:
@@ -145,14 +146,20 @@ def recall(k: int) -> int:
         raise SystemExit(f"[fatal] {EMBEDDINGS} 不存在")
     mat, idx_order = build_property_matrix(emb_data, {})
 
-    recalls = []
+    recalls, ndcgs = [], []
     for q in queries:
         qvec = encode(q["query"])
         sims = mat @ qvec
         top = [idx_order[i] for i in np.argsort(-sims)[:k]]
-        recalls.append(recall_at_k(top, set(q["relevant_idxs"]), k))
-    mean = sum(recalls) / len(recalls) if recalls else 0.0
-    print(f"[recall] generalization_eval Recall@{k} = {mean:.4f}  (n={len(queries)})")
+        relevant = set(q["relevant_idxs"])
+        recalls.append(recall_at_k(top, relevant, k))
+        # NDCG@5 — 與階段① ablation 同定義(binary relevance,ndcg_at_k 內部切前 5)。
+        rels = [1.0 if idx in relevant else 0.0 for idx in top]
+        ndcgs.append(ndcg_at_k(rels, 5))
+    rmean = sum(recalls) / len(recalls) if recalls else 0.0
+    nmean = sum(ndcgs) / len(ndcgs) if ndcgs else 0.0
+    print(f"[recall] generalization_eval Recall@{k} = {rmean:.4f}  (n={len(queries)})")
+    print(f"[ndcg]   generalization_eval NDCG@5 (binary) = {nmean:.4f}  (n={len(queries)})")
     return 0
 
 
