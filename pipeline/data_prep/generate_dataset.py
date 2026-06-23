@@ -968,7 +968,7 @@ def main():
     test_data  = generate_samples_for_split(test_prop_idx)
 
     external_query_files = [
-        "../../data/raw/fb_queries.json",
+        # fb_queries.json 已砍(階段③:FB 來源品質爛,連訓練查詢來源一起移除)
         "../../data/raw/llm_queries.json",
         "../../data/raw/mined_hard_negatives.json",
         "../../data/raw/silver_labeled_queries.json",
