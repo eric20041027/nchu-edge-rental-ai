@@ -142,7 +142,7 @@ export async function initData() {
 // 失敗為非致命:propertyEmbeddings 維持 null → recommend 自動 fallback 到 rule-based。
 async function loadPropertyEmbeddings(rawData) {
     try {
-        const resp = await fetchWithRetry('assets/property_embeddings.json?v=20260623');
+        const resp = await fetchWithRetry('assets/property_embeddings.json?v=20260623b');
         const emb = await resp.json();
         const vecs = Float32Array.from(emb.vecs);   // 704*768 flat row-major,每列已 L2 norm
         const idxToProp = new Map();
