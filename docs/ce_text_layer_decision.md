@@ -14,7 +14,7 @@
 - 訓練與打分統一改用 `property_to_text_enriched`(納入全部 notes + 全部 furniture,不砍前 5),訓練語料 property 端與線上一致。
 - 推論側不靠前端組裝,而是用 `pipeline/data_prep/precompute_ce_text.py` 在 Python 端 byte-exact 把 `ce_text` 預算進 `property_data.json`;前端 `scorePair(text, prop.ce_text || prop.text)` 直接讀預算欄。
 - `MAX_LENGTH` 由 64 改 **128**(富化文字平均 ~98 token,64 會截斷)。
-- 模型換為 C 組富化 rbt3 student(38.7 MB,舊模型已備份 `.PREV-20260616.onnx`)。
+- 模型換為 C 組富化 rbt3 student(38.7 MB,舊模型曾備份為 `.PREV-20260616.onnx`,已於 dead-weight 清理(收尾 B)移除)。
 
 **為什麼這次不再 OOD**:當初 NO-GO 的成因是「拿舊 prop.text-trained 模型去吃加長/改格式的文字」屬分佈外輸入,分數崩壞(「要有陽台」+7.9 → +0.5)。C 組訓練端與推論端**同款 enriched 文字**,線上線下一致,當初記錄的崩壞不復存在。
 
