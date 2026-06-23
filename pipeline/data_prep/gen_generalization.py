@@ -96,6 +96,13 @@ FEATURES: dict[str, dict] = {
             ("騎個車十分鐘內到校就行", "口語"),
             ("通勤靠機車不挑特別近", "negation"),
             ("有摩托車所以距離我不太計較", "生活推理"),
+            # 第五輪補:精確近距 scooter 表達(評估「騎車三分到校」R@30 僅 0.30,
+            # 舊表達全是「不必太近/遠一點沒差」鬆散語意,模型學不到「騎車很近」)。
+            ("騎車三分鐘就到學校超近", "口語"),
+            ("機車五分內到校門口", "口語"),
+            ("騎車一下就到的近距離", "口語"),
+            ("摩托車幾分鐘衝到學校", "生活推理"),
+            ("騎車很快就到不用騎很久", "口語"),
         ],
     },
     "cheap": {
@@ -304,6 +311,7 @@ def _resolve_eval(key: str) -> list[int]:
 # 預設權重 1.0;holdout 7 題對應的 5 維 + cheap 拉高,平衡單維口語 vs 複合精確召回。
 WEIGHT = {
     "walk_near": 2.0,   # holdout「早上爬不起來」
+    "scooter_near": 2.0,  # 第五輪:recall 弱項(「騎車三分到校」R@30 0.30 → 加權+補精確表達)
     "balcony": 2.0,     # holdout「想曬棉被」
     "elevator": 2.0,    # holdout「不想爬樓梯」
     "window": 2.0,      # holdout「黑漆漆」
@@ -356,7 +364,12 @@ def build_train(target_n: int) -> list[dict]:
             rows.append({"query": q, "property": prop_text(idx), "label": 1,
                          "relevance": 2, "is_hard": False, "src_idx": idx, "feat": feat})
 
-    # 硬負樣本:每維度第一條 query 配硬衝突房源(資料反向算)。
+    # 正樣本截到 target_n(硬負樣本不算在內,下方 append 後不再截 —— 硬負是
+    # InfoNCE 重要訊號,壓低表面相似但衝突房源,不可因 target_n 截斷被切掉)。
+    if len(rows) > target_n:
+        rows = rows[:target_n]
+
+    # 硬負樣本:每維度第一條 query 配硬衝突房源(資料反向算)。始終保留。
     for feat, spec in FEATURES.items():
         conflict = _hard_conflict(feat)
         if conflict is None or not spec["templates"]:
@@ -365,7 +378,7 @@ def build_train(target_n: int) -> list[dict]:
         if q0 not in hold_q:
             rows.append({"query": q0, "property": prop_text(conflict), "label": 0,
                          "relevance": 0, "is_hard": True, "src_idx": conflict, "feat": feat})
-    return rows[:target_n] if len(rows) > target_n else rows
+    return rows
 
 
 CAVEAT = ("評估 query 與訓練 query 皆 Claude 生成,非完美 holdout;數字僅作相對 Δ 與趨勢"
