@@ -17,8 +17,34 @@
 
 ## 路線順序
 
-1. **向量檢索**(語意召回 + 解推論速度)
-2. **反饋微調**(用點擊/回饋再訓練)
+1. **向量檢索**(語意召回 + 解推論速度)— ✅ 階段①已落地 main(T0–T7 GO)
+2. **反饋微調**(用點擊/回饋線上重排)— 意圖見下方〈階段②確認意圖〉
+
+## 階段②確認意圖
+
+> 由 interview-me 產出的確認意圖,2026-06-23。後續 spec / 規劃以此為準。
+
+- **Outcome:** 在 CE 精排之後加一層**純後處理重排** —— 用 localStorage 累積的
+  per-propertyId 👍/👎 對房源加固定調整量(👍 輕推、👎 重罰但不消失),
+  讓推薦隨使用者回饋越用越貼個人。**不碰任何模型權重。**
+- **User:** 這個瀏覽器的使用者(及 demo 操作者)—— 回饋跨 query、跨 session
+  累積,個人化只在本機(per-browser)。
+- **Why now:** 階段①向量檢索把可擴展性鋪好,反饋微調才有意義;回饋機制
+  (`renting_feedback_log`)已在收資料,現在把它接進排序。
+- **Success(行為判準):** 👎 某房源後重跑同/異 query,它明顯下沉;👍 後上升;
+  跨 session 仍生效;kill-switch 關掉後行為完全回到階段①。瀏覽器 preview
+  親自驗 + 一個確定性 self-check(假回饋 + 假 CE 分數 → 重排順序符合預期)。
+- **Constraint:** edge-first、純前端、零後端、零模型重訓;後處理層獨立可關
+  (kill-switch,比照 `VECTOR_RECALL_ENABLED`),零侵入 `recommend()`
+  既有召回 + CE 邏輯。
+
+### 階段② Out of scope
+
+- 真重訓 bi-encoder / CE
+- 👎 泛化到向量鄰居 / 相似房源(只記 propertyId 本人)
+- 硬隱藏房源(👎 = 重罰下沉,非消失)
+- 離線 Recall@K A/B 數字(回饋即 ground-truth,離線指標循環論證)
+- 跨裝置 / 雲端同步回饋
 
 ## Out of scope
 
