@@ -140,7 +140,10 @@ def recall(k: int) -> int:
     queries = eval_data["queries"] if isinstance(eval_data, dict) else eval_data
 
     encode = build_query_encoder()
-    mat, idx_order = build_property_matrix(EMBEDDINGS)
+    emb_data = _load(EMBEDDINGS)
+    if emb_data is None:
+        raise SystemExit(f"[fatal] {EMBEDDINGS} 不存在")
+    mat, idx_order = build_property_matrix(emb_data, {})
 
     recalls = []
     for q in queries:
