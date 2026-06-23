@@ -144,24 +144,6 @@
   "feat": "walk_near"
  },
  {
-  "query": "走路就到學校 懶得騎車",
-  "property": "雅房 透天厝 南區 仁義街 3400元 距離0.54km 床 衣櫃 寬頻網路 書櫃 洗衣機 含水",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 24,
-  "feat": "walk_near"
- },
- {
-  "query": "走路就到學校 懶得騎車",
-  "property": "套房 透天厝 南區 仁義街 4500元 距離0.58km 床 衣櫃 寬頻網路 冰箱 洗衣機 限學生 禁養寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 25,
-  "feat": "walk_near"
- },
- {
   "query": "睡到最後一刻再衝去上課的那種近",
   "property": "套房 透天厝 南區 仁和一街 5000元 距離0.09km 床 衣櫃 寬頻網路 書櫃 冰箱 限女性 限學生 禁養寵物",
   "label": 1,
@@ -303,24 +285,6 @@
   "relevance": 2,
   "is_hard": false,
   "src_idx": 21,
-  "feat": "walk_near"
- },
- {
-  "query": "睡到最後一刻再衝去上課的那種近",
-  "property": "雅房 透天厝 南區 仁義街 3400元 距離0.54km 床 衣櫃 寬頻網路 書櫃 洗衣機 含水",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 24,
-  "feat": "walk_near"
- },
- {
-  "query": "睡到最後一刻再衝去上課的那種近",
-  "property": "套房 透天厝 南區 仁義街 4500元 距離0.58km 床 衣櫃 寬頻網路 冰箱 洗衣機 限學生 禁養寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 25,
   "feat": "walk_near"
  },
  {
@@ -468,24 +432,6 @@
   "feat": "walk_near"
  },
  {
-  "query": "出門幾步路就是校門口",
-  "property": "雅房 透天厝 南區 仁義街 3400元 距離0.54km 床 衣櫃 寬頻網路 書櫃 洗衣機 含水",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 24,
-  "feat": "walk_near"
- },
- {
-  "query": "出門幾步路就是校門口",
-  "property": "套房 透天厝 南區 仁義街 4500元 距離0.58km 床 衣櫃 寬頻網路 冰箱 洗衣機 限學生 禁養寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 25,
-  "feat": "walk_near"
- },
- {
   "query": "根本住在學校隔壁的感覺",
   "property": "套房 透天厝 南區 仁和一街 5000元 距離0.09km 床 衣櫃 寬頻網路 書櫃 冰箱 限女性 限學生 禁養寵物",
   "label": 1,
@@ -627,24 +573,6 @@
   "relevance": 2,
   "is_hard": false,
   "src_idx": 21,
-  "feat": "walk_near"
- },
- {
-  "query": "根本住在學校隔壁的感覺",
-  "property": "雅房 透天厝 南區 仁義街 3400元 距離0.54km 床 衣櫃 寬頻網路 書櫃 洗衣機 含水",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 24,
-  "feat": "walk_near"
- },
- {
-  "query": "根本住在學校隔壁的感覺",
-  "property": "套房 透天厝 南區 仁義街 4500元 距離0.58km 床 衣櫃 寬頻網路 冰箱 洗衣機 限學生 禁養寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 25,
   "feat": "walk_near"
  },
  {
@@ -792,24 +720,6 @@
   "feat": "walk_near"
  },
  {
-  "query": "不用通勤直接走過去就好",
-  "property": "雅房 透天厝 南區 仁義街 3400元 距離0.54km 床 衣櫃 寬頻網路 書櫃 洗衣機 含水",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 24,
-  "feat": "walk_near"
- },
- {
-  "query": "不用通勤直接走過去就好",
-  "property": "套房 透天厝 南區 仁義街 4500元 距離0.58km 床 衣櫃 寬頻網路 冰箱 洗衣機 限學生 禁養寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 25,
-  "feat": "walk_near"
- },
- {
   "query": "離興大近到可以中午回來睡午覺",
   "property": "套房 透天厝 南區 仁和一街 5000元 距離0.09km 床 衣櫃 寬頻網路 書櫃 冰箱 限女性 限學生 禁養寵物",
   "label": 1,
@@ -951,24 +861,6 @@
   "relevance": 2,
   "is_hard": false,
   "src_idx": 21,
-  "feat": "walk_near"
- },
- {
-  "query": "離興大近到可以中午回來睡午覺",
-  "property": "雅房 透天厝 南區 仁義街 3400元 距離0.54km 床 衣櫃 寬頻網路 書櫃 洗衣機 含水",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 24,
-  "feat": "walk_near"
- },
- {
-  "query": "離興大近到可以中午回來睡午覺",
-  "property": "套房 透天厝 南區 仁義街 4500元 距離0.58km 床 衣櫃 寬頻網路 冰箱 洗衣機 限學生 禁養寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 25,
   "feat": "walk_near"
  },
  {
@@ -1116,24 +1008,6 @@
   "feat": "walk_near"
  },
  {
-  "query": "校門口走路五分鐘以內",
-  "property": "雅房 透天厝 南區 仁義街 3400元 距離0.54km 床 衣櫃 寬頻網路 書櫃 洗衣機 含水",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 24,
-  "feat": "walk_near"
- },
- {
-  "query": "校門口走路五分鐘以內",
-  "property": "套房 透天厝 南區 仁義街 4500元 距離0.58km 床 衣櫃 寬頻網路 冰箱 洗衣機 限學生 禁養寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 25,
-  "feat": "walk_near"
- },
- {
   "query": "步行可達不必牽車",
   "property": "套房 透天厝 南區 仁和一街 5000元 距離0.09km 床 衣櫃 寬頻網路 書櫃 冰箱 限女性 限學生 禁養寵物",
   "label": 1,
@@ -1275,24 +1149,6 @@
   "relevance": 2,
   "is_hard": false,
   "src_idx": 21,
-  "feat": "walk_near"
- },
- {
-  "query": "步行可達不必牽車",
-  "property": "雅房 透天厝 南區 仁義街 3400元 距離0.54km 床 衣櫃 寬頻網路 書櫃 洗衣機 含水",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 24,
-  "feat": "walk_near"
- },
- {
-  "query": "步行可達不必牽車",
-  "property": "套房 透天厝 南區 仁義街 4500元 距離0.58km 床 衣櫃 寬頻網路 冰箱 洗衣機 限學生 禁養寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 25,
   "feat": "walk_near"
  },
  {
@@ -1440,24 +1296,6 @@
   "feat": "scooter_near"
  },
  {
-  "query": "騎車就到不必太近",
-  "property": "套房 獨立 電梯大樓 南區 仁義街 8800元 距離0.76km 冰箱 冷氣 床 桌子 椅子",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 16,
-  "feat": "scooter_near"
- },
- {
-  "query": "騎車就到不必太近",
-  "property": "套房 獨立 電梯大樓 南區 仁義街 9300元 距離0.76km 冰箱 冷氣 床 桌子 椅子",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 17,
-  "feat": "scooter_near"
- },
- {
   "query": "機車代步幾分鐘的距離沒問題",
   "property": "套房 獨立 透天 南區 五權南路 7000元 距離2.09km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
   "label": 1,
@@ -1599,24 +1437,6 @@
   "relevance": 2,
   "is_hard": false,
   "src_idx": 15,
-  "feat": "scooter_near"
- },
- {
-  "query": "機車代步幾分鐘的距離沒問題",
-  "property": "套房 獨立 電梯大樓 南區 仁義街 8800元 距離0.76km 冰箱 冷氣 床 桌子 椅子",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 16,
-  "feat": "scooter_near"
- },
- {
-  "query": "機車代步幾分鐘的距離沒問題",
-  "property": "套房 獨立 電梯大樓 南區 仁義街 9300元 距離0.76km 冰箱 冷氣 床 桌子 椅子",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 17,
   "feat": "scooter_near"
  },
  {
@@ -1764,24 +1584,6 @@
   "feat": "scooter_near"
  },
  {
-  "query": "遠一點沒差有車就好",
-  "property": "套房 獨立 電梯大樓 南區 仁義街 8800元 距離0.76km 冰箱 冷氣 床 桌子 椅子",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 16,
-  "feat": "scooter_near"
- },
- {
-  "query": "遠一點沒差有車就好",
-  "property": "套房 獨立 電梯大樓 南區 仁義街 9300元 距離0.76km 冰箱 冷氣 床 桌子 椅子",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 17,
-  "feat": "scooter_near"
- },
- {
   "query": "騎個車十分鐘內到校就行",
   "property": "套房 獨立 透天 南區 五權南路 7000元 距離2.09km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
   "label": 1,
@@ -1923,24 +1725,6 @@
   "relevance": 2,
   "is_hard": false,
   "src_idx": 15,
-  "feat": "scooter_near"
- },
- {
-  "query": "騎個車十分鐘內到校就行",
-  "property": "套房 獨立 電梯大樓 南區 仁義街 8800元 距離0.76km 冰箱 冷氣 床 桌子 椅子",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 16,
-  "feat": "scooter_near"
- },
- {
-  "query": "騎個車十分鐘內到校就行",
-  "property": "套房 獨立 電梯大樓 南區 仁義街 9300元 距離0.76km 冰箱 冷氣 床 桌子 椅子",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 17,
   "feat": "scooter_near"
  },
  {
@@ -2088,24 +1872,6 @@
   "feat": "scooter_near"
  },
  {
-  "query": "通勤靠機車不挑特別近",
-  "property": "套房 獨立 電梯大樓 南區 仁義街 8800元 距離0.76km 冰箱 冷氣 床 桌子 椅子",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 16,
-  "feat": "scooter_near"
- },
- {
-  "query": "通勤靠機車不挑特別近",
-  "property": "套房 獨立 電梯大樓 南區 仁義街 9300元 距離0.76km 冰箱 冷氣 床 桌子 椅子",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 17,
-  "feat": "scooter_near"
- },
- {
   "query": "有摩托車所以距離我不太計較",
   "property": "套房 獨立 透天 南區 五權南路 7000元 距離2.09km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
   "label": 1,
@@ -2250,24 +2016,6 @@
   "feat": "scooter_near"
  },
  {
-  "query": "有摩托車所以距離我不太計較",
-  "property": "套房 獨立 電梯大樓 南區 仁義街 8800元 距離0.76km 冰箱 冷氣 床 桌子 椅子",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 16,
-  "feat": "scooter_near"
- },
- {
-  "query": "有摩托車所以距離我不太計較",
-  "property": "套房 獨立 電梯大樓 南區 仁義街 9300元 距離0.76km 冰箱 冷氣 床 桌子 椅子",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 17,
-  "feat": "scooter_near"
- },
- {
   "query": "最便宜能住人就好 學生沒錢",
   "property": "套房 獨立 透天 南區 五權南路 7000元 距離2.09km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
   "label": 1,
@@ -2409,24 +2157,6 @@
   "relevance": 2,
   "is_hard": false,
   "src_idx": 25,
-  "feat": "cheap"
- },
- {
-  "query": "最便宜能住人就好 學生沒錢",
-  "property": "住宅 透天厝 南區 信義南街 3500元 距離0.83km 床 衣櫃 電視 寬頻網路 冰箱",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 30,
-  "feat": "cheap"
- },
- {
-  "query": "最便宜能住人就好 學生沒錢",
-  "property": "套房 獨立 公寓 南區 公理街 6499元 距離1.15km 住警器 冰箱 冷氣 床 桌子 可養其他寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 32,
   "feat": "cheap"
  },
  {
@@ -2574,24 +2304,6 @@
   "feat": "cheap"
  },
  {
-  "query": "預算很緊只求有地方睡",
-  "property": "住宅 透天厝 南區 信義南街 3500元 距離0.83km 床 衣櫃 電視 寬頻網路 冰箱",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 30,
-  "feat": "cheap"
- },
- {
-  "query": "預算很緊只求有地方睡",
-  "property": "套房 獨立 公寓 南區 公理街 6499元 距離1.15km 住警器 冰箱 冷氣 床 桌子 可養其他寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 32,
-  "feat": "cheap"
- },
- {
   "query": "窮學生找最省的",
   "property": "套房 獨立 透天 南區 五權南路 7000元 距離2.09km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
   "label": 1,
@@ -2733,24 +2445,6 @@
   "relevance": 2,
   "is_hard": false,
   "src_idx": 25,
-  "feat": "cheap"
- },
- {
-  "query": "窮學生找最省的",
-  "property": "住宅 透天厝 南區 信義南街 3500元 距離0.83km 床 衣櫃 電視 寬頻網路 冰箱",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 30,
-  "feat": "cheap"
- },
- {
-  "query": "窮學生找最省的",
-  "property": "套房 獨立 公寓 南區 公理街 6499元 距離1.15km 住警器 冰箱 冷氣 床 桌子 可養其他寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 32,
   "feat": "cheap"
  },
  {
@@ -2898,24 +2592,6 @@
   "feat": "cheap"
  },
  {
-  "query": "錢包很扁挑最便宜的",
-  "property": "住宅 透天厝 南區 信義南街 3500元 距離0.83km 床 衣櫃 電視 寬頻網路 冰箱",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 30,
-  "feat": "cheap"
- },
- {
-  "query": "錢包很扁挑最便宜的",
-  "property": "套房 獨立 公寓 南區 公理街 6499元 距離1.15km 住警器 冰箱 冷氣 床 桌子 可養其他寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 32,
-  "feat": "cheap"
- },
- {
   "query": "一個月七千以內的平價房",
   "property": "套房 獨立 透天 南區 五權南路 7000元 距離2.09km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
   "label": 1,
@@ -3057,24 +2733,6 @@
   "relevance": 2,
   "is_hard": false,
   "src_idx": 25,
-  "feat": "cheap"
- },
- {
-  "query": "一個月七千以內的平價房",
-  "property": "住宅 透天厝 南區 信義南街 3500元 距離0.83km 床 衣櫃 電視 寬頻網路 冰箱",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 30,
-  "feat": "cheap"
- },
- {
-  "query": "一個月七千以內的平價房",
-  "property": "套房 獨立 公寓 南區 公理街 6499元 距離1.15km 住警器 冰箱 冷氣 床 桌子 可養其他寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 32,
   "feat": "cheap"
  },
  {
@@ -3222,24 +2880,6 @@
   "feat": "cheap"
  },
  {
-  "query": "能省則省租金越低越好",
-  "property": "住宅 透天厝 南區 信義南街 3500元 距離0.83km 床 衣櫃 電視 寬頻網路 冰箱",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 30,
-  "feat": "cheap"
- },
- {
-  "query": "能省則省租金越低越好",
-  "property": "套房 獨立 公寓 南區 公理街 6499元 距離1.15km 住警器 冰箱 冷氣 床 桌子 可養其他寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 32,
-  "feat": "cheap"
- },
- {
   "query": "不挑環境便宜第一",
   "property": "套房 獨立 透天 南區 五權南路 7000元 距離2.09km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
   "label": 1,
@@ -3381,24 +3021,6 @@
   "relevance": 2,
   "is_hard": false,
   "src_idx": 25,
-  "feat": "cheap"
- },
- {
-  "query": "不挑環境便宜第一",
-  "property": "住宅 透天厝 南區 信義南街 3500元 距離0.83km 床 衣櫃 電視 寬頻網路 冰箱",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 30,
-  "feat": "cheap"
- },
- {
-  "query": "不挑環境便宜第一",
-  "property": "套房 獨立 公寓 南區 公理街 6499元 距離1.15km 住警器 冰箱 冷氣 床 桌子 可養其他寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 32,
   "feat": "cheap"
  },
  {
@@ -3546,24 +3168,6 @@
   "feat": "elevator"
  },
  {
-  "query": "有電梯不用扛行李爬樓",
-  "property": "套房 分租 電梯大樓 南區 信義南街 13000元 距離0.78km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 28,
-  "feat": "elevator"
- },
- {
-  "query": "有電梯不用扛行李爬樓",
-  "property": "套房 獨立 電梯大樓 南區 信義南街 8600元 距離1.13km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 31,
-  "feat": "elevator"
- },
- {
   "query": "懶得爬樓梯要電梯大樓",
   "property": "套房 獨立 透天 南區 五權南路 7000元 距離2.09km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
   "label": 1,
@@ -3705,24 +3309,6 @@
   "relevance": 2,
   "is_hard": false,
   "src_idx": 27,
-  "feat": "elevator"
- },
- {
-  "query": "懶得爬樓梯要電梯大樓",
-  "property": "套房 分租 電梯大樓 南區 信義南街 13000元 距離0.78km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 28,
-  "feat": "elevator"
- },
- {
-  "query": "懶得爬樓梯要電梯大樓",
-  "property": "套房 獨立 電梯大樓 南區 信義南街 8600元 距離1.13km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 31,
   "feat": "elevator"
  },
  {
@@ -3870,24 +3456,6 @@
   "feat": "elevator"
  },
  {
-  "query": "搬東西方便的有電梯",
-  "property": "套房 分租 電梯大樓 南區 信義南街 13000元 距離0.78km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 28,
-  "feat": "elevator"
- },
- {
-  "query": "搬東西方便的有電梯",
-  "property": "套房 獨立 電梯大樓 南區 信義南街 8600元 距離1.13km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 31,
-  "feat": "elevator"
- },
- {
   "query": "受不了走樓梯一定要電梯",
   "property": "套房 獨立 透天 南區 五權南路 7000元 距離2.09km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
   "label": 1,
@@ -4029,24 +3597,6 @@
   "relevance": 2,
   "is_hard": false,
   "src_idx": 27,
-  "feat": "elevator"
- },
- {
-  "query": "受不了走樓梯一定要電梯",
-  "property": "套房 分租 電梯大樓 南區 信義南街 13000元 距離0.78km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 28,
-  "feat": "elevator"
- },
- {
-  "query": "受不了走樓梯一定要電梯",
-  "property": "套房 獨立 電梯大樓 南區 信義南街 8600元 距離1.13km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 31,
   "feat": "elevator"
  },
  {
@@ -4194,24 +3744,6 @@
   "feat": "elevator"
  },
  {
-  "query": "買菜回來不想爬樓",
-  "property": "套房 分租 電梯大樓 南區 信義南街 13000元 距離0.78km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 28,
-  "feat": "elevator"
- },
- {
-  "query": "買菜回來不想爬樓",
-  "property": "套房 獨立 電梯大樓 南區 信義南街 8600元 距離1.13km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 31,
-  "feat": "elevator"
- },
- {
   "query": "要有陽台曬衣服",
   "property": "套房 獨立 透天 南區 五權南路 7000元 距離2.09km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
   "label": 1,
@@ -4353,24 +3885,6 @@
   "relevance": 2,
   "is_hard": false,
   "src_idx": 18,
-  "feat": "balcony"
- },
- {
-  "query": "要有陽台曬衣服",
-  "property": "套房 透天厝 南區 仁義街 4800元 距離0.67km 床 衣櫃 寬頻網路 書櫃 冰箱 含水 限學生",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 20,
-  "feat": "balcony"
- },
- {
-  "query": "要有陽台曬衣服",
-  "property": "套房 公寓 南區 仁義街 5000元 距離0.81km 床 衣櫃 電視 寬頻網路 書櫃 限學生 禁養寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 21,
   "feat": "balcony"
  },
  {
@@ -4518,24 +4032,6 @@
   "feat": "balcony"
  },
  {
-  "query": "想種點花草要陽台",
-  "property": "套房 透天厝 南區 仁義街 4800元 距離0.67km 床 衣櫃 寬頻網路 書櫃 冰箱 含水 限學生",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 20,
-  "feat": "balcony"
- },
- {
-  "query": "想種點花草要陽台",
-  "property": "套房 公寓 南區 仁義街 5000元 距離0.81km 床 衣櫃 電視 寬頻網路 書櫃 限學生 禁養寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 21,
-  "feat": "balcony"
- },
- {
   "query": "衣服想曬太陽不要烘的",
   "property": "套房 獨立 透天 南區 五權南路 7000元 距離2.09km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
   "label": 1,
@@ -4677,24 +4173,6 @@
   "relevance": 2,
   "is_hard": false,
   "src_idx": 18,
-  "feat": "balcony"
- },
- {
-  "query": "衣服想曬太陽不要烘的",
-  "property": "套房 透天厝 南區 仁義街 4800元 距離0.67km 床 衣櫃 寬頻網路 書櫃 冰箱 含水 限學生",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 20,
-  "feat": "balcony"
- },
- {
-  "query": "衣服想曬太陽不要烘的",
-  "property": "套房 公寓 南區 仁義街 5000元 距離0.81km 床 衣櫃 電視 寬頻網路 書櫃 限學生 禁養寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 21,
   "feat": "balcony"
  },
  {
@@ -4842,21 +4320,1011 @@
   "feat": "balcony"
  },
  {
-  "query": "有個小陽台透透氣",
-  "property": "套房 透天厝 南區 仁義街 4800元 距離0.67km 床 衣櫃 寬頻網路 書櫃 冰箱 含水 限學生",
+  "query": "棉被想拿出去曬太陽",
+  "property": "套房 獨立 透天 南區 五權南路 7000元 距離2.09km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
   "label": 1,
   "relevance": 2,
   "is_hard": false,
-  "src_idx": 20,
+  "src_idx": 0,
   "feat": "balcony"
  },
  {
-  "query": "有個小陽台透透氣",
-  "property": "套房 公寓 南區 仁義街 5000元 距離0.81km 床 衣櫃 電視 寬頻網路 書櫃 限學生 禁養寵物",
+  "query": "棉被想拿出去曬太陽",
+  "property": "套房 獨立 電梯大樓 南區 五權南路 10500元 距離2.09km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
   "label": 1,
   "relevance": 2,
   "is_hard": false,
-  "src_idx": 21,
+  "src_idx": 1,
+  "feat": "balcony"
+ },
+ {
+  "query": "棉被想拿出去曬太陽",
+  "property": "住宅 公寓 南區 五權南路 4500元 距離1.67km 床 衣櫃 電視 書櫃 陽台 限學生",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 3,
+  "feat": "balcony"
+ },
+ {
+  "query": "棉被想拿出去曬太陽",
+  "property": "套房 透天厝 南區 五權南路 5000元 距離1.59km 床 衣櫃 電視 寬頻網路 書櫃",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 4,
+  "feat": "balcony"
+ },
+ {
+  "query": "棉被想拿出去曬太陽",
+  "property": "住宅 大樓 南區 五權南路 15000元 距離2.3km 床 衣櫃 冰箱 陽台 洗衣機 限學生",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 5,
+  "feat": "balcony"
+ },
+ {
+  "query": "棉被想拿出去曬太陽",
+  "property": "套房 透天厝 南區 仁和一街 5000元 距離0.09km 床 衣櫃 寬頻網路 書櫃 冰箱 限女性 限學生 禁養寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 6,
+  "feat": "balcony"
+ },
+ {
+  "query": "棉被想拿出去曬太陽",
+  "property": "套房 透天厝 南區 仁和二街 6300元 距離0.08km 床 衣櫃 電視 寬頻網路 書櫃 限女性",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 8,
+  "feat": "balcony"
+ },
+ {
+  "query": "棉被想拿出去曬太陽",
+  "property": "套房 獨立 電梯大樓 南區 仁和路 12500元 距離0.22km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 9,
+  "feat": "balcony"
+ },
+ {
+  "query": "棉被想拿出去曬太陽",
+  "property": "套房 獨立 電梯大樓 南區 仁和路 14500元 距離0.22km 冰箱 冷氣 床 桌子 椅子",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 10,
+  "feat": "balcony"
+ },
+ {
+  "query": "棉被想拿出去曬太陽",
+  "property": "套房 獨立 公寓 南區 仁德街 7500元 距離0.69km 冰箱 冷氣 床 桌子 椅子",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 11,
+  "feat": "balcony"
+ },
+ {
+  "query": "棉被想拿出去曬太陽",
+  "property": "雅房 套/ 透天厝 南區 仁德街 3000元 距離0.6km 床 衣櫃 寬頻網路 書櫃 冰箱 含水 限學生",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 13,
+  "feat": "balcony"
+ },
+ {
+  "query": "棉被想拿出去曬太陽",
+  "property": "套房 透天厝 南區 仁德街 6500元 距離0.55km 床 衣櫃 電視 寬頻網路 冰箱 含水 限學生 禁養寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 14,
+  "feat": "balcony"
+ },
+ {
+  "query": "棉被想拿出去曬太陽",
+  "property": "套房 獨立 透天 南區 仁義街 7500元 距離0.76km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 15,
+  "feat": "balcony"
+ },
+ {
+  "query": "棉被想拿出去曬太陽",
+  "property": "套房 獨立 電梯大樓 南區 仁義街 8800元 距離0.76km 冰箱 冷氣 床 桌子 椅子",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 16,
+  "feat": "balcony"
+ },
+ {
+  "query": "棉被想拿出去曬太陽",
+  "property": "套房 獨立 電梯大樓 南區 仁義街 9300元 距離0.76km 冰箱 冷氣 床 桌子 椅子",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 17,
+  "feat": "balcony"
+ },
+ {
+  "query": "棉被想拿出去曬太陽",
+  "property": "套房 獨立 透天 南區 仁義街 14500元 距離0.76km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 18,
+  "feat": "balcony"
+ },
+ {
+  "query": "有個能晾衣服的外推空間",
+  "property": "套房 獨立 透天 南區 五權南路 7000元 距離2.09km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 0,
+  "feat": "balcony"
+ },
+ {
+  "query": "有個能晾衣服的外推空間",
+  "property": "套房 獨立 電梯大樓 南區 五權南路 10500元 距離2.09km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 1,
+  "feat": "balcony"
+ },
+ {
+  "query": "有個能晾衣服的外推空間",
+  "property": "住宅 公寓 南區 五權南路 4500元 距離1.67km 床 衣櫃 電視 書櫃 陽台 限學生",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 3,
+  "feat": "balcony"
+ },
+ {
+  "query": "有個能晾衣服的外推空間",
+  "property": "套房 透天厝 南區 五權南路 5000元 距離1.59km 床 衣櫃 電視 寬頻網路 書櫃",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 4,
+  "feat": "balcony"
+ },
+ {
+  "query": "有個能晾衣服的外推空間",
+  "property": "住宅 大樓 南區 五權南路 15000元 距離2.3km 床 衣櫃 冰箱 陽台 洗衣機 限學生",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 5,
+  "feat": "balcony"
+ },
+ {
+  "query": "有個能晾衣服的外推空間",
+  "property": "套房 透天厝 南區 仁和一街 5000元 距離0.09km 床 衣櫃 寬頻網路 書櫃 冰箱 限女性 限學生 禁養寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 6,
+  "feat": "balcony"
+ },
+ {
+  "query": "有個能晾衣服的外推空間",
+  "property": "套房 透天厝 南區 仁和二街 6300元 距離0.08km 床 衣櫃 電視 寬頻網路 書櫃 限女性",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 8,
+  "feat": "balcony"
+ },
+ {
+  "query": "有個能晾衣服的外推空間",
+  "property": "套房 獨立 電梯大樓 南區 仁和路 12500元 距離0.22km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 9,
+  "feat": "balcony"
+ },
+ {
+  "query": "有個能晾衣服的外推空間",
+  "property": "套房 獨立 電梯大樓 南區 仁和路 14500元 距離0.22km 冰箱 冷氣 床 桌子 椅子",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 10,
+  "feat": "balcony"
+ },
+ {
+  "query": "有個能晾衣服的外推空間",
+  "property": "套房 獨立 公寓 南區 仁德街 7500元 距離0.69km 冰箱 冷氣 床 桌子 椅子",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 11,
+  "feat": "balcony"
+ },
+ {
+  "query": "有個能晾衣服的外推空間",
+  "property": "雅房 套/ 透天厝 南區 仁德街 3000元 距離0.6km 床 衣櫃 寬頻網路 書櫃 冰箱 含水 限學生",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 13,
+  "feat": "balcony"
+ },
+ {
+  "query": "有個能晾衣服的外推空間",
+  "property": "套房 透天厝 南區 仁德街 6500元 距離0.55km 床 衣櫃 電視 寬頻網路 冰箱 含水 限學生 禁養寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 14,
+  "feat": "balcony"
+ },
+ {
+  "query": "有個能晾衣服的外推空間",
+  "property": "套房 獨立 透天 南區 仁義街 7500元 距離0.76km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 15,
+  "feat": "balcony"
+ },
+ {
+  "query": "有個能晾衣服的外推空間",
+  "property": "套房 獨立 電梯大樓 南區 仁義街 8800元 距離0.76km 冰箱 冷氣 床 桌子 椅子",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 16,
+  "feat": "balcony"
+ },
+ {
+  "query": "有個能晾衣服的外推空間",
+  "property": "套房 獨立 電梯大樓 南區 仁義街 9300元 距離0.76km 冰箱 冷氣 床 桌子 椅子",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 17,
+  "feat": "balcony"
+ },
+ {
+  "query": "有個能晾衣服的外推空間",
+  "property": "套房 獨立 透天 南區 仁義街 14500元 距離0.76km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 18,
+  "feat": "balcony"
+ },
+ {
+  "query": "洗好的衣服想掛外面吹風",
+  "property": "套房 獨立 透天 南區 五權南路 7000元 距離2.09km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 0,
+  "feat": "balcony"
+ },
+ {
+  "query": "洗好的衣服想掛外面吹風",
+  "property": "套房 獨立 電梯大樓 南區 五權南路 10500元 距離2.09km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 1,
+  "feat": "balcony"
+ },
+ {
+  "query": "洗好的衣服想掛外面吹風",
+  "property": "住宅 公寓 南區 五權南路 4500元 距離1.67km 床 衣櫃 電視 書櫃 陽台 限學生",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 3,
+  "feat": "balcony"
+ },
+ {
+  "query": "洗好的衣服想掛外面吹風",
+  "property": "套房 透天厝 南區 五權南路 5000元 距離1.59km 床 衣櫃 電視 寬頻網路 書櫃",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 4,
+  "feat": "balcony"
+ },
+ {
+  "query": "洗好的衣服想掛外面吹風",
+  "property": "住宅 大樓 南區 五權南路 15000元 距離2.3km 床 衣櫃 冰箱 陽台 洗衣機 限學生",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 5,
+  "feat": "balcony"
+ },
+ {
+  "query": "洗好的衣服想掛外面吹風",
+  "property": "套房 透天厝 南區 仁和一街 5000元 距離0.09km 床 衣櫃 寬頻網路 書櫃 冰箱 限女性 限學生 禁養寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 6,
+  "feat": "balcony"
+ },
+ {
+  "query": "洗好的衣服想掛外面吹風",
+  "property": "套房 透天厝 南區 仁和二街 6300元 距離0.08km 床 衣櫃 電視 寬頻網路 書櫃 限女性",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 8,
+  "feat": "balcony"
+ },
+ {
+  "query": "洗好的衣服想掛外面吹風",
+  "property": "套房 獨立 電梯大樓 南區 仁和路 12500元 距離0.22km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 9,
+  "feat": "balcony"
+ },
+ {
+  "query": "洗好的衣服想掛外面吹風",
+  "property": "套房 獨立 電梯大樓 南區 仁和路 14500元 距離0.22km 冰箱 冷氣 床 桌子 椅子",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 10,
+  "feat": "balcony"
+ },
+ {
+  "query": "洗好的衣服想掛外面吹風",
+  "property": "套房 獨立 公寓 南區 仁德街 7500元 距離0.69km 冰箱 冷氣 床 桌子 椅子",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 11,
+  "feat": "balcony"
+ },
+ {
+  "query": "洗好的衣服想掛外面吹風",
+  "property": "雅房 套/ 透天厝 南區 仁德街 3000元 距離0.6km 床 衣櫃 寬頻網路 書櫃 冰箱 含水 限學生",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 13,
+  "feat": "balcony"
+ },
+ {
+  "query": "洗好的衣服想掛外面吹風",
+  "property": "套房 透天厝 南區 仁德街 6500元 距離0.55km 床 衣櫃 電視 寬頻網路 冰箱 含水 限學生 禁養寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 14,
+  "feat": "balcony"
+ },
+ {
+  "query": "洗好的衣服想掛外面吹風",
+  "property": "套房 獨立 透天 南區 仁義街 7500元 距離0.76km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 15,
+  "feat": "balcony"
+ },
+ {
+  "query": "洗好的衣服想掛外面吹風",
+  "property": "套房 獨立 電梯大樓 南區 仁義街 8800元 距離0.76km 冰箱 冷氣 床 桌子 椅子",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 16,
+  "feat": "balcony"
+ },
+ {
+  "query": "洗好的衣服想掛外面吹風",
+  "property": "套房 獨立 電梯大樓 南區 仁義街 9300元 距離0.76km 冰箱 冷氣 床 桌子 椅子",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 17,
+  "feat": "balcony"
+ },
+ {
+  "query": "洗好的衣服想掛外面吹風",
+  "property": "套房 獨立 透天 南區 仁義街 14500元 距離0.76km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 18,
+  "feat": "balcony"
+ },
+ {
+  "query": "房間外面要有可以站的地方",
+  "property": "套房 獨立 透天 南區 五權南路 7000元 距離2.09km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 0,
+  "feat": "balcony"
+ },
+ {
+  "query": "房間外面要有可以站的地方",
+  "property": "套房 獨立 電梯大樓 南區 五權南路 10500元 距離2.09km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 1,
+  "feat": "balcony"
+ },
+ {
+  "query": "房間外面要有可以站的地方",
+  "property": "住宅 公寓 南區 五權南路 4500元 距離1.67km 床 衣櫃 電視 書櫃 陽台 限學生",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 3,
+  "feat": "balcony"
+ },
+ {
+  "query": "房間外面要有可以站的地方",
+  "property": "套房 透天厝 南區 五權南路 5000元 距離1.59km 床 衣櫃 電視 寬頻網路 書櫃",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 4,
+  "feat": "balcony"
+ },
+ {
+  "query": "房間外面要有可以站的地方",
+  "property": "住宅 大樓 南區 五權南路 15000元 距離2.3km 床 衣櫃 冰箱 陽台 洗衣機 限學生",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 5,
+  "feat": "balcony"
+ },
+ {
+  "query": "房間外面要有可以站的地方",
+  "property": "套房 透天厝 南區 仁和一街 5000元 距離0.09km 床 衣櫃 寬頻網路 書櫃 冰箱 限女性 限學生 禁養寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 6,
+  "feat": "balcony"
+ },
+ {
+  "query": "房間外面要有可以站的地方",
+  "property": "套房 透天厝 南區 仁和二街 6300元 距離0.08km 床 衣櫃 電視 寬頻網路 書櫃 限女性",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 8,
+  "feat": "balcony"
+ },
+ {
+  "query": "房間外面要有可以站的地方",
+  "property": "套房 獨立 電梯大樓 南區 仁和路 12500元 距離0.22km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 9,
+  "feat": "balcony"
+ },
+ {
+  "query": "房間外面要有可以站的地方",
+  "property": "套房 獨立 電梯大樓 南區 仁和路 14500元 距離0.22km 冰箱 冷氣 床 桌子 椅子",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 10,
+  "feat": "balcony"
+ },
+ {
+  "query": "房間外面要有可以站的地方",
+  "property": "套房 獨立 公寓 南區 仁德街 7500元 距離0.69km 冰箱 冷氣 床 桌子 椅子",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 11,
+  "feat": "balcony"
+ },
+ {
+  "query": "房間外面要有可以站的地方",
+  "property": "雅房 套/ 透天厝 南區 仁德街 3000元 距離0.6km 床 衣櫃 寬頻網路 書櫃 冰箱 含水 限學生",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 13,
+  "feat": "balcony"
+ },
+ {
+  "query": "房間外面要有可以站的地方",
+  "property": "套房 透天厝 南區 仁德街 6500元 距離0.55km 床 衣櫃 電視 寬頻網路 冰箱 含水 限學生 禁養寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 14,
+  "feat": "balcony"
+ },
+ {
+  "query": "房間外面要有可以站的地方",
+  "property": "套房 獨立 透天 南區 仁義街 7500元 距離0.76km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 15,
+  "feat": "balcony"
+ },
+ {
+  "query": "房間外面要有可以站的地方",
+  "property": "套房 獨立 電梯大樓 南區 仁義街 8800元 距離0.76km 冰箱 冷氣 床 桌子 椅子",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 16,
+  "feat": "balcony"
+ },
+ {
+  "query": "房間外面要有可以站的地方",
+  "property": "套房 獨立 電梯大樓 南區 仁義街 9300元 距離0.76km 冰箱 冷氣 床 桌子 椅子",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 17,
+  "feat": "balcony"
+ },
+ {
+  "query": "房間外面要有可以站的地方",
+  "property": "套房 獨立 透天 南區 仁義街 14500元 距離0.76km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 18,
+  "feat": "balcony"
+ },
+ {
+  "query": "想養點盆栽曬得到太陽",
+  "property": "套房 獨立 透天 南區 五權南路 7000元 距離2.09km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 0,
+  "feat": "balcony"
+ },
+ {
+  "query": "想養點盆栽曬得到太陽",
+  "property": "套房 獨立 電梯大樓 南區 五權南路 10500元 距離2.09km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 1,
+  "feat": "balcony"
+ },
+ {
+  "query": "想養點盆栽曬得到太陽",
+  "property": "住宅 公寓 南區 五權南路 4500元 距離1.67km 床 衣櫃 電視 書櫃 陽台 限學生",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 3,
+  "feat": "balcony"
+ },
+ {
+  "query": "想養點盆栽曬得到太陽",
+  "property": "套房 透天厝 南區 五權南路 5000元 距離1.59km 床 衣櫃 電視 寬頻網路 書櫃",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 4,
+  "feat": "balcony"
+ },
+ {
+  "query": "想養點盆栽曬得到太陽",
+  "property": "住宅 大樓 南區 五權南路 15000元 距離2.3km 床 衣櫃 冰箱 陽台 洗衣機 限學生",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 5,
+  "feat": "balcony"
+ },
+ {
+  "query": "想養點盆栽曬得到太陽",
+  "property": "套房 透天厝 南區 仁和一街 5000元 距離0.09km 床 衣櫃 寬頻網路 書櫃 冰箱 限女性 限學生 禁養寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 6,
+  "feat": "balcony"
+ },
+ {
+  "query": "想養點盆栽曬得到太陽",
+  "property": "套房 透天厝 南區 仁和二街 6300元 距離0.08km 床 衣櫃 電視 寬頻網路 書櫃 限女性",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 8,
+  "feat": "balcony"
+ },
+ {
+  "query": "想養點盆栽曬得到太陽",
+  "property": "套房 獨立 電梯大樓 南區 仁和路 12500元 距離0.22km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 9,
+  "feat": "balcony"
+ },
+ {
+  "query": "想養點盆栽曬得到太陽",
+  "property": "套房 獨立 電梯大樓 南區 仁和路 14500元 距離0.22km 冰箱 冷氣 床 桌子 椅子",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 10,
+  "feat": "balcony"
+ },
+ {
+  "query": "想養點盆栽曬得到太陽",
+  "property": "套房 獨立 公寓 南區 仁德街 7500元 距離0.69km 冰箱 冷氣 床 桌子 椅子",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 11,
+  "feat": "balcony"
+ },
+ {
+  "query": "想養點盆栽曬得到太陽",
+  "property": "雅房 套/ 透天厝 南區 仁德街 3000元 距離0.6km 床 衣櫃 寬頻網路 書櫃 冰箱 含水 限學生",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 13,
+  "feat": "balcony"
+ },
+ {
+  "query": "想養點盆栽曬得到太陽",
+  "property": "套房 透天厝 南區 仁德街 6500元 距離0.55km 床 衣櫃 電視 寬頻網路 冰箱 含水 限學生 禁養寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 14,
+  "feat": "balcony"
+ },
+ {
+  "query": "想養點盆栽曬得到太陽",
+  "property": "套房 獨立 透天 南區 仁義街 7500元 距離0.76km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 15,
+  "feat": "balcony"
+ },
+ {
+  "query": "想養點盆栽曬得到太陽",
+  "property": "套房 獨立 電梯大樓 南區 仁義街 8800元 距離0.76km 冰箱 冷氣 床 桌子 椅子",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 16,
+  "feat": "balcony"
+ },
+ {
+  "query": "想養點盆栽曬得到太陽",
+  "property": "套房 獨立 電梯大樓 南區 仁義街 9300元 距離0.76km 冰箱 冷氣 床 桌子 椅子",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 17,
+  "feat": "balcony"
+ },
+ {
+  "query": "想養點盆栽曬得到太陽",
+  "property": "套房 獨立 透天 南區 仁義街 14500元 距離0.76km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 18,
+  "feat": "balcony"
+ },
+ {
+  "query": "要能通風透氣的半開放空間",
+  "property": "套房 獨立 透天 南區 五權南路 7000元 距離2.09km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 0,
+  "feat": "balcony"
+ },
+ {
+  "query": "要能通風透氣的半開放空間",
+  "property": "套房 獨立 電梯大樓 南區 五權南路 10500元 距離2.09km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 1,
+  "feat": "balcony"
+ },
+ {
+  "query": "要能通風透氣的半開放空間",
+  "property": "住宅 公寓 南區 五權南路 4500元 距離1.67km 床 衣櫃 電視 書櫃 陽台 限學生",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 3,
+  "feat": "balcony"
+ },
+ {
+  "query": "要能通風透氣的半開放空間",
+  "property": "套房 透天厝 南區 五權南路 5000元 距離1.59km 床 衣櫃 電視 寬頻網路 書櫃",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 4,
+  "feat": "balcony"
+ },
+ {
+  "query": "要能通風透氣的半開放空間",
+  "property": "住宅 大樓 南區 五權南路 15000元 距離2.3km 床 衣櫃 冰箱 陽台 洗衣機 限學生",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 5,
+  "feat": "balcony"
+ },
+ {
+  "query": "要能通風透氣的半開放空間",
+  "property": "套房 透天厝 南區 仁和一街 5000元 距離0.09km 床 衣櫃 寬頻網路 書櫃 冰箱 限女性 限學生 禁養寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 6,
+  "feat": "balcony"
+ },
+ {
+  "query": "要能通風透氣的半開放空間",
+  "property": "套房 透天厝 南區 仁和二街 6300元 距離0.08km 床 衣櫃 電視 寬頻網路 書櫃 限女性",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 8,
+  "feat": "balcony"
+ },
+ {
+  "query": "要能通風透氣的半開放空間",
+  "property": "套房 獨立 電梯大樓 南區 仁和路 12500元 距離0.22km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 9,
+  "feat": "balcony"
+ },
+ {
+  "query": "要能通風透氣的半開放空間",
+  "property": "套房 獨立 電梯大樓 南區 仁和路 14500元 距離0.22km 冰箱 冷氣 床 桌子 椅子",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 10,
+  "feat": "balcony"
+ },
+ {
+  "query": "要能通風透氣的半開放空間",
+  "property": "套房 獨立 公寓 南區 仁德街 7500元 距離0.69km 冰箱 冷氣 床 桌子 椅子",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 11,
+  "feat": "balcony"
+ },
+ {
+  "query": "要能通風透氣的半開放空間",
+  "property": "雅房 套/ 透天厝 南區 仁德街 3000元 距離0.6km 床 衣櫃 寬頻網路 書櫃 冰箱 含水 限學生",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 13,
+  "feat": "balcony"
+ },
+ {
+  "query": "要能通風透氣的半開放空間",
+  "property": "套房 透天厝 南區 仁德街 6500元 距離0.55km 床 衣櫃 電視 寬頻網路 冰箱 含水 限學生 禁養寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 14,
+  "feat": "balcony"
+ },
+ {
+  "query": "要能通風透氣的半開放空間",
+  "property": "套房 獨立 透天 南區 仁義街 7500元 距離0.76km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 15,
+  "feat": "balcony"
+ },
+ {
+  "query": "要能通風透氣的半開放空間",
+  "property": "套房 獨立 電梯大樓 南區 仁義街 8800元 距離0.76km 冰箱 冷氣 床 桌子 椅子",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 16,
+  "feat": "balcony"
+ },
+ {
+  "query": "要能通風透氣的半開放空間",
+  "property": "套房 獨立 電梯大樓 南區 仁義街 9300元 距離0.76km 冰箱 冷氣 床 桌子 椅子",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 17,
+  "feat": "balcony"
+ },
+ {
+  "query": "要能通風透氣的半開放空間",
+  "property": "套房 獨立 透天 南區 仁義街 14500元 距離0.76km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 18,
+  "feat": "balcony"
+ },
+ {
+  "query": "不想衣服悶在房間裡曬",
+  "property": "套房 獨立 透天 南區 五權南路 7000元 距離2.09km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 0,
+  "feat": "balcony"
+ },
+ {
+  "query": "不想衣服悶在房間裡曬",
+  "property": "套房 獨立 電梯大樓 南區 五權南路 10500元 距離2.09km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 1,
+  "feat": "balcony"
+ },
+ {
+  "query": "不想衣服悶在房間裡曬",
+  "property": "住宅 公寓 南區 五權南路 4500元 距離1.67km 床 衣櫃 電視 書櫃 陽台 限學生",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 3,
+  "feat": "balcony"
+ },
+ {
+  "query": "不想衣服悶在房間裡曬",
+  "property": "套房 透天厝 南區 五權南路 5000元 距離1.59km 床 衣櫃 電視 寬頻網路 書櫃",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 4,
+  "feat": "balcony"
+ },
+ {
+  "query": "不想衣服悶在房間裡曬",
+  "property": "住宅 大樓 南區 五權南路 15000元 距離2.3km 床 衣櫃 冰箱 陽台 洗衣機 限學生",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 5,
+  "feat": "balcony"
+ },
+ {
+  "query": "不想衣服悶在房間裡曬",
+  "property": "套房 透天厝 南區 仁和一街 5000元 距離0.09km 床 衣櫃 寬頻網路 書櫃 冰箱 限女性 限學生 禁養寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 6,
+  "feat": "balcony"
+ },
+ {
+  "query": "不想衣服悶在房間裡曬",
+  "property": "套房 透天厝 南區 仁和二街 6300元 距離0.08km 床 衣櫃 電視 寬頻網路 書櫃 限女性",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 8,
+  "feat": "balcony"
+ },
+ {
+  "query": "不想衣服悶在房間裡曬",
+  "property": "套房 獨立 電梯大樓 南區 仁和路 12500元 距離0.22km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 9,
+  "feat": "balcony"
+ },
+ {
+  "query": "不想衣服悶在房間裡曬",
+  "property": "套房 獨立 電梯大樓 南區 仁和路 14500元 距離0.22km 冰箱 冷氣 床 桌子 椅子",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 10,
+  "feat": "balcony"
+ },
+ {
+  "query": "不想衣服悶在房間裡曬",
+  "property": "套房 獨立 公寓 南區 仁德街 7500元 距離0.69km 冰箱 冷氣 床 桌子 椅子",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 11,
+  "feat": "balcony"
+ },
+ {
+  "query": "不想衣服悶在房間裡曬",
+  "property": "雅房 套/ 透天厝 南區 仁德街 3000元 距離0.6km 床 衣櫃 寬頻網路 書櫃 冰箱 含水 限學生",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 13,
+  "feat": "balcony"
+ },
+ {
+  "query": "不想衣服悶在房間裡曬",
+  "property": "套房 透天厝 南區 仁德街 6500元 距離0.55km 床 衣櫃 電視 寬頻網路 冰箱 含水 限學生 禁養寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 14,
+  "feat": "balcony"
+ },
+ {
+  "query": "不想衣服悶在房間裡曬",
+  "property": "套房 獨立 透天 南區 仁義街 7500元 距離0.76km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 15,
+  "feat": "balcony"
+ },
+ {
+  "query": "不想衣服悶在房間裡曬",
+  "property": "套房 獨立 電梯大樓 南區 仁義街 8800元 距離0.76km 冰箱 冷氣 床 桌子 椅子",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 16,
+  "feat": "balcony"
+ },
+ {
+  "query": "不想衣服悶在房間裡曬",
+  "property": "套房 獨立 電梯大樓 南區 仁義街 9300元 距離0.76km 冰箱 冷氣 床 桌子 椅子",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 17,
+  "feat": "balcony"
+ },
+ {
+  "query": "不想衣服悶在房間裡曬",
+  "property": "套房 獨立 透天 南區 仁義街 14500元 距離0.76km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
+  "label": 1,
+  "relevance": 2,
+  "is_hard": false,
+  "src_idx": 18,
   "feat": "balcony"
  },
  {
@@ -5004,24 +5472,6 @@
   "feat": "parking"
  },
  {
-  "query": "要有車位停機車",
-  "property": "套房 大樓 南區 中興路二段 12800元 距離0.95km 床 衣櫃 電視 寬頻網路 書櫃 禁養寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 53,
-  "feat": "parking"
- },
- {
-  "query": "要有車位停機車",
-  "property": "住宅 大樓 南區 信義南街 46000元 距離1.05km 床 衣櫃 書櫃 冰箱 陽台",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 54,
-  "feat": "parking"
- },
- {
   "query": "有地方停車不怕被拖吊",
   "property": "套房 公寓 南區 五權南路 5900元 距離1.75km 床 衣櫃 電視 寬頻網路 書櫃 含水 禁養寵物",
   "label": 1,
@@ -5163,24 +5613,6 @@
   "relevance": 2,
   "is_hard": false,
   "src_idx": 52,
-  "feat": "parking"
- },
- {
-  "query": "有地方停車不怕被拖吊",
-  "property": "套房 大樓 南區 中興路二段 12800元 距離0.95km 床 衣櫃 電視 寬頻網路 書櫃 禁養寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 53,
-  "feat": "parking"
- },
- {
-  "query": "有地方停車不怕被拖吊",
-  "property": "住宅 大樓 南區 信義南街 46000元 距離1.05km 床 衣櫃 書櫃 冰箱 陽台",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 54,
   "feat": "parking"
  },
  {
@@ -5328,24 +5760,6 @@
   "feat": "parking"
  },
  {
-  "query": "附停車位的房",
-  "property": "套房 大樓 南區 中興路二段 12800元 距離0.95km 床 衣櫃 電視 寬頻網路 書櫃 禁養寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 53,
-  "feat": "parking"
- },
- {
-  "query": "附停車位的房",
-  "property": "住宅 大樓 南區 信義南街 46000元 距離1.05km 床 衣櫃 書櫃 冰箱 陽台",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 54,
-  "feat": "parking"
- },
- {
   "query": "車子有地方放的",
   "property": "套房 公寓 南區 五權南路 5900元 距離1.75km 床 衣櫃 電視 寬頻網路 書櫃 含水 禁養寵物",
   "label": 1,
@@ -5490,24 +5904,6 @@
   "feat": "parking"
  },
  {
-  "query": "車子有地方放的",
-  "property": "套房 大樓 南區 中興路二段 12800元 距離0.95km 床 衣櫃 電視 寬頻網路 書櫃 禁養寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 53,
-  "feat": "parking"
- },
- {
-  "query": "車子有地方放的",
-  "property": "住宅 大樓 南區 信義南街 46000元 距離1.05km 床 衣櫃 書櫃 冰箱 陽台",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 54,
-  "feat": "parking"
- },
- {
   "query": "採光好有對外窗",
   "property": "套房 獨立 透天 南區 五權南路 7000元 距離2.09km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
   "label": 1,
@@ -5649,24 +6045,6 @@
   "relevance": 2,
   "is_hard": false,
   "src_idx": 18,
-  "feat": "window"
- },
- {
-  "query": "採光好有對外窗",
-  "property": "套房 透天厝 南區 仁義街 4800元 距離0.67km 床 衣櫃 寬頻網路 書櫃 冰箱 含水 限學生",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 20,
-  "feat": "window"
- },
- {
-  "query": "採光好有對外窗",
-  "property": "套房 公寓 南區 仁義街 5000元 距離0.81km 床 衣櫃 電視 寬頻網路 書櫃 限學生 禁養寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 21,
   "feat": "window"
  },
  {
@@ -5814,24 +6192,6 @@
   "feat": "window"
  },
  {
-  "query": "不要暗房一定要窗戶",
-  "property": "套房 透天厝 南區 仁義街 4800元 距離0.67km 床 衣櫃 寬頻網路 書櫃 冰箱 含水 限學生",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 20,
-  "feat": "window"
- },
- {
-  "query": "不要暗房一定要窗戶",
-  "property": "套房 公寓 南區 仁義街 5000元 距離0.81km 床 衣櫃 電視 寬頻網路 書櫃 限學生 禁養寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 21,
-  "feat": "window"
- },
- {
   "query": "有窗戶通風採光的",
   "property": "套房 獨立 透天 南區 五權南路 7000元 距離2.09km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
   "label": 1,
@@ -5976,24 +6336,6 @@
   "feat": "window"
  },
  {
-  "query": "有窗戶通風採光的",
-  "property": "套房 透天厝 南區 仁義街 4800元 距離0.67km 床 衣櫃 寬頻網路 書櫃 冰箱 含水 限學生",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 20,
-  "feat": "window"
- },
- {
-  "query": "有窗戶通風採光的",
-  "property": "套房 公寓 南區 仁義街 5000元 距離0.81km 床 衣櫃 電視 寬頻網路 書櫃 限學生 禁養寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 21,
-  "feat": "window"
- },
- {
   "query": "白天不開燈也亮的房間",
   "property": "套房 獨立 透天 南區 五權南路 7000元 距離2.09km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
   "label": 1,
@@ -6135,24 +6477,6 @@
   "relevance": 2,
   "is_hard": false,
   "src_idx": 18,
-  "feat": "window"
- },
- {
-  "query": "白天不開燈也亮的房間",
-  "property": "套房 透天厝 南區 仁義街 4800元 距離0.67km 床 衣櫃 寬頻網路 書櫃 冰箱 含水 限學生",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 20,
-  "feat": "window"
- },
- {
-  "query": "白天不開燈也亮的房間",
-  "property": "套房 公寓 南區 仁義街 5000元 距離0.81km 床 衣櫃 電視 寬頻網路 書櫃 限學生 禁養寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 21,
   "feat": "window"
  },
  {
@@ -6300,24 +6624,6 @@
   "feat": "subsidy"
  },
  {
-  "query": "可以申請租屋補助的",
-  "property": "套房 獨立 電梯大樓 南區 南平路 10800元 距離2.01km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 43,
-  "feat": "subsidy"
- },
- {
-  "query": "可以申請租屋補助的",
-  "property": "雅房 透天 南區 南門路 5300元 距離0.45km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 45,
-  "feat": "subsidy"
- },
- {
   "query": "能報租金補貼省一點",
   "property": "套房 獨立 透天 南區 五權南路 7000元 距離2.09km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
   "label": 1,
@@ -6459,24 +6765,6 @@
   "relevance": 2,
   "is_hard": false,
   "src_idx": 34,
-  "feat": "subsidy"
- },
- {
-  "query": "能報租金補貼省一點",
-  "property": "套房 獨立 電梯大樓 南區 南平路 10800元 距離2.01km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 43,
-  "feat": "subsidy"
- },
- {
-  "query": "能報租金補貼省一點",
-  "property": "雅房 透天 南區 南門路 5300元 距離0.45km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 45,
   "feat": "subsidy"
  },
  {
@@ -6624,24 +6912,6 @@
   "feat": "subsidy"
  },
  {
-  "query": "房東願意配合補助申請",
-  "property": "套房 獨立 電梯大樓 南區 南平路 10800元 距離2.01km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 43,
-  "feat": "subsidy"
- },
- {
-  "query": "房東願意配合補助申請",
-  "property": "雅房 透天 南區 南門路 5300元 距離0.45km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 45,
-  "feat": "subsidy"
- },
- {
   "query": "透天裡的套房安靜唸書",
   "property": "套房 獨立 透天 南區 五權南路 7000元 距離2.09km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
   "label": 1,
@@ -6783,24 +7053,6 @@
   "relevance": 2,
   "is_hard": false,
   "src_idx": 33,
-  "feat": "toutian"
- },
- {
-  "query": "透天裡的套房安靜唸書",
-  "property": "整層 透天 南區 公理街 18000元 距離1.15km 冷氣 沙發",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 34,
-  "feat": "toutian"
- },
- {
-  "query": "透天裡的套房安靜唸書",
-  "property": "套房 透天厝 南區 公理街 6000元 距離1.07km 床 衣櫃 電視 寬頻網路 書櫃 含水 限女性",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 35,
   "feat": "toutian"
  },
  {
@@ -6948,24 +7200,6 @@
   "feat": "toutian"
  },
  {
-  "query": "獨棟透天的房間",
-  "property": "整層 透天 南區 公理街 18000元 距離1.15km 冷氣 沙發",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 34,
-  "feat": "toutian"
- },
- {
-  "query": "獨棟透天的房間",
-  "property": "套房 透天厝 南區 公理街 6000元 距離1.07km 床 衣櫃 電視 寬頻網路 書櫃 含水 限女性",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 35,
-  "feat": "toutian"
- },
- {
   "query": "不要大樓喜歡透天厝",
   "property": "套房 獨立 透天 南區 五權南路 7000元 距離2.09km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
   "label": 1,
@@ -7110,24 +7344,6 @@
   "feat": "toutian"
  },
  {
-  "query": "不要大樓喜歡透天厝",
-  "property": "整層 透天 南區 公理街 18000元 距離1.15km 冷氣 沙發",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 34,
-  "feat": "toutian"
- },
- {
-  "query": "不要大樓喜歡透天厝",
-  "property": "套房 透天厝 南區 公理街 6000元 距離1.07km 床 衣櫃 電視 寬頻網路 書櫃 含水 限女性",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 35,
-  "feat": "toutian"
- },
- {
   "query": "透天的住起來像家",
   "property": "套房 獨立 透天 南區 五權南路 7000元 距離2.09km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
   "label": 1,
@@ -7269,24 +7485,6 @@
   "relevance": 2,
   "is_hard": false,
   "src_idx": 33,
-  "feat": "toutian"
- },
- {
-  "query": "透天的住起來像家",
-  "property": "整層 透天 南區 公理街 18000元 距離1.15km 冷氣 沙發",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 34,
-  "feat": "toutian"
- },
- {
-  "query": "透天的住起來像家",
-  "property": "套房 透天厝 南區 公理街 6000元 距離1.07km 床 衣櫃 電視 寬頻網路 書櫃 含水 限女性",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 35,
   "feat": "toutian"
  },
  {
@@ -7434,24 +7632,6 @@
   "feat": "zhengceng"
  },
  {
-  "query": "一家人要住的大整層",
-  "property": "住宅 大樓 南區 學府路 15000元 距離1.11km 床 陽台 書桌 熱水器 冷氣機",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 110,
-  "feat": "zhengceng"
- },
- {
-  "query": "一家人要住的大整層",
-  "property": "住宅 華廈 南區 學府路 13000元 距離1.46km 床 衣櫃 電視 寬頻網路 書櫃 限女性 限學生 禁養寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 112,
-  "feat": "zhengceng"
- },
- {
   "query": "整層住家空間夠大",
   "property": "住宅 公寓 南區 五權南路 4500元 距離1.67km 床 衣櫃 電視 書櫃 陽台 限學生",
   "label": 1,
@@ -7593,24 +7773,6 @@
   "relevance": 2,
   "is_hard": false,
   "src_idx": 93,
-  "feat": "zhengceng"
- },
- {
-  "query": "整層住家空間夠大",
-  "property": "住宅 大樓 南區 學府路 15000元 距離1.11km 床 陽台 書桌 熱水器 冷氣機",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 110,
-  "feat": "zhengceng"
- },
- {
-  "query": "整層住家空間夠大",
-  "property": "住宅 華廈 南區 學府路 13000元 距離1.46km 床 衣櫃 電視 寬頻網路 書櫃 限女性 限學生 禁養寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 112,
   "feat": "zhengceng"
  },
  {
@@ -7758,24 +7920,6 @@
   "feat": "zhengceng"
  },
  {
-  "query": "全家搬來要整層的",
-  "property": "住宅 大樓 南區 學府路 15000元 距離1.11km 床 陽台 書桌 熱水器 冷氣機",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 110,
-  "feat": "zhengceng"
- },
- {
-  "query": "全家搬來要整層的",
-  "property": "住宅 華廈 南區 學府路 13000元 距離1.46km 床 衣櫃 電視 寬頻網路 書櫃 限女性 限學生 禁養寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 112,
-  "feat": "zhengceng"
- },
- {
   "query": "能住一整層不是只有一間",
   "property": "住宅 公寓 南區 五權南路 4500元 距離1.67km 床 衣櫃 電視 書櫃 陽台 限學生",
   "label": 1,
@@ -7920,24 +8064,6 @@
   "feat": "zhengceng"
  },
  {
-  "query": "能住一整層不是只有一間",
-  "property": "住宅 大樓 南區 學府路 15000元 距離1.11km 床 陽台 書桌 熱水器 冷氣機",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 110,
-  "feat": "zhengceng"
- },
- {
-  "query": "能住一整層不是只有一間",
-  "property": "住宅 華廈 南區 學府路 13000元 距離1.46km 床 衣櫃 電視 寬頻網路 書櫃 限女性 限學生 禁養寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 112,
-  "feat": "zhengceng"
- },
- {
   "query": "安靜環境好好唸書",
   "property": "套房 獨立 透天 南區 五權南路 7000元 距離2.09km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
   "label": 1,
@@ -8079,24 +8205,6 @@
   "relevance": 2,
   "is_hard": false,
   "src_idx": 57,
-  "feat": "quiet"
- },
- {
-  "query": "安靜環境好好唸書",
-  "property": "住宅 大樓 南區 工學路 17000元 距離2.54km 床 衣櫃 洗衣機 書桌 熱水器 限男性",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 61,
-  "feat": "quiet"
- },
- {
-  "query": "安靜環境好好唸書",
-  "property": "雅房 大樓 南區 德富路 13000元 距離3.51km 床 衣櫃 電視 書櫃 冰箱 禁養寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 63,
   "feat": "quiet"
  },
  {
@@ -8244,24 +8352,6 @@
   "feat": "quiet"
  },
  {
-  "query": "不要吵的清靜地段",
-  "property": "住宅 大樓 南區 工學路 17000元 距離2.54km 床 衣櫃 洗衣機 書桌 熱水器 限男性",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 61,
-  "feat": "quiet"
- },
- {
-  "query": "不要吵的清靜地段",
-  "property": "雅房 大樓 南區 德富路 13000元 距離3.51km 床 衣櫃 電視 書櫃 冰箱 禁養寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 63,
-  "feat": "quiet"
- },
- {
   "query": "讀書需要安靜的住處",
   "property": "套房 獨立 透天 南區 五權南路 7000元 距離2.09km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
   "label": 1,
@@ -8406,24 +8496,6 @@
   "feat": "quiet"
  },
  {
-  "query": "讀書需要安靜的住處",
-  "property": "住宅 大樓 南區 工學路 17000元 距離2.54km 床 衣櫃 洗衣機 書桌 熱水器 限男性",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 61,
-  "feat": "quiet"
- },
- {
-  "query": "讀書需要安靜的住處",
-  "property": "雅房 大樓 南區 德富路 13000元 距離3.51km 床 衣櫃 電視 書櫃 冰箱 禁養寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 63,
-  "feat": "quiet"
- },
- {
   "query": "遠離喧鬧的安靜角落",
   "property": "套房 獨立 透天 南區 五權南路 7000元 距離2.09km 冰箱 冷氣 床 桌子 椅子 可養其他寵物",
   "label": 1,
@@ -8565,24 +8637,6 @@
   "relevance": 2,
   "is_hard": false,
   "src_idx": 57,
-  "feat": "quiet"
- },
- {
-  "query": "遠離喧鬧的安靜角落",
-  "property": "住宅 大樓 南區 工學路 17000元 距離2.54km 床 衣櫃 洗衣機 書桌 熱水器 限男性",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 61,
-  "feat": "quiet"
- },
- {
-  "query": "遠離喧鬧的安靜角落",
-  "property": "雅房 大樓 南區 德富路 13000元 距離3.51km 床 衣櫃 電視 書櫃 冰箱 禁養寵物",
-  "label": 1,
-  "relevance": 2,
-  "is_hard": false,
-  "src_idx": 63,
   "feat": "quiet"
  },
  {
