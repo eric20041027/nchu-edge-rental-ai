@@ -29,7 +29,37 @@ python -m pipeline.model_training.train_and_export_onnx
 輸出：
 - `saved_models/rbt6_teacher/` — Teacher checkpoint（永不被 student 覆蓋）
 - `saved_models/rbt3_finetuned/` — Student PyTorch checkpoint
-- `frontend/models/custom_onnx_model_dir/my_custom_model_quant.onnx` — 部署模型（現為 C 組房源富化模型，38.7 MB；舊版備份 `*.PREV-20260616.onnx`）
+- `frontend/models/custom_onnx_model_dir/my_custom_model_quant.onnx` — Cross-Encoder 精排部署模型（現為 C 組房源富化模型，38.7 MB / 38,721,068 bytes；舊版曾備份為 `*.PREV-20260616.onnx`，已於 dead-weight 清理（收尾 B，PR #44）移除）
+- `frontend/models/bi_encoder_dir/bi_encoder_quant.onnx` — bi-encoder 向量召回部署模型（INT8，57.0 MB / 59,784,101 bytes）
+
+---
+
+## bi-encoder 向量召回（訓練 + 導出 + embedding 預計算）
+
+```bash
+set PYTHONUTF8=1
+
+# 第一步：訓練 bi-encoder（shared-weight encoder，InfoNCE/MNRL）
+python -m pipeline.model_training.train_bi_encoder
+
+# 第二步：導出 ONNX + Dynamic INT8（mean-pool + L2-norm baked in graph）
+python -m pipeline.model_training.export_bi_encoder
+
+# 第三步：離線預計算房源向量 → frontend/assets/property_embeddings.json
+python -m pipeline.data_prep.build_property_embeddings
+```
+
+輸出：
+- `frontend/models/bi_encoder_dir/bi_encoder_quant.onnx` — 召回部署模型（57.0 MB / 59,784,101 bytes）
+- `frontend/assets/property_embeddings.json` — 房源 embedding（704×768 float16，L2-norm）
+
+向量召回 vs rule-based 的 A/B harness（go/no-go gate，T7 判定 GO）：
+
+```bash
+python tests/eval_vector_vs_rulebased.py
+```
+
+詳見 [MODEL_ARCHITECTURE.md](MODEL_ARCHITECTURE.md#向量召回-bi-encodervector-recall) 與 [spec/vector-retrieval.md](spec/vector-retrieval.md)。
 
 ---
 
@@ -93,19 +123,25 @@ cd frontend && python -m http.server 8000
 │   ├── index.html
 │   ├── benchmark.html       # 效能測試工具
 │   ├── sw.js                # Service Worker
+│   ├── assets/
+│   │   └── property_embeddings.json  # 房源 embedding（704×768 float16，L2-norm）
 │   └── js/
 │       ├── app.js           # 主應用邏輯
 │       ├── inference.js     # Cross-Encoder 推論介面
 │       ├── inference-worker.js  # Cross-Encoder Web Worker
+│       ├── bi-encoder-worker.js # bi-encoder 向量召回 Web Worker
 │       └── ner-worker.js        # NER Web Worker
 ├── pipeline/
 │   ├── crawlers/            # 多源爬蟲
 │   ├── data_prep/           # 6 步資料流水線
 │   │   ├── augment_with_expansion_map.py  # C 組房源富化（property_to_text_enriched）
-│   │   └── precompute_ce_text.py          # 把 C 組富化 ce_text 預算進前端 JSON
+│   │   ├── precompute_ce_text.py          # 把 C 組富化 ce_text 預算進前端 JSON
+│   │   └── build_property_embeddings.py   # 離線預計算房源向量 → property_embeddings.json
 │   ├── model_training/
 │   │   ├── train_teacher.py          # rbt6 teacher 訓練
 │   │   ├── train_and_export_onnx.py  # rbt3 student 蒸餾 + ONNX + INT8
+│   │   ├── train_bi_encoder.py       # bi-encoder 向量召回訓練（InfoNCE/MNRL）
+│   │   ├── export_bi_encoder.py      # bi-encoder ONNX 導出 + INT8
 │   │   ├── ablation_runner.py        # 消融實驗主入口
 │   │   ├── ablation_config.py        # 消融配置
 │   │   ├── ablation_train.py         # 消融訓練模組
@@ -118,6 +154,8 @@ cd frontend && python -m http.server 8000
 ├── saved_models/
 │   ├── rbt6_teacher/        # Teacher checkpoint（永不被 student 覆蓋）
 │   └── rbt3_finetuned/      # Student checkpoint
+├── tests/
+│   └── eval_vector_vs_rulebased.py  # 向量召回 vs rule-based A/B harness（go/no-go gate）
 └── pipeline_runner.py       # 端到端入口點
 ```
 
@@ -138,3 +176,5 @@ cd frontend && python -m http.server 8000
 > C 組富化的 NDCG@5（0.9475）與上方 v3.0（~0.879）數量級不同，因評測 query 集不同，不可直接比較。
 
 v2.4–v2.8 退步根本原因：Teacher 路徑被 student 覆蓋，pre-trained rbt6 random head 作為 teacher → soft label 噪聲。
+
+> 上表為 **Cross-Encoder 精排**模型演進。另有 **bi-encoder 向量召回**模型（基底 `hfl/rbt6`，INT8，57.0 MB / 59,784,101 bytes），與精排為不同階段、評測指標亦不同（Recall@K / NDCG@5）。T7 A/B（判定 GO）：all Recall@30 0.057 → 0.412、semantic Recall@30 0.007 → 0.547。詳見 [MODEL_ARCHITECTURE.md](MODEL_ARCHITECTURE.md#向量召回-bi-encodervector-recall)。
