@@ -32,9 +32,13 @@ PD = json.loads((ROOT / "frontend/assets/property_data.json").read_text(encoding
 BY_IDX = {p["idx"]: p for p in PD if "idx" in p}
 
 
-def ce(idx: int) -> str:
+# 同源鐵則:property 文字必須與上線 embedding 的 field 對齊。
+# 查證(frontend/assets/property_embeddings.json: field='text')→ 上線 embedding 用 `text`。
+# 若這裡用 ce_text(資訊較多),bi-encoder 會學 query↔ce_text 映射,但線上比對的是
+# text 向量 → 分布偏移破同源。故 property 文字用 `text`,對齊上線 embedding。
+def prop_text(idx: int) -> str:
     p = BY_IDX[idx]
-    return p.get("ce_text") or p.get("text") or ""
+    return p.get("text") or ""
 
 
 # ── GT predicates:全部從 property_data 欄位客觀算 ─────────────────────────
@@ -251,7 +255,7 @@ def build_train(target_n: int) -> list[dict]:
     per_q = max(1, target_n // max(1, len(units)))
     for feat, q, gt in units:
         for idx in gt[:per_q]:  # 取 GT 前 per_q 間(穩定、可重現)
-            rows.append({"query": q, "property": ce(idx), "label": 1,
+            rows.append({"query": q, "property": prop_text(idx), "label": 1,
                          "relevance": 2, "is_hard": False, "src_idx": idx, "feat": feat})
 
     # 硬負樣本:每維度第一條 query 配硬衝突房源(資料反向算)。
@@ -261,7 +265,7 @@ def build_train(target_n: int) -> list[dict]:
             continue
         q0 = spec["templates"][0][0]
         if q0 not in hold_q:
-            rows.append({"query": q0, "property": ce(conflict), "label": 0,
+            rows.append({"query": q0, "property": prop_text(conflict), "label": 0,
                          "relevance": 0, "is_hard": True, "src_idx": conflict, "feat": feat})
     return rows[:target_n] if len(rows) > target_n else rows
 
