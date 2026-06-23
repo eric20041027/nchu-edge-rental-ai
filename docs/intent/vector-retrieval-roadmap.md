@@ -51,16 +51,22 @@
 
 > 由 interview-me 產出的確認意圖,2026-06-23。後續 spec / 規劃以此為準。
 
-- **Outcome:** 把現有「爬蟲 → 富化 → 重算向量 → 上線」串成**一條命令端到端跑通的
-  可重複管線**(零手動):新房源資料丟進去 → 自動產出可換進前端的
-  `property_data.json` + `property_embeddings.json`。**先把管線打通,之後再一個個
-  接新租屋平台 crawler 餵進這條管線。**
+- **Outcome:** 把現有「爬蟲 → 富化 → 重算向量 → 上線」串成**可重複管線**(段內零手動):
+  新房源資料丟進去 → 產出可換進前端的 `property_data.json` + `property_embeddings.json`。
+  **先把管線打通,之後再一個個接新租屋平台 crawler 餵進這條管線。**
+  - **現實修正(2026-06-23 查證 code 後):** 向量重算 `build_property_embeddings.py` 用
+    **PyTorch** 跑 bi-encoder forward,本機 CPU(無 torch)跑不動 → 管線**分兩段**:
+    **本機段**(crawl → 富化 → `property_data.json`,純 CPU 可跑可驗)+
+    **Colab 段**(向量重算 → `property_embeddings.json`,需 torch)。
+    不是「一條命令」而是「兩條命令、各自段內零手動」。重算用已訓練權重,**非重訓**。
 - **User:** 維護者 —— 擴充房源從「手動跑一串 script」變成「跑一條命令」;
   最終受益是 demo 使用者(房源更多更有料)。
 - **Why now:** 階段①②鋪好可擴展性與品質;roadmap 原始 why 就是「拓展更多房源」,
   但流程手動是量上不去的根因 → 先解流程(痛點 = 量少 + 流程手動,流程是量的瓶頸)。
-- **Success(行為判準):** 一條命令端到端跑通 —— 餵新房源 → 自動富化 → 重算向量 →
-  產出兩個 JSON,中間零手動。本機 / preview 親驗。**不綁量化拓量門檻**(拓到幾筆是自然結果)。
+- **Success(行為判準):** 兩段各自跑通、段內零手動 —— **本機段**一條命令:餵新房源 →
+  富化 → 產出 `property_data.json`(本機親驗,含 `build_property_embeddings.py --check`
+  驗記錄數/欄位,無需 torch);**Colab 段**一條命令:重算向量 → `property_embeddings.json`。
+  **不綁量化拓量門檻**(拓到幾筆是自然結果)。
 - **Constraint:** 中興大學附近為主軸(`geo_tier` / `distance` 相對中興算,不動地理語境);
   不跨城市、不引入 `city` 欄位;edge-first 不變;**先管線、後平台**。
 

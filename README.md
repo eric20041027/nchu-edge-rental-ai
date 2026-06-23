@@ -206,6 +206,8 @@ graph TD
 | 2026.06.14 | 雙來源欄位對齊、語意層審查、OSRM;兩項 NO-GO 決策 | — |
 | 2026.06.16 | C 組房源富化 rbt3 接回 production(富化文字,MAX_LENGTH 64→128);舊版備份 `*.PREV-20260616.onnx` | NDCG@5 0.9351 → **0.9475**,F1 0.833 → **0.854** |
 | 2026.06.21–22 | **bi-encoder 向量召回**取代 rule-based(T0–T7 完整 spec-driven);A/B GO | 語意 Recall@30 **0.007 → 0.547** |
+| 2026.06.23 | 階段②**反饋重排**:CE 精排後 per-propertyId 👍/👎 純後處理(👍+8/👎−25,kill-switch 可關) | 行為判準驗收 |
+| 2026.06.23 | 階段③**資料管線一鍵化**:`build_frontend_data` 本機段一條命令(precompute→ce_text→check);砍 FB 來源 | 本機段純 CPU 可驗 |
 
 完整版本歷程與消融細節見 [開發者指南](docs/DEVELOPMENT.md)、[消融實驗](docs/ABLATION_STUDY.md)。
 
@@ -251,6 +253,15 @@ graph TD
 python -m venv venv && venv\Scripts\activate
 pip install torch --index-url https://download.pytorch.org/whl/cu124
 pip install -r requirements.txt
+
+# ── 資料管線(兩段;階段③一鍵化)─────────────────────────────
+# 本機段(純 CPU,無 torch):crawl(可選)→ 富化 → property_data.json + 驗證
+#   一條命令跑完 precompute_embeddings → precompute_ce_text --write → --check:
+python -m pipeline.build_frontend_data            # 用既有 CSV
+python -m pipeline.build_frontend_data --crawl    # 先跑 ddroom/nchu 爬蟲更新 CSV(需網路)
+# Colab 段(需 torch + 已訓練 bi-encoder 權重):重算房源向量
+python -m pipeline.data_prep.build_property_embeddings        # → property_embeddings.json
+python -m pipeline.data_prep.build_property_embeddings --check  # 本機可驗:記錄數/欄位/向量同步(無 torch)
 
 # Cross-Encoder 兩階段蒸餾訓練
 set PYTHONUTF8=1
