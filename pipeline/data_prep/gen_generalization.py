@@ -289,6 +289,15 @@ COMPOUND = [
     ("騎車五分有網路又安靜遠距上課", [lambda: _scooter(5), lambda: _text_has("網路"), lambda: _geo("quiet")]),
     ("走路七分有停車位又平價", [lambda: _walk(7), lambda: _flag("has_parking"), _cheap]),
     ("騎車三分電梯又要便宜有保全", [lambda: _scooter(3), lambda: _flag("has_elevator"), _cheap, lambda: _text_has("保全")]),
+    # 第六輪:補 8 條獨特複合 query(非加權)增訓練訊號多樣性推 recall。全含距離骨幹收斂小桶。
+    ("走路五分有陽台又便宜", [lambda: _walk(5), lambda: _flag("has_balcony"), _cheap]),
+    ("走路五分有停車又有電梯", [lambda: _walk(5), lambda: _flag("has_parking"), lambda: _flag("has_elevator")]),
+    ("騎車三分便宜又有陽台", [lambda: _scooter(3), _cheap, lambda: _flag("has_balcony")]),
+    ("走路五分有電梯又有冷氣", [lambda: _walk(5), lambda: _flag("has_elevator"), lambda: _text_has("冷氣")]),
+    ("騎車三分有電梯又有窗", [lambda: _scooter(3), lambda: _flag("has_elevator"), lambda: _flag("has_window")]),
+    ("走路三分有冷氣又有網路", [lambda: _walk(3), lambda: _text_has("冷氣"), lambda: _text_has("網路")]),
+    ("走路五分透天又便宜", [lambda: _walk(5), lambda: _btype("透天"), _cheap]),
+    ("騎車三分有停車又便宜", [lambda: _scooter(3), lambda: _flag("has_parking"), _cheap]),
 ]
 
 
@@ -309,17 +318,10 @@ def _resolve_eval(key: str) -> list[int]:
 # 新增維度讓 units 變多 → 均攤使 holdout 對應的核心單維(walk/balcony…)pair 數被稀釋
 # → holdout 94%→89% 退步。給 holdout 對應維度高權重保住其 pair 數,同時保留複合召回。
 # 預設權重 1.0;holdout 7 題對應的 5 維 + cheap 拉高,平衡單維口語 vs 複合精確召回。
-WEIGHT = {
-    "walk_near": 2.0,   # holdout「早上爬不起來」
-    "scooter_near": 2.0,  # 第五輪:recall 弱項(「騎車三分到校」R@30 0.30 → 加權+補精確表達)
-    "balcony": 2.0,     # holdout「想曬棉被」
-    "elevator": 2.0,    # holdout「不想爬樓梯」
-    "window": 2.0,      # holdout「黑漆漆」
-    "quiet": 2.5,       # holdout「受不了吵」(第二輪起就弱 3/5,加重權救)
-    "toutian": 2.0,     # holdout「有家感覺的透天」
-    "cheap": 2.0,       # holdout「找最便宜」
-    "compound": 1.0,    # 複合召回(真 GT)維持
-}
+# 第六輪:移除維度加權(全回 1.0)。查證證明加權是向量塌縮元兇 ——
+# 第五輪加權 2.0-2.5 → 兩兩 cosine 0.703→0.745/0.808、總分 0.739→0.65-0.69 全面退。
+# 改用「補更多獨特複合 query」增訓練訊號多樣性推 recall(向量被推向更多方向,抗塌縮)。
+WEIGHT: dict[str, float] = {}  # 空 = 全維度用 DEFAULT_WEIGHT 1.0(均攤,無加權塌縮)
 DEFAULT_WEIGHT = 1.0
 
 
