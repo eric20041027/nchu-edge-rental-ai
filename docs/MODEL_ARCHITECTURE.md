@@ -28,7 +28,8 @@
 > `MAX_LENGTH=128`）。C 組 A/B 評測：**NDCG@5 = 0.9475 / F1 = 0.854**。
 > 本檔下方各處 0.877（FP32）/ 0.809（INT8）/ 0.879 等數值為 **v3.0 非富化基準**，
 > 保留作歷史對照（評測 query 集與富化版不同，NDCG 數量級不可直接比較）。
-> 量化後體積由舊 57/60 MB 降至 **38.7 MB**（舊檔備份為 `*.PREV-20260616.onnx`）。
+> 量化後體積由舊 57/60 MB 降至 **38.7 MB**（38,721,068 bytes）。
+> 舊版曾備份為 `*.PREV-20260616.onnx`，已於 dead-weight 清理（收尾 B，PR #44）移除。
 
 ### 蒸餾損失
 
@@ -137,3 +138,44 @@ $$\mathcal{L}_{\text{student}} = (1-\alpha)\underbrace{\left(\mathcal{L}_{\text{
 $$\mathcal{L}_{\text{CE}}:\text{ label smoothing},\quad \varepsilon=0.05$$
 
 > v3.0 起移除 R-Drop（$\alpha_{\text{rdrop}}$ 設為 0）。消融實驗（C3_no_RDrop）顯示移除後 NDCG@5 提升 +0.0068，詳見 [ABLATION_STUDY.md](ABLATION_STUDY.md)。
+
+---
+
+## 向量召回 bi-encoder（Vector Recall）
+
+上述 Cross-Encoder 為**精排**（re-rank）模型；在它之前先以 bi-encoder 做**向量召回**（vector recall），形成「召回 → 精排」兩段式檢索。bi-encoder 把 query 與房源各自獨立編碼成向量，用餘弦相似度快速取回 Top-K 候選，再交由 Cross-Encoder 對候選逐一精排。詳細規格見 [spec/vector-retrieval.md](spec/vector-retrieval.md)。
+
+### 架構
+
+- 基底：`hfl/rbt6`（6 層），shared-weight encoder（query 與房源共用同一組權重）。
+- 輸出：768 維 embedding，**mask-aware mean-pool + L2-normalize 已 baked 進 ONNX graph**（推論端不需再做 pooling / 正規化）。
+- 量化：Dynamic INT8，**57.0 MB（59,784,101 bytes）**。
+- 檔案：`frontend/models/bi_encoder_dir/bi_encoder_quant.onnx`，由 `frontend/js/bi-encoder-worker.js` 載入。
+
+### 訓練
+
+- 腳本：`pipeline/model_training/train_bi_encoder.py`。
+- 損失：InfoNCE / MNRL（in-batch negatives + `is_hard` 困難負樣本，去重後上限 2×batch），temperature 0.05。
+- 超參：epochs 3、batch 32、lr 2e-5、max_length 64、召回 K=30。
+
+### 導出與數值驗證
+
+- 腳本：`pipeline/model_training/export_bi_encoder.py`，`dynamo=False`、opset 15、Dynamic INT8。
+- CP2 數值檢查（PyTorch vs ONNX 餘弦相似度）：fp32 = 1.000，int8 = 0.956。
+- 房源 embedding 離線預先計算 → `frontend/assets/property_embeddings.json`（704×768 float16，已 L2-norm），推論端只需編碼 query 即可比對。
+
+### A/B 評測（T7，判定 GO）
+
+| 指標 | rule-based | bi-encoder |
+|:---|:---|:---|
+| semantic Recall@30 | 0.007 | 0.547 |
+| semantic Recall@15 | 0.000 | 0.506 |
+| semantic NDCG@5 | 0.000 | 0.325 |
+| keyword Recall@30 | 0.077 | 0.359 |
+| all Recall@30 | 0.057 | 0.412 |
+
+> 評測使用 fuzzy-join 標註集（match-rate 24.4%），judgment 基礎為相對 delta 而非絕對值。harness：`tests/eval_vector_vs_rulebased.py`。
+
+### 角色：primary recall + fallback
+
+bi-encoder 已取代 rule-based 召回成為 **primary**；rule-based 保留為 **fallback**，於下列情況啟用：worker 尚未就緒、編碼逾時（800ms encode timeout）、或 `VECTOR_RECALL_ENABLED` kill-switch 關閉時。

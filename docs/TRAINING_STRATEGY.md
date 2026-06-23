@@ -29,6 +29,33 @@ C 組 A/B 評測結果見 [ABLATION_STUDY.md](ABLATION_STUDY.md)。
 
 ---
 
+## bi-encoder 對比學習訓練（向量召回）
+
+> 本節為**召回階段 bi-encoder** 的對比學習訓練，與上方 Cross-Encoder 蒸餾訓練（teacher/student、FGM、R-Drop、蒸餾權重退火）為**不同模型、不同訓練範式**。Cross-Encoder 做精排（query-property pair → 分數）；bi-encoder 做召回（query 與 property 各自編碼成向量，以 cosine 召回）。
+
+**損失函數**：InfoNCE / MNRL（Multiple Negatives Ranking Loss），temperature = 0.05。同一 batch 內，每個 query 以其正樣本為目標、batch 內其他樣本為負樣本做對比學習，拉近 query 與正向 property 的向量、推遠負向 property。
+
+**負樣本構造**：
+
+- **in-batch negatives**：batch 內其他 query 的正樣本自動作為當前 query 的負樣本。
+- **is_hard negatives**：額外加入標記為 hard 的困難負樣本，提供更接近決策邊界的對比信號。
+
+**超參數**：
+
+| 參數 | 值 |
+|:---|:---|
+| 損失 | InfoNCE / MNRL |
+| temperature | 0.05 |
+| 負樣本 | in-batch + is_hard |
+| epochs | 3 |
+| batch_size | 32 |
+| learning_rate | 2e-5 |
+| max_length | 64 |
+
+**訓練腳本**：`pipeline/model_training/train_bi_encoder.py`。A100 環境以 `--bf16 --tf32` 加速（僅影響速度，不改變結果）；Colab 版見 `colab_train_bi_encoder.ipynb`。
+
+---
+
 ## FGM 對抗訓練（Fast Gradient Method）
 
 **原理**：由 Goodfellow et al.（2014）提出，Zhu et al.（2019）將其應用於 NLP embedding 層。每個訓練步驟在正常反向傳播後，沿 embedding 梯度方向加入一個小擾動 $\delta$，再做一次前向+反向（不更新參數），讓模型同時對原始輸入和被擾動的輸入都有好的預測。
