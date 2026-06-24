@@ -4,6 +4,24 @@
 > 由 ~57 MB 降到 ~38 MB(比照 Cross-Encoder 已做的 rbt6→rbt3),縮短冷載入。
 > hidden_size 維持 768 → embedding 維度與 `property_embeddings.json` schema **不變**。
 
+## ✅ 已完成(2026-06-24,落地 main)
+
+蒸餾跑完並上線。Colab 走完整鏈(重訓 rbt6 teacher → 蒸 rbt3 → export → 重編房源向量 → A/B gate)。
+
+| | 結果 |
+|---|---|
+| `bi_encoder_quant.onnx` | 59.8 → **38.2 MB(−36%)** |
+| Production wire(Vercel brotli) | 43.5 → **~27.9 MB(−36%)** |
+| Recall@15 all | 0.2975 → 0.2883(−0.009,容忍內) |
+| Recall@30 all | 0.3991 → **0.4000**(微升) |
+| NDCG@5 all | 0.1769 → **0.1830**(升) |
+| vs rule-based | 仍 **GO** |
+
+benchmark.html 本機量測(localhost,非真實網速):bi-encoder 冷載入 9107(舊 rbt6,25Mbps 螢幕截圖)
+→ 本機 rbt3 冷 ~3790ms;真正可比的是**位元組 −36%**(網速無關)。
+
+---
+
 ## 為什麼需要 GPU / Colab
 
 - 本機無 torch/GPU,訓練跑不動;`build_property_embeddings` 在程式碼中明文標記為 Colab 段。
