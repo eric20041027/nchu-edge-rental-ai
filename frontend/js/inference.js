@@ -161,8 +161,8 @@ async function loadPropertyEmbeddings(rawData) {
 export async function initNLP(onProgress) {
     // 背景預載 bi-encoder fallback (flag 關時為 no-op,不阻塞主初始化)。
     initEncoderFallback();
-    // 背景預載向量召回 bi-encoder (flag 關時為 no-op,非阻塞)。
-    initBiEncoder();
+    // 向量召回 bi-encoder 由 app.js 帶進度 callback 啟動 (見 initBiEncoder export);
+    // 此處不再自行 init,避免無 callback 的 worker 搶先建立。
     if (!worker) {
         return new Promise((resolve, reject) => {
             console.log("Initializing Inference Web Worker...");
@@ -171,7 +171,7 @@ export async function initNLP(onProgress) {
             worker.onmessage = (e) => {
                 const { type, message, score, id, error, loaded, total } = e.data;
                 if (type === 'status' && onProgress) {
-                    onProgress({ status: 'progress', message, loaded, total });
+                    onProgress({ status: 'progress', message, loaded, total, init: e.data.init });
                 } else if (type === 'ready') {
                     console.log('Inference Worker Ready');
                     if (onProgress) onProgress({ status: 'ready' });
@@ -217,7 +217,7 @@ export async function initNER(onProgress = null, onReady = null) {
             } else if (type === 'ner_status') {
                 console.log('[NER]', e.data.message);
             } else if (type === 'ner_progress') {
-                if (onProgress) onProgress({ loaded: e.data.loaded, total: e.data.total });
+                if (onProgress) onProgress({ loaded: e.data.loaded, total: e.data.total, init: e.data.init });
             }
         };
         nerWorker.postMessage({ type: 'ner_init', data: { origin: window.location.origin } });
@@ -243,25 +243,33 @@ async function nerExtract(query) {
 
 // --- Bi-encoder Worker Initialization (向量召回) ---
 // 鏡像 initNER:flag 關閉時直接 no-op,不建立 worker。非阻塞、非致命。
-function initBiEncoder() {
-    if (!VECTOR_RECALL_ENABLED) return;
-    if (biEncoderWorker) return;
+// onProgress({loaded,total,init})、onReady() 供載入畫面顯示第三條進度條。
+// 回傳 true 表示已啟動 worker;false 表示 flag 關閉(no-op,呼叫端應視為「無此模型」)。
+export function initBiEncoder(onProgress = null, onReady = null) {
+    if (!VECTOR_RECALL_ENABLED) return false;
+    if (biEncoderWorker) { if (onReady && biEncoderReady) onReady(); return true; }
     biEncoderWorker = new Worker('js/bi-encoder-worker.js', { type: 'module' });
     biEncoderWorker.onmessage = (e) => {
-        const { type, embedding, id } = e.data;
+        const { type, embedding, id, loaded, total } = e.data;
         if (type === 'bienc_ready') {
             biEncoderReady = true;
             console.log('Bi-encoder Worker Ready');
+            if (onReady) onReady();
+        } else if (type === 'bienc_progress') {
+            if (onProgress) onProgress({ loaded, total });
         } else if (type === 'encodeResult') {
             const cb = pendingBiEnc.get(id);
             if (cb) { cb(embedding); pendingBiEnc.delete(id); }
         } else if (type === 'bienc_error') {
             console.warn('Bi-encoder worker error:', e.data.message);  // 非致命 → 回退 rule-based
         } else if (type === 'bienc_status') {
+            // 下載結束後的 WASM session 編譯期 → 回報 init 旗標,UI 顯示「初始化中…」
+            if (onProgress && e.data.init) onProgress({ init: true });
             console.log('[BiEnc]', e.data.message);
         }
     };
     biEncoderWorker.postMessage({ type: 'bienc_init', data: { origin: window.location.origin } });
+    return true;
 }
 
 // --- Query 向量編碼 (800ms timeout,逾時/未就緒回 null → caller fallback) ---

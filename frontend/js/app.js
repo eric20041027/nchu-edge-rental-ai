@@ -1,4 +1,4 @@
-import { initData, initNLP, initNER, recommend } from './inference.js';
+import { initData, initNLP, initNER, initBiEncoder, recommend } from './inference.js';
 
 // 查無結果時的提示(兩處共用:無候選 / 渲染空陣列)
 const NO_RESULTS_HTML = `<div style="text-align: center; color: white; padding: 2rem;">找不到符合條件的房屋，試著放寬預算或是區域限制吧！</div>`;
@@ -73,13 +73,22 @@ async function setupApplication() {
                 <div id="ls-ce-bar" style="height:100%;width:0%;background:var(--primary-color,#00FFD1);transition:width 0.3s;border-radius:4px;"></div>
             </div>
         </div>
-        <div id="ls-ner">
+        <div id="ls-ner" style="margin-bottom:6px;">
             <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
                 <span><i class="fa-solid fa-tag"></i> 語意模型</span>
                 <span id="ls-ner-pct">等待中…</span>
             </div>
             <div style="background:rgba(255,255,255,0.1);border-radius:4px;height:5px;overflow:hidden;">
                 <div id="ls-ner-bar" style="height:100%;width:0%;background:#a78bfa;transition:width 0.3s;border-radius:4px;"></div>
+            </div>
+        </div>
+        <div id="ls-bi">
+            <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+                <span><i class="fa-solid fa-magnifying-glass"></i> 向量召回模型</span>
+                <span id="ls-bi-pct">等待中…</span>
+            </div>
+            <div style="background:rgba(255,255,255,0.1);border-radius:4px;height:5px;overflow:hidden;">
+                <div id="ls-bi-bar" style="height:100%;width:0%;background:#f59e0b;transition:width 0.3s;border-radius:4px;"></div>
             </div>
         </div>`;
     // 插入到 input footer 上方的 wrapper，而非歡迎畫面中間
@@ -91,11 +100,24 @@ async function setupApplication() {
     const cePct  = document.getElementById('ls-ce-pct');
     const nerBar = document.getElementById('ls-ner-bar');
     const nerPct = document.getElementById('ls-ner-pct');
+    const biBar  = document.getElementById('ls-bi-bar');
+    const biPct  = document.getElementById('ls-bi-pct');
 
     function setBar(bar, pct, label, pctEl) {
         bar.style.width = pct + '%';
         pctEl.textContent = label;
     }
+
+    // 三條進度條各自獨立完成,全部就緒(或略過)後才淡出整個面板。
+    const modelDone = { ce: false, ner: false, bi: false };
+    function markDone(key) {
+        modelDone[key] = true;
+        if (modelDone.ce && modelDone.ner && modelDone.bi) {
+            setTimeout(() => { loadStatus.style.display = 'none'; }, 1500);
+        }
+    }
+    // 下載完成→WASM 編譯期:把條子推到 100% 並標「初始化中…」,取代卡 100% 的假象。
+    function setInit(bar, pctEl) { setBar(bar, 100, '初始化中…', pctEl); }
 
     userRequirement.disabled = true;
     userRequirement.placeholder = "請稍候，資料庫與 AI 模型準備中...";
@@ -104,34 +126,55 @@ async function setupApplication() {
         // Start NER download immediately in parallel — don't wait for CE to finish first
         const nerPromise = initNER(
             (nerProgress) => {
-                if (nerProgress.loaded && nerProgress.total > 0) {
-                    if (nerProgress.loaded === nerProgress.total && nerProgress.total === 1) {
-                        setBar(nerBar, 100, '⚡ 快取', nerPct);
-                    } else {
-                        const pct = Math.round((nerProgress.loaded / nerProgress.total) * 100);
-                        setBar(nerBar, pct, pct + '%', nerPct);
-                    }
+                if (nerProgress.init) {
+                    setInit(nerBar, nerPct);
+                } else if (nerProgress.loaded && nerProgress.total > 0) {
+                    const pct = Math.round((nerProgress.loaded / nerProgress.total) * 100);
+                    setBar(nerBar, pct, pct + '%', nerPct);
                 }
             },
             () => {
                 setBar(nerBar, 100, '完成 ✓', nerPct);
                 nerBar.style.background = '#4ade80';
-                setTimeout(() => { loadStatus.style.display = 'none'; }, 1500);
+                markDone('ner');
             }
         ).catch(e => {
             console.warn('NER init failed (non-fatal):', e);
             nerPct.textContent = '略過';
             nerBar.style.background = '#f87171';
-            setTimeout(() => { loadStatus.style.display = 'none'; }, 2000);
+            markDone('ner');
         });
+
+        // 向量召回 bi-encoder:與 NER 同款,獨立並行下載 + 進度條。
+        const biStarted = initBiEncoder(
+            (biProgress) => {
+                if (biProgress.init) {
+                    setInit(biBar, biPct);
+                } else if (biProgress.loaded && biProgress.total > 0) {
+                    const pct = Math.round((biProgress.loaded / biProgress.total) * 100);
+                    setBar(biBar, pct, pct + '%', biPct);
+                }
+            },
+            () => {
+                setBar(biBar, 100, '完成 ✓', biPct);
+                biBar.style.background = '#4ade80';
+                markDone('bi');
+            }
+        );
+        // flag 關閉時 worker 不啟動 → 隱藏該列並視為完成,否則面板永不淡出。
+        if (!biStarted) {
+            const biRow = document.getElementById('ls-bi');
+            if (biRow) biRow.style.display = 'none';
+            markDone('bi');
+        }
 
         // CE + data load in parallel with NER; open input box as soon as CE is ready
         await Promise.all([
             initData(),
             initNLP((progress) => {
                 if (progress.status === 'progress') {
-                    if (progress.message && progress.message.includes('快取')) {
-                        setBar(ceBar, 100, '⚡ 快取', cePct);
+                    if (progress.init) {
+                        setInit(ceBar, cePct);
                     } else if (progress.total > 0) {
                         const pct = Math.round((progress.loaded / progress.total) * 100);
                         setBar(ceBar, pct, pct + '%', cePct);
@@ -143,6 +186,7 @@ async function setupApplication() {
         ]);
         setBar(ceBar, 100, '完成 ✓', cePct);
         ceBar.style.background = '#4ade80';
+        markDone('ce');
 
         userRequirement.disabled = false;
         userRequirement.placeholder = "輸入租屋需求，例如：預算 6000 以內、有冷氣...";

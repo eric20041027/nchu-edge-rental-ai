@@ -62,6 +62,8 @@ async function init(origin, noCache = false) {
         let pos = 0;
         for (const chunk of chunks) { modelBuffer.set(chunk, pos); pos += chunk.byteLength; }
 
+        // 下載完成但 WASM session 編譯仍需數秒 → 通知 UI 進入「初始化中」。
+        postMessage({ type: 'ner_progress', loaded: contentLength, total: contentLength, init: true });
         session = await ort.InferenceSession.create(modelBuffer, {
             executionProviders: ['wasm'],
             graphOptimizationLevel: 'all',
