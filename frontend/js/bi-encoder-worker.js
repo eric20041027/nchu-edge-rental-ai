@@ -59,11 +59,40 @@ async function init(origin, noCache = false) {
         let pos = 0;
         for (const chunk of chunks) { modelBuffer.set(chunk, pos); pos += chunk.byteLength; }
 
+        // 下載完成但 WASM session 編譯仍需數秒 → 通知 UI 進入「初始化中」,
+        // 否則進度條卡在 100% 看似當掉。
+        postMessage({ type: 'bienc_status', message: '初始化向量編碼 Session...', init: true });
         session = await ort.InferenceSession.create(modelBuffer, {
             executionProviders: ['wasm'],
             graphOptimizationLevel: 'all',
         });
 
+        postMessage({ type: 'bienc_ready' });
+    } catch (err) {
+        postMessage({ type: 'bienc_error', message: err.message });
+    }
+}
+
+// Buffer-based init: warm benchmark 把 Cache Storage 預取的 ArrayBuffer 傳進來,跳過網路。
+async function initFromBuffer(origin, modelBuffer) {
+    try {
+        postMessage({ type: 'bienc_status', message: '載入向量編碼模組...' });
+        const ortModule = await import('https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.mjs');
+        ort = ortModule.default ?? ortModule;
+
+        env.allowRemoteModels = false;
+        env.allowLocalModels = true;
+        env.useBrowserCache = true;
+        env.localModelPath = origin + '/';
+
+        postMessage({ type: 'bienc_status', message: '載入向量編碼分詞器...' });
+        tokenizer = await AutoTokenizer.from_pretrained('models/bi_encoder_dir');
+
+        postMessage({ type: 'bienc_status', message: '初始化向量編碼 Session...', init: true });
+        session = await ort.InferenceSession.create(modelBuffer, {
+            executionProviders: ['wasm'],
+            graphOptimizationLevel: 'all',
+        });
         postMessage({ type: 'bienc_ready' });
     } catch (err) {
         postMessage({ type: 'bienc_error', message: err.message });
@@ -109,6 +138,8 @@ onmessage = async (e) => {
 
     if (type === 'bienc_init') {
         await init(data.origin, data.noCache ?? false);
+    } else if (type === 'bienc_init_buffer') {
+        await initFromBuffer(data.origin, data.modelBuffer);
     } else if (type === 'encode') {
         const { query, id } = data;
         try {

@@ -92,6 +92,10 @@ async function init(localOrigin, noCache = false) {
 
         tokenizer = loadedTokenizer;
 
+        // 下載完成但 WASM session 編譯仍需數秒 → 通知 UI 進入「初始化中」,
+        // 否則進度條卡在 100% 看似當掉。
+        postMessage({ type: 'status', message: '初始化 AI 模型...', init: true });
+
         // 2. Create Session
         session = await ort.InferenceSession.create(loadedModelBuffer, {
             executionProviders: ['wasm'],
