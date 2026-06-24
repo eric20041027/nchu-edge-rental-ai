@@ -135,7 +135,7 @@
       <div class="card-title">🔍 Bi-Encoder 載入</div>
       <div class="card-value pending" id="cold-val-bi">—</div>
       <div class="card-unit">ms（首次）</div>
-      <div class="card-sub">57 MB INT8 量化｜向量召回</div>
+      <div class="card-sub">38 MB INT8｜rbt3 蒸餾｜向量召回</div>
     </div>
     <div class="card" id="cold-card-infer">
       <div class="card-title">🚀 推論延遲 P95</div>
@@ -172,7 +172,7 @@
       <div class="card-title">🔍 Bi-Encoder 載入</div>
       <div class="card-value pending" id="warm-val-bi">—</div>
       <div class="card-unit">ms（快取後）</div>
-      <div class="card-sub">57 MB INT8 量化｜向量召回</div>
+      <div class="card-sub">38 MB INT8｜rbt3 蒸餾｜向量召回</div>
     </div>
     <div class="card" id="warm-card-infer">
       <div class="card-title">🚀 推論延遲 P95</div>
@@ -383,7 +383,7 @@ const WIRE_MODELS = [
   // brWire: 對 production 實測的 brotli 傳輸大小 (curl content-length, 2026-06-24)
   { key: 'ner', path: '/models/ner_model_dir/ner_model_quant.onnx',          brWire: 26.7e6 },
   { key: 'ce',  path: '/models/custom_onnx_model_dir/my_custom_model_quant.onnx', brWire: 27.2e6 },
-  { key: 'bi',  path: '/models/bi_encoder_dir/bi_encoder_quant.onnx',         brWire: 43.5e6 },
+  { key: 'bi',  path: '/models/bi_encoder_dir/bi_encoder_quant.onnx',         brWire: 27.9e6 },
 ];
 
 window.probeWireSizes = async function() {

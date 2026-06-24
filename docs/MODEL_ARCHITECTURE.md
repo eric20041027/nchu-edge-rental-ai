@@ -147,16 +147,32 @@ $$\mathcal{L}_{\text{CE}}:\text{ label smoothing},\quad \varepsilon=0.05$$
 
 ### 架構
 
-- 基底：`hfl/rbt6`（6 層），shared-weight encoder（query 與房源共用同一組權重）。
-- 輸出：768 維 embedding，**mask-aware mean-pool + L2-normalize 已 baked 進 ONNX graph**（推論端不需再做 pooling / 正規化）。
-- 量化：Dynamic INT8，**57.0 MB（59,784,101 bytes）**。
+- 基底：**rbt3（3 層，由 rbt6 蒸餾）**，shared-weight encoder（query 與房源共用同一組權重）。
+  > 原為 `hfl/rbt6`（6 層）。2026-06-24 比照 Cross-Encoder 做 rbt6→rbt3 蒸餾,
+  > 體積由 57→38 MB(−36%),召回幾乎零損(見下方蒸餾說明)。
+- 輸出：768 維 embedding（hidden_size 蒸餾後不變），**mask-aware mean-pool + L2-normalize 已 baked 進 ONNX graph**（推論端不需再做 pooling / 正規化）。
+- 量化：Dynamic INT8，**38.2 MB（38,214,155 bytes）**（原 rbt6 為 57.0 MB）。
 - 檔案：`frontend/models/bi_encoder_dir/bi_encoder_quant.onnx`，由 `frontend/js/bi-encoder-worker.js` 載入。
 
-### 訓練
+### 訓練 / 蒸餾
 
-- 腳本：`pipeline/model_training/train_bi_encoder.py`。
+- T2 teacher 訓練：`pipeline/model_training/train_bi_encoder.py`（rbt6 teacher）。
+- **蒸餾**：`pipeline/model_training/distill_bi_encoder.py`，rbt6 teacher → rbt3 student。
+  student = teacher embeddings + 前 3 層(截斷初始化);loss = α·cos-distill(student↔teacher 向量) + (1−α)·MNRL。
+  流程見 [spec/bi-encoder-distill.md](spec/bi-encoder-distill.md)、`notebooks/bi_encoder_distill_colab.ipynb`。
 - 損失：InfoNCE / MNRL（in-batch negatives + `is_hard` 困難負樣本，去重後上限 2×batch），temperature 0.05。
-- 超參：epochs 3、batch 32、lr 2e-5、max_length 64、召回 K=30。
+- 超參：teacher epochs 3 / lr 2e-5;蒸餾 epochs 3 / lr 3e-5 / α 0.5、batch 32、max_length 64、召回 K=30。
+
+### 蒸餾 gate(rbt3 student vs rbt6 teacher,`tests/eval_vector_vs_rulebased.py` 278 query)
+
+| 指標 | rbt6 (57MB) | rbt3 (38MB) | Δ |
+|:---|:---|:---|:---|
+| Recall@15 all | 0.2975 | 0.2883 | −0.009 |
+| Recall@30 all | 0.3991 | 0.4000 | +0.001 |
+| NDCG@5 all | 0.1769 | 0.1830 | +0.006 |
+| semantic Recall@30 | 0.5808 | 0.5864 | +0.006 |
+
+> 體積 −36%,召回零損(R@15 掉幅 < 容忍 0.02,其餘微升),仍 GO vs rule-based。
 
 ### 導出與數值驗證
 
