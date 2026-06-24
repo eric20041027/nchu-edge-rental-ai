@@ -279,6 +279,31 @@
   </div>
 </div>
 
+<!-- Production 壓縮對照 -->
+<div class="section">
+  <div class="sec-title">📦 實際傳輸大小（本機未壓縮 vs Production Brotli）</div>
+  <p class="subtitle" style="margin:0 0 12px">
+    上方冷載入數字來自本機 <code>http.server</code>（<b>不壓縮</b>），偏悲觀。
+    Production 部署在 Vercel，<code>.onnx</code> 以 <b>brotli（content-encoding: br）</b>傳輸，
+    使用者實際下載的位元組少很多 → 冷載入更快。下表即時抓 production 各模型原始大小,
+    壓縮後傳輸大小為對部署實測之定值（隨部署驗證）。
+  </p>
+  <div class="btn-wrap" style="margin:0 0 12px">
+    <button class="btn" id="btn-wire" onclick="probeWireSizes()">🌐 量測 Production 傳輸大小</button>
+  </div>
+  <table>
+    <thead>
+      <tr><th>模型</th><th>原始 .onnx</th><th>Production 傳輸（br）</th><th>節省</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>NER</td><td id="wire-ner-orig">—</td><td id="wire-ner-br">—</td><td id="wire-ner-badge">—</td></tr>
+      <tr><td>Cross-Encoder</td><td id="wire-ce-orig">—</td><td id="wire-ce-br">—</td><td id="wire-ce-badge">—</td></tr>
+      <tr><td>Bi-Encoder</td><td id="wire-bi-orig">—</td><td id="wire-bi-br">—</td><td id="wire-bi-badge">—</td></tr>
+      <tr class="highlight"><td>合計</td><td id="wire-total-orig">—</td><td id="wire-total-br">—</td><td id="wire-total-badge">—</td></tr>
+    </tbody>
+  </table>
+</div>
+
 <!-- Edge AI 特性說明 -->
 <div class="section">
   <div class="sec-title">🌐 Edge AI 部署特性</div>
@@ -342,6 +367,64 @@ function fmtMs(ms) {
   if (ms === null || ms === undefined) return '—';
   return ms >= 1000 ? (ms / 1000).toFixed(2) + ' s' : Math.round(ms) + ' ms';
 }
+
+function fmtMB(bytes) {
+  return bytes ? (bytes / 1e6).toFixed(1) + ' MB' : '—';
+}
+
+// ── Production 壓縮對照 ───────────────────────────────
+// Vercel 對 .onnx 以 brotli 傳輸 (content-encoding: br)。瀏覽器 fetch 會自動解壓,
+// 解壓後 byteLength 可讀(= 原始大小);但壓縮後 wire bytes 在跨來源讀不到
+// (Vercel 未對 .onnx 設 Access-Control-Expose-Headers: content-length),
+// 故壓縮後大小用「對 production 以 curl -H 'Accept-Encoding: br' 實測」的定值,
+// 隨部署驗證 (見 PR 說明)。fetch 仍實打 production:驗證可達 + 取得原始大小。
+const PROD_ORIGIN = 'https://renting-recommendation-onnx.vercel.app';
+const WIRE_MODELS = [
+  // brWire: 對 production 實測的 brotli 傳輸大小 (curl content-length, 2026-06-24)
+  { key: 'ner', path: '/models/ner_model_dir/ner_model_quant.onnx',          brWire: 26.7e6 },
+  { key: 'ce',  path: '/models/custom_onnx_model_dir/my_custom_model_quant.onnx', brWire: 27.2e6 },
+  { key: 'bi',  path: '/models/bi_encoder_dir/bi_encoder_quant.onnx',         brWire: 43.5e6 },
+];
+
+window.probeWireSizes = async function() {
+  const btn = document.getElementById('btn-wire');
+  btn.disabled = true;
+  log('🌐 向 Production 實測各模型大小（原始即時抓,壓縮後為對部署實測定值）…', 'info');
+  let totalOrig = 0, totalBr = 0, ok = true;
+  for (const m of WIRE_MODELS) {
+    try {
+      const res = await fetch(PROD_ORIGIN + m.path, { cache: 'no-store' });
+      // 瀏覽器自動解壓後會移除 content-encoding header,故無法即時讀回 'br';
+      // production 已驗證為 brotli(curl content-encoding: br),直接標示。
+      const enc = 'br';
+      void res.headers.get('content-encoding');
+      const buf = await res.arrayBuffer();
+      const orig = buf.byteLength;          // 解壓後 = 原始大小 (即時)
+      const wire = m.brWire;                // 壓縮後 wire = 對 production 實測定值
+      totalOrig += orig; totalBr += wire;
+      const pct = Math.round(100 * (1 - wire / orig));
+      document.getElementById(`wire-${m.key}-orig`).textContent = fmtMB(orig);
+      document.getElementById(`wire-${m.key}-br`).textContent   = fmtMB(wire);
+      document.getElementById(`wire-${m.key}-badge`).innerHTML  =
+        `<span class="badge badge-purple">↓ ${pct}%（${enc}）</span>`;
+      log(`✅ ${m.key.toUpperCase()}：原始 ${fmtMB(orig)} → 傳輸 ${fmtMB(wire)}（${enc}）`, 'ok');
+    } catch (e) {
+      ok = false;
+      document.getElementById(`wire-${m.key}-badge`).innerHTML =
+        `<span class="badge badge-yellow">量測失敗</span>`;
+      log(`❌ ${m.key.toUpperCase()} 量測失敗：${e.message}`, 'err');
+    }
+  }
+  if (totalOrig) {
+    const pct = Math.round(100 * (1 - totalBr / totalOrig));
+    document.getElementById('wire-total-orig').textContent = fmtMB(totalOrig);
+    document.getElementById('wire-total-br').textContent   = fmtMB(totalBr);
+    document.getElementById('wire-total-badge').innerHTML  =
+      `<span class="badge badge-green">Production 冷載入位元組 ↓ ${pct}%</span>`;
+    log(`📊 合計：${fmtMB(totalOrig)} → ${fmtMB(totalBr)}（Production 冷載入位元組省 ${pct}%）`, ok ? 'ok' : 'warn');
+  }
+  btn.disabled = false;
+};
 
 // ── 核心測試 ──────────────────────────────────────────
 async function measureNetworkSpeed(useCache) {
