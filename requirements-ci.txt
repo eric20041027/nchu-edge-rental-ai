@@ -1,0 +1,11 @@
+# 階段⑥-B:CI test job 的精簡依賴(不含 torch — 體積大、CI 慢)。
+# test_distill_bi_encoder.py 用 importorskip("torch") → 無 torch 時自動 skip,非 fail。
+# recall gate job 額外裝 onnxruntime(見 ci.yml),仍不需 torch。
+pydantic>=2.0,<3.0
+pandas>=2.0
+requests>=2.31
+beautifulsoup4>=4.12
+python-dotenv>=1.0
+tqdm>=4.66
+pytest>=8.0
+pytest-timeout>=2.3

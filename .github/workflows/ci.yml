@@ -1,0 +1,43 @@
+name: CI
+
+# 階段⑥-B 回歸護欄:PR / push 到 main 時跑測試 + recall gate,退步自動擋。
+# 規格:docs/spec/ci-regression-gate.md
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ── 測試(輕量,不裝 torch)────────────────────────────────────
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install CI deps (no torch)
+        run: pip install -r requirements-ci.txt
+      - name: Python tests
+        # test_distill_bi_encoder.py 用 importorskip("torch") → 無 torch 自動 skip。
+        run: pytest tests/
+      - name: Frontend self-check (feedback rerank)
+        run: node tests/feedback_rerank.test.mjs
+
+  # ── Recall gate(裝 onnxruntime + transformers,仍不裝 torch)──
+  recall-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install gate deps (onnxruntime + transformers, no torch)
+        run: pip install -r requirements-ci.txt onnxruntime transformers
+      - name: Vector recall A/B gate
+        # eval_vector_vs_rulebased.py:verdict 非 GO → exit 2 → job fail。
+        run: python tests/eval_vector_vs_rulebased.py
