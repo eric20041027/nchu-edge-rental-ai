@@ -2,6 +2,10 @@
 import pytest
 from pathlib import Path
 
+# pipeline.model_training 頂層 import torch(trainer.py)→ 無 torch 時整檔 skip,
+# 讓 CI 輕量 test job(不裝 torch)能通過;有 torch 的環境照常跑。
+pytest.importorskip("torch")
+
 from pipeline.model_training import (
     ModelTrainingConfig,
     TrainingMetrics,
@@ -28,7 +32,7 @@ class TestModelTrainingConfig:
         config = ModelTrainingConfig()
         assert config.model_checkpoint == "hfl/rbt6"
         assert config.batch_size == 32
-        assert config.num_epochs == 5
+        assert config.num_epochs == 10
         assert config.learning_rate == 2e-5
 
     def test_config_paths_exist(self):

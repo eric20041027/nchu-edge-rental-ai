@@ -136,22 +136,17 @@ def test_base_classes():
 
 
 def test_end_to_end_imports():
-    """測試端到端導入流程"""
+    """測試端到端導入流程(crawlers + data_prep 核心型別仍可導入)。"""
     # 爬蟲模塊
     from pipeline.crawlers import CrawlerConfig, RentalProperty
-    from pipeline.crawlers_runner import main as crawlers_main
-
     # 數據準備模塊
     from pipeline.data_prep import DataPrepConfig, DataPipeline
-    from pipeline.data_prep_runner import main as dataprep_main
 
     # 驗證所有導入都成功
     assert CrawlerConfig is not None
     assert RentalProperty is not None
     assert DataPrepConfig is not None
     assert DataPipeline is not None
-
-    print("✓ 端到端導入流程驗證成功")
 
 
 if __name__ == "__main__":

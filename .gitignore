@@ -66,3 +66,6 @@ nchu-rental-ai.pptx
 .venv_eval/
 tests/.rule_based_join_cache.json
 .codebase-memory/
+
+# crawler 執行時的 lock 檔(階段⑥-B 發現測試會留下)
+pipeline/crawlers/crawler.lock
