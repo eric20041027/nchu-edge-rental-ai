@@ -83,6 +83,22 @@ def append_to_csv(rows: list, csv_path: str):
             if len(clean_row) == 19:
                 writer.writerow(clean_row)
 
+
+def load_existing_rids(csv_path: str) -> set:
+    """讀主檔已存在的興大房源 RID,供重跑去重(比照 591/ddroom 的 existing-URL)。
+
+    原本只 in-run 去重 → 重跑會把現有 145 筆興大全部重複 append。讀現有 CSV 的
+    detail.php?rid=<RID> 抽 RID,跳過已抓過的。
+    """
+    rids: set = set()
+    if os.path.exists(csv_path):
+        with open(csv_path, "r", encoding="utf-8-sig") as f:
+            for row in csv.DictReader(f):
+                m = re.search(r"rid=(\d+)", row.get("網址", ""))
+                if m:
+                    rids.add(m.group(1))
+    return rids
+
 async def get_nchu_detail(page, rid: str) -> dict:
     url = f"{DETAIL_URL_BASE}{rid}"
     try:
@@ -186,7 +202,9 @@ async def get_nchu_detail(page, rid: str) -> dict:
 
 async def main():
     log("Starting NCHU Rental Crawler...")
-    processed_rids = set()
+    existing_rids = load_existing_rids(TARGET_CSV)
+    log(f"  已有 {len(existing_rids)} 筆興大 RID(去重基準)")
+    processed_rids = set(existing_rids)  # 已存在的視同已處理 → 跳過,不重複 append
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
         context = await browser.new_context()
