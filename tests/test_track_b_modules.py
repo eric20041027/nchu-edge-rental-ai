@@ -116,17 +116,22 @@ class TestOSRMClientUnit:
 # ─── B1: NER imports ────────────────────────────────────────────────────────
 class TestNERImports:
     def test_config_importable(self):
+        # pipeline.ner_model 頂層 import torch(ner_trainer)→ 無 torch 時 skip。
+        pytest.importorskip("torch")
         from pipeline.ner_model import NERConfig
         cfg = NERConfig()
         assert cfg.num_labels == 7
         assert cfg.target_f1 == 0.958
 
     def test_predictor_importable(self):
+        pytest.importorskip("torch")
         from pipeline.ner_model import NERPredictor
         p = NERPredictor()
         assert not p._loaded
 
     def test_label_maps(self):
+        # 即使只 import 子模組,pipeline.ner_model.__init__ 仍會 import torch → skip。
+        pytest.importorskip("torch")
         from pipeline.ner_model.config import LABEL2ID, ID2LABEL
         assert "B-LOC" in LABEL2ID
         assert "B-BGT" in LABEL2ID

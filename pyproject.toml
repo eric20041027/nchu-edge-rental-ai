@@ -1,0 +1,12 @@
+[tool.pytest.ini_options]
+# 階段⑥-B:讓 `pytest` 一鍵跑全套測試。
+testpaths = ["tests"]
+# repo root 加進 sys.path,讓 `from pipeline...` 在 CI(乾淨 checkout)解析得到。
+# 本機從 repo root 跑剛好有,CI runner 沒有 → 不加會 collection error。
+pythonpath = ["."]
+# 預設加 30s per-test timeout,擋住意外打網路 / 啟動爬蟲的測試把 CI 掛死。
+# (需 pytest-timeout;CI 已裝。本機若無此套件,移除此行或 pip install pytest-timeout。)
+addopts = "-q --timeout=60 --timeout-method=thread"
+markers = [
+    "slow: 需要重依賴(torch/onnxruntime)或較久的測試",
+]
