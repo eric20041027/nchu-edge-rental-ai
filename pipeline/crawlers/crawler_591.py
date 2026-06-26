@@ -98,11 +98,18 @@ _PHONE_RE = re.compile(
     r"(?<!\d)(09\d{2}-?\d{3}-?\d{3}|0\d{1,2}-\d{6,8})(?!\d)"
 )
 
+# 591 房東真號需點擊揭露(JS),raw HTML 只剩平台客服總機 → 黑名單,命中視同無號。
+# (live 實測 5/5 都抓到 02-55722000 = 591 客服,灌進去會誤導使用者。)
+_PLATFORM_PHONES = {"02-55722000", "0255722000"}
+
 
 def _extract_phone(html: str) -> str:
-    """從 HTML 抽合法電話;591 號碼常需點擊揭露,抽不到就留空(不寧濫勿缺)。"""
+    """從 HTML 抽合法電話;591 房東號需點擊揭露,抓不到/抓到平台號就留空(不寧濫勿缺)。"""
     m = _PHONE_RE.search(html)
-    return m.group(1) if m else ""
+    if not m:
+        return ""
+    phone = m.group(1)
+    return "" if phone.replace("-", "") in {p.replace("-", "") for p in _PLATFORM_PHONES} else phone
 
 
 def load_existing_urls(csv_path: str) -> set[str]:

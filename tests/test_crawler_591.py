@@ -38,6 +38,9 @@ def test_extract_phone_rejects_garbage():
     """live run 曾把 11 碼雜訊串 01543446671 當電話 → 回歸守門。"""
     assert c._extract_phone("...id=01543446671...") == ""   # 11 碼無 dash:雜訊
     assert c._extract_phone("x09123456789999") == ""        # 黏進長數字串
+    # 591 平台客服號(live 5/5 抓到)→ 黑名單,留空不灌假號
+    assert c._extract_phone("客服 02-55722000") == ""
+    assert c._extract_phone("0255722000") == ""
     # 合法號碼仍抽得到
     assert c._extract_phone("聯絡 0912-345-678") == "0912-345-678"
     assert c._extract_phone("0912345678") == "0912345678"
