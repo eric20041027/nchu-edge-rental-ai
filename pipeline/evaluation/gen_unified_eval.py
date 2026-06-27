@@ -80,7 +80,10 @@ def main() -> None:
                  "purpose": "統一評估集:單訴求+複合混合,每筆標對的指標終結假矛盾",
                  "metric_rule": "小桶(距離/價格/複合)→recall;大桶設施→precision(TOP K 純度)",
                  "gt_method": "property_data 欄位客觀算",
-                 "query_source": "手寫(單訴求+複合),非訓練同源"},
+                 "query_source": "手寫(單訴求+複合),非訓練同源",
+                 # provenance:GT 對哪個房源數客觀算(擴量後重跑才會更新 → 防誤用舊集)
+                 "property_count": len(PD),
+                 "n_queries": len(queries)},
         "queries": queries,
     }
     out = ROOT / "tests/fixtures/unified_eval.json"
