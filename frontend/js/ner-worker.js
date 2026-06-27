@@ -8,6 +8,8 @@
  * Labels: O=0, B-LOC=1, I-LOC=2, B-BGT=3, I-BGT=4, B-FEAT=5, I-FEAT=6
  */
 
+import { loadORT, streamingFetch, createSession } from './worker-shared.js';
+
 const MAX_LEN   = 64;
 const CLS_ID    = 101;
 const SEP_ID    = 102;
@@ -31,9 +33,7 @@ async function init(origin, noCache = false) {
     try {
         const cacheMode = noCache ? 'no-store' : 'default';
         postMessage({ type: 'ner_status', message: '載入 NER 模組...' });
-
-        const ortModule = await import('https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.mjs');
-        ort = ortModule.default ?? ortModule;
+        ort = await loadORT();
 
         // Fetch vocab from tokenizer.json
         postMessage({ type: 'ner_status', message: '載入 NER 詞表...' });
@@ -43,31 +43,14 @@ async function init(origin, noCache = false) {
 
         // Fetch + load the quantized NER model (streaming for progress reporting)
         postMessage({ type: 'ner_status', message: '載入 NER 模型...' });
-        const modelRes = await fetch(origin + '/models/ner_model_dir/ner_model_quant.onnx', { cache: cacheMode });
-        if (!modelRes.ok) throw new Error(`NER model fetch failed: ${modelRes.status}`);
-        const contentLength = parseInt(modelRes.headers.get('Content-Length') || '0', 10);
-        const reader = modelRes.body.getReader();
-        const chunks = [];
-        let received = 0;
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            chunks.push(value);
-            received += value.byteLength;
-            if (contentLength > 0) {
-                postMessage({ type: 'ner_progress', loaded: received, total: contentLength });
-            }
-        }
-        const modelBuffer = new Uint8Array(received);
-        let pos = 0;
-        for (const chunk of chunks) { modelBuffer.set(chunk, pos); pos += chunk.byteLength; }
+        const modelBuffer = await streamingFetch(
+            origin + '/models/ner_model_dir/ner_model_quant.onnx', cacheMode,
+            (loaded, total) => postMessage({ type: 'ner_progress', loaded, total }),
+        );
 
         // 下載完成但 WASM session 編譯仍需數秒 → 通知 UI 進入「初始化中」。
-        postMessage({ type: 'ner_progress', loaded: contentLength, total: contentLength, init: true });
-        session = await ort.InferenceSession.create(modelBuffer, {
-            executionProviders: ['wasm'],
-            graphOptimizationLevel: 'all',
-        });
+        postMessage({ type: 'ner_progress', loaded: modelBuffer.length, total: modelBuffer.length, init: true });
+        session = await createSession(ort, modelBuffer);
 
         postMessage({ type: 'ner_ready' });
     } catch (err) {
@@ -191,8 +174,7 @@ async function extractEntities(text) {
 async function initFromBuffer(origin, modelBuffer) {
     try {
         postMessage({ type: 'ner_status', message: '載入 NER 模組...' });
-        const ortModule = await import('https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.mjs');
-        ort = ortModule.default ?? ortModule;
+        ort = await loadORT();
 
         postMessage({ type: 'ner_status', message: '載入 NER 詞表...' });
         const tokenizerRes = await fetch(origin + '/models/ner_model_dir/tokenizer.json', { cache: 'default' });
@@ -200,10 +182,7 @@ async function initFromBuffer(origin, modelBuffer) {
         vocab = new Map(Object.entries(tokenizerJson.model.vocab));
 
         postMessage({ type: 'ner_status', message: '初始化 NER Session...' });
-        session = await ort.InferenceSession.create(modelBuffer, {
-            executionProviders: ['wasm'],
-            graphOptimizationLevel: 'all',
-        });
+        session = await createSession(ort, modelBuffer);
         postMessage({ type: 'ner_ready' });
     } catch (err) {
         postMessage({ type: 'ner_error', message: err.message });
