@@ -64,14 +64,21 @@ def main() -> None:
     queries = []
     print("統一評估集 — 每筆指標 + GT 桶大小")
     print("-" * 64)
+    RECALL_MAX_GT = 25  # recall 桶 GT 上限:超過則 Recall@30 天花板被壓失真
     for q, preds, metric in EVAL:
         idxs = _idxs(*preds)
         n = len(idxs)
         # recall 類要小桶(可解讀);precision 類本就大桶(算 TOP K 純度,桶大小不影響)。
-        warn = ""
-        if metric == "recall" and not (1 <= n <= 25):
-            warn = " ⚠recall桶過大/空"
-        print(f"  [{metric:9s}] {n:>3} 間  {q}{warn}")
+        # 擴量後距離/價格桶可能膨脹成大桶(如「走路五分到校」290 間)→ Recall@30 天花板
+        # 僅 ~0.1,平均被嚴重拉低成假象。GT 過大的 recall 桶自動降級為 precision
+        # (對桶大小不敏感),metric 隨資料規模自適,不靠人工硬寫。
+        note = ""
+        if metric == "recall" and n > RECALL_MAX_GT:
+            metric = "precision"
+            note = f" (GT={n}>{RECALL_MAX_GT} 自動改 precision)"
+        elif metric == "recall" and n < 1:
+            note = " ⚠recall桶空"
+        print(f"  [{metric:9s}] {n:>3} 間  {q}{note}")
         queries.append({"query": q, "metric": metric, "n_relevant": n,
                         "relevant_idxs": idxs})
 
