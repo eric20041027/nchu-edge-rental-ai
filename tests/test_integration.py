@@ -6,20 +6,11 @@ from pipeline.data_prep import DataPrepConfig, DataPipeline
 
 def test_crawler_module_complete():
     """測試爬蟲模塊完整性"""
-    from pipeline.crawlers import (
-        CrawlerConfig,
-        RentalProperty,
-        CSV_COLUMNS,
-    )
-    from pipeline.crawlers.base import BaseCrawler
+    from pipeline.crawlers import CrawlerConfig, CSV_COLUMNS
 
-    # 驗證所有公開類和常數都能導入
     cfg = CrawlerConfig()
     assert cfg is not None
-    assert len(CSV_COLUMNS) == 22
-    assert BaseCrawler is not None
-
-    print("✓ 爬蟲模塊完整性驗證成功")
+    assert len(CSV_COLUMNS) == 19  # 現役 shared schema(孤兒 22 欄 models 已刪)
 
 
 def test_data_prep_module_complete():
@@ -65,8 +56,7 @@ def test_data_pipeline_orchestration():
 
 
 def test_pydantic_models():
-    """測試 Pydantic 數據模型"""
-    from pipeline.crawlers import RentalProperty
+    """測試 Pydantic 數據模型(data_prep;crawlers 的孤兒 RentalProperty 已刪)"""
     from pipeline.data_prep import (
         MergedRental,
         QueryPropertyPair,
@@ -74,10 +64,6 @@ def test_pydantic_models():
         BudgetTrap,
         HardNegativeExample,
     )
-
-    # 測試爬蟲模型
-    prop = RentalProperty(url="http://test.com", address="測試地址")
-    assert prop.url == "http://test.com"
 
     # 測試數據準備模型
     merged = MergedRental(url="http://test.com", address="測試地址")
@@ -120,31 +106,23 @@ def test_configuration_hierarchy():
 
 
 def test_base_classes():
-    """測試抽象基類"""
-    from pipeline.crawlers.base import BaseCrawler
+    """測試抽象基類(data_prep;crawlers.base 孤兒已刪)"""
     from pipeline.data_prep import BaseProcessor
 
-    # 驗證基類存在
-    assert BaseCrawler is not None
     assert BaseProcessor is not None
-
-    # 驗證它們是抽象的
-    assert hasattr(BaseCrawler, 'run')
     assert hasattr(BaseProcessor, 'run')
-
-    print("✓ 抽象基類驗證成功")
 
 
 def test_end_to_end_imports():
     """測試端到端導入流程(crawlers + data_prep 核心型別仍可導入)。"""
     # 爬蟲模塊
-    from pipeline.crawlers import CrawlerConfig, RentalProperty
+    from pipeline.crawlers import CrawlerConfig, CSV_COLUMNS
     # 數據準備模塊
     from pipeline.data_prep import DataPrepConfig, DataPipeline
 
     # 驗證所有導入都成功
     assert CrawlerConfig is not None
-    assert RentalProperty is not None
+    assert CSV_COLUMNS is not None
     assert DataPrepConfig is not None
     assert DataPipeline is not None
 
