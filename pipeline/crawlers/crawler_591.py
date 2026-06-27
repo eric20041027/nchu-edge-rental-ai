@@ -26,12 +26,13 @@ from pathlib import Path
 
 from playwright.async_api import async_playwright
 
+from .shared import (
+    CSV_COLUMNS, FEATURES_DB, FURNITURE_DB, LOCK_FILE, TARGET_CSV,
+    append_to_csv, load_existing_urls, log, polish,
+)
+
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
-
-_REPO_ROOT = Path(__file__).resolve().parents[2]
-TARGET_CSV = str(_REPO_ROOT / "data/raw/nchu_rental_info.csv")
-LOCK_FILE = str(Path(__file__).parent / "crawler.lock")
 
 # 興大周邊(中興大學在南區),沿用 ddroom 的目標行政區。
 TARGET_AREAS = ["南區", "西區", "東區", "大里區", "太平區"]
@@ -46,43 +47,8 @@ _UA = (
     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 )
 
-# 與 crawler_ddroom.py 同一份 19 欄 schema(管線讀 nchu_rental_info.csv)。
-CSV_COLUMNS = [
-    "網址", "地址", "類型", "室內坪數", "租金", "押金", "樓層", "電話",
-    "家具設施", "另計費用", "水費", "電費", "租屋補助", "特色", "最短租期",
-    "圖片網址", "距離(km)", "walk_mins", "scooter_mins",
-]
-
-FURNITURE_DB = ["床", "桌子", "椅子", "沙發", "衣櫃", "鞋櫃", "櫃子", "排油煙機", "瓦斯爐",
-                "電磁爐", "流理台", "電視", "第四台", "冰箱", "洗衣機", "冷氣", "網路",
-                "熱水器", "天然瓦斯", "住警器", "飲水機", "電梯", "陽台"]
-FEATURES_DB = ["可養貓", "可養狗", "可養其他寵物", "對外窗", "有電梯", "水泥隔間", "保全設施",
-               "垃圾代收", "包裹代收", "定期清潔", "免仲介費", "可報稅", "租金補貼",
-               "氣密窗", "有陽台", "可開伙", "可入籍"]
-
 _DOOR_NUM_RE = re.compile(r"\d+號|\d+-\d+號|\d+之\d+號")
 _BLOCK_MARKERS = ["請輸入驗證碼", "captcha", "請稍後再試", "異常流量", "403 forbidden", "access denied"]
-
-
-def log(msg: str) -> None:
-    print(msg, flush=True)
-
-
-def polish(text: str, is_phone: bool = False) -> str:
-    """比照 ddroom final_polish:去控制字元、攤平空白、金額去空格、電話抽號碼。"""
-    if not text:
-        return ""
-    text = str(text).replace("\n", " ").replace("\r", " ").replace("\t", " ").replace(",", " ").replace('"', " ")
-    text = "".join(c for c in text if ord(c) >= 32 and ord(c) != 127)
-    if is_phone:
-        if any(k in text for k in ["註冊", "登入", "聯絡"]):
-            m = re.search(r"(09\d{2}-?\d{3}-?\d{3}|0\d{1,2}-?\d{6,8})", text)
-            return m.group(1) if m else ""
-        return "".join(c for c in text if c.isdigit() or c == "-")
-    if any(c.isdigit() for c in text) and any(k in text for k in ["元", "月", "天"]):
-        text = re.sub(r"(\d)\s+(\d)", r"\1\2", text)
-        text = re.sub(r"(\d)\s+元", r"\1元", text)
-    return " ".join(text.split()).strip()
 
 
 def looks_blocked(html: str) -> bool:
@@ -110,28 +76,6 @@ def _extract_phone(html: str) -> str:
         return ""
     phone = m.group(1)
     return "" if phone.replace("-", "") in {p.replace("-", "") for p in _PLATFORM_PHONES} else phone
-
-
-def load_existing_urls(csv_path: str) -> set[str]:
-    """讀已抓 URL 去重(比照 ddroom)。"""
-    urls: set[str] = set()
-    if os.path.exists(csv_path):
-        with open(csv_path, "r", encoding="utf-8-sig") as f:
-            for row in csv.DictReader(f):
-                if row.get("網址"):
-                    urls.add(row["網址"].strip())
-    return urls
-
-
-def append_to_csv(rows: list[dict], csv_path: str) -> None:
-    Path(csv_path).parent.mkdir(parents=True, exist_ok=True)
-    write_header = not os.path.exists(csv_path) or os.path.getsize(csv_path) == 0
-    with open(csv_path, "a", newline="", encoding="utf-8-sig") as f:
-        writer = csv.writer(f, quoting=csv.QUOTE_MINIMAL, lineterminator="\n")
-        if write_header:
-            writer.writerow(CSV_COLUMNS)
-        for row in rows:
-            writer.writerow([polish(row.get(col, ""), is_phone=(col == "電話")) for col in CSV_COLUMNS])
 
 
 async def extract_house_ids(page) -> list[str]:

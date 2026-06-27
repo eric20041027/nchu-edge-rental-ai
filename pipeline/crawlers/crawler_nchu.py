@@ -7,25 +7,14 @@ import sys
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
 
+from .shared import CSV_COLUMNS, FEATURES_DB, FURNITURE_DB, TARGET_CSV, append_to_csv, log
+
 sys.stdout.reconfigure(encoding='utf-8')
 
-TARGET_CSV = os.path.join(os.path.dirname(__file__), "../../data/raw/nchu_rental_info.csv")
 BASE_URL = "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/index.php"
 DETAIL_URL_BASE = "https://www.osa.nchu.edu.tw/osa/arm/sys/modules/re/detail.php?rid="
-
-CSV_COLUMNS = [
-    "網址", "地址", "類型", "室內坪數", "租金", "押金", "樓層", "電話", 
-    "家具設施", "另計費用", "水費", "電費", "租屋補助", "特色", "最短租期", 
-    "圖片網址", "距離(km)", "walk_mins", "scooter_mins"
-]
-
-FURNITURE_DB = ["床", "桌子", "椅子", "沙發", "衣櫃", "鞋櫃", "櫃子", "排油煙機", "瓦斯爐", "電磁爐", "流理台", "電視", "第四台", "電視盒", "冰箱", "洗衣機", "冷氣", "網路", "熱水器", "天然瓦斯", "住警器", "飲水機", "電梯", "陽台"]
-
-# Canonical feature labels (mirrors crawler_ddroom.FEATURES_DB so downstream
-# string matching in precompute_embeddings.py lights up the same has_* flags
-# for both sources). NCHU lists these inside its 家具設施 / 安全管理 / 消防逃生 /
-# 租金包含 / 備註 secondary tables rather than as chips, so we derive them.
-FEATURES_DB = ["可養貓", "可養狗", "可養其他寵物", "對外窗", "有電梯", "水泥隔間", "保全設施", "垃圾代收", "包裹代收", "定期清潔", "免仲介費", "可報稅", "租金補貼", "高齡友善", "飲水機", "氣密窗", "有陽台", "可開伙", "台電", "台水", "可申請補助", "可入籍"]
+# 註:nchu 的 FEATURES_DB 原與 ddroom 相同(現由 shared 提供);NCHU 把這些放在
+# 家具設施/安全管理/消防逃生/租金包含/備註 次表,故下方 derive_nchu_features 推導。
 
 # Keyword -> canonical feature. Scanned over the union of the captured NCHU
 # tables. Keeps the front-end vocabulary aligned across both crawlers.
@@ -55,9 +44,6 @@ def derive_nchu_features(blob: str) -> list:
     return found
 
 
-def log(msg):
-    print(msg, flush=True)
-
 def clean_numerical(text):
     if not text: return ""
     text = str(text)
@@ -66,22 +52,14 @@ def clean_numerical(text):
     text = re.sub(r'(\d)\s+元', r'\1元', text)
     return text.strip()
 
-def append_to_csv(rows: list, csv_path: str):
-    file_exists = os.path.exists(csv_path)
-    write_header = not file_exists or os.path.getsize(csv_path) == 0
-    with open(csv_path, "a", newline="", encoding="utf-8-sig") as f:
-        writer = csv.writer(f, quoting=csv.QUOTE_MINIMAL, lineterminator='\n')
-        if write_header:
-            writer.writerow(CSV_COLUMNS)
-        for row in rows:
-            clean_row = []
-            for col in CSV_COLUMNS:
-                val = str(row.get(col, "")).replace("\n", " ").replace("\r", " ").replace(",", " ")
-                if col in ["租金", "押金", "另計費用"]:
-                    val = clean_numerical(val)
-                clean_row.append(val)
-            if len(clean_row) == 19:
-                writer.writerow(clean_row)
+
+def _nchu_clean_cell(value: str, column: str) -> str:
+    """NCHU 逐欄清理(與 591/ddroom 不同:只去換行/逗號,金額欄做 clean_numerical;
+    不去控制字元、不抽電話)。傳給 shared.append_to_csv 保留原行為。"""
+    val = str(value).replace("\n", " ").replace("\r", " ").replace(",", " ")
+    if column in ["租金", "押金", "另計費用"]:
+        val = clean_numerical(val)
+    return val
 
 
 def load_existing_rids(csv_path: str) -> set:
@@ -238,7 +216,7 @@ async def main():
             dp = await context.new_page()
             res = await get_nchu_detail(dp, rid)
             if res:
-                append_to_csv([res], TARGET_CSV)
+                append_to_csv([res], TARGET_CSV, clean_cell=_nchu_clean_cell)
                 log(f"  Processed RID {rid}: {res.get('地址')}")
             await dp.close()
             await asyncio.sleep(1)

@@ -17,57 +17,16 @@ import sys
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
 
-sys.stdout.reconfigure(encoding='utf-8')
+from .shared import (
+    CSV_COLUMNS, FEATURES_DB, FURNITURE_DB, LOCK_FILE, TARGET_CSV,
+    append_to_csv, log,
+)
+from .shared import polish as final_polish  # 保留呼叫點名稱
 
-TARGET_CSV = os.path.join(os.path.dirname(__file__), "../../data/raw/nchu_rental_info.csv")
-LOCK_FILE = os.path.join(os.path.dirname(__file__), "crawler.lock")
+sys.stdout.reconfigure(encoding='utf-8')
 
 TARGET_AREAS = ["南區", "西區", "東區", "大里區", "太平區"]
 MAX_PAGES = 100
-
-CSV_COLUMNS = [
-    "網址", "地址", "類型", "室內坪數", "租金", "押金", "樓層", "電話", 
-    "家具設施", "另計費用", "水費", "電費", "租屋補助", "特色", "最短租期", 
-    "圖片網址", "距離(km)", "walk_mins", "scooter_mins"
-]
-
-FURNITURE_DB = ["床", "桌子", "椅子", "沙發", "衣櫃", "鞋櫃", "櫃子", "排油煙機", "瓦斯爐", "電磁爐", "流理台", "電視", "第四台", "電視盒", "冰箱", "洗衣機", "冷氣", "網路", "熱水器", "天然瓦斯", "住警器", "飲水機", "電梯", "陽台"]
-FEATURES_DB = ["可養貓", "可養狗", "可養其他寵物", "對外窗", "有電梯", "水泥隔間", "保全設施", "垃圾代收", "包裹代收", "定期清潔", "免仲介費", "可報稅", "租金補貼", "高齡友善", "飲水機", "氣密窗", "有陽台", "可開伙", "台電", "台水", "可申請補助", "可入籍"]
-
-def log(msg):
-    print(msg, flush=True)
-
-def final_polish(text, is_phone=False):
-    if not text: return ""
-    text = str(text).replace("\n", " ").replace("\r", " ").replace("\t", " ").replace(",", " ").replace('"', " ")
-    text = "".join(c for c in text if ord(c) >= 32 and ord(c) != 127)
-    
-    if is_phone:
-        if any(k in text for k in ["註冊", "登入", "聯絡"]):
-            m = re.search(r'(09\d{2}-?\d{3}-?\d{3}|0\d{1,2}-?\d{6,8})', text)
-            if m: return m.group(1)
-            else: return ""
-        return "".join(c for c in text if c.isdigit() or c == "-")
-    
-    # 針對金額、另計費用、押金等欄位移除數字間的空格
-    if any(c.isdigit() for c in text) and any(k in text for k in ["元", "月", "天"]):
-        # 使用正則移除數字中間或與單位間的空格
-        text = re.sub(r'(\d)\s+(\d)', r'\1\2', text)
-        text = re.sub(r'(\d)\s+元', r'\1元', text)
-
-    return " ".join(text.split()).strip()
-
-def append_to_csv(rows: list, csv_path: str):
-    file_exists = os.path.exists(csv_path)
-    write_header = not file_exists or os.path.getsize(csv_path) == 0
-    with open(csv_path, "a", newline="", encoding="utf-8-sig") as f:
-        writer = csv.writer(f, quoting=csv.QUOTE_MINIMAL, lineterminator='\n')
-        if write_header:
-            writer.writerow(CSV_COLUMNS)
-        for row in rows:
-            clean_row = [final_polish(row.get(col, ""), is_phone=(col == "電話")) for col in CSV_COLUMNS]
-            if len(clean_row) == 19:
-                writer.writerow(clean_row)
 
 async def get_detail_info_ultimate(page, url: str) -> dict:
     try:

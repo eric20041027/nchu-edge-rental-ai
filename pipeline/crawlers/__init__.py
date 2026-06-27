@@ -1,5 +1,5 @@
 """pipeline.crawlers — rental data collection module."""
 from .config import CrawlerConfig
-from .models import CSV_COLUMNS, RentalProperty
+from .shared import CSV_COLUMNS
 
-__all__ = ["CrawlerConfig", "RentalProperty", "CSV_COLUMNS"]
+__all__ = ["CrawlerConfig", "CSV_COLUMNS"]
