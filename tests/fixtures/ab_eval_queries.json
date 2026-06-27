@@ -4,6 +4,8 @@
     "source": "recommendation_train.json",
     "join": "T0 fuzzy-join (token-set)",
     "join_match_rate": 0.2445,
+    "joined_property_count": 971,
+    "caveat_new_listings": "GT 來源是 recommendation_train.json 的 query-property pair(舊房源)。擴量新增的房源幾乎不在 train pair 內,故鮮少成為 relevant_idxs。擴量後 recall 絕對值下降主要是『候選池變大、relevant 標的固定』的數學必然,非品質退步。要公平評估新房源需人工/LLM 補標(stage4 第二輪)。",
     "notes": "Semantic bucket = PROVEN recall blind spots: query carries a colloquial trigger (data/semantic_rules.json `rules` key, feature word absent from query) AND the T0 rule-based recall (INTENT_MAP expansion included -- the real A/B baseline) misses >=1 relevant listing at K=30, so vector recall has room to win. Empirical gate matters because every `rules` key is also in the baseline's INTENT_MAP, so trigger-membership alone is not enough. Keyword bucket = control (literal feature/location/budget, no qualifying trigger). relevant_idxs are property_data idx from T0 build_ground_truth (relevance>=1); no re-join needed in T7. trigger-bearing queries=160, of which semantic(blind)=78; keyword=200 (capped at 200 from 5006 available)."
   },
   "queries": [
@@ -781,7 +783,6 @@
       "bucket": "keyword",
       "n_relevant": 44,
       "relevant_idxs": [
-        0,
         34,
         83,
         91,
@@ -824,7 +825,8 @@
         680,
         683,
         689,
-        703
+        703,
+        885
       ],
       "semantic_trigger": null
     },
@@ -941,7 +943,6 @@
         126,
         152,
         174,
-        177,
         183,
         185,
         198,
@@ -966,7 +967,8 @@
         586,
         610,
         613,
-        624
+        624,
+        886
       ],
       "semantic_trigger": null
     },
@@ -979,7 +981,6 @@
         49,
         92,
         122,
-        133,
         147,
         187,
         197,
@@ -1008,7 +1009,8 @@
         652,
         658,
         668,
-        689
+        689,
+        969
       ],
       "semantic_trigger": null
     },
@@ -1786,10 +1788,10 @@
       "bucket": "keyword",
       "n_relevant": 4,
       "relevant_idxs": [
-        133,
         333,
         701,
-        703
+        703,
+        969
       ],
       "semantic_trigger": null
     },
@@ -2173,7 +2175,7 @@
       "relevant_idxs": [
         96,
         107,
-        133
+        969
       ],
       "semantic_trigger": null
     },
@@ -2512,9 +2514,9 @@
       "bucket": "keyword",
       "n_relevant": 3,
       "relevant_idxs": [
-        0,
         40,
-        68
+        68,
+        885
       ],
       "semantic_trigger": null
     },
