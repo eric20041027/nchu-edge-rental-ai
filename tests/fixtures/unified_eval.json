@@ -11,7 +11,7 @@
  "queries": [
   {
    "query": "走路五分鐘就到學校",
-   "metric": "recall",
+   "metric": "precision",
    "n_relevant": 290,
    "relevant_idxs": [
     6,
@@ -308,7 +308,7 @@
   },
   {
    "query": "騎車三分鐘到校",
-   "metric": "recall",
+   "metric": "precision",
    "n_relevant": 293,
    "relevant_idxs": [
     6,
@@ -5300,7 +5300,7 @@
   },
   {
    "query": "走路五分內又便宜八千",
-   "metric": "recall",
+   "metric": "precision",
    "n_relevant": 91,
    "relevant_idxs": [
     6,
@@ -5418,7 +5418,7 @@
   },
   {
    "query": "騎車三分電梯又要便宜",
-   "metric": "recall",
+   "metric": "precision",
    "n_relevant": 63,
    "relevant_idxs": [
     7,
@@ -5488,7 +5488,7 @@
   },
   {
    "query": "走路五分的透天厝",
-   "metric": "recall",
+   "metric": "precision",
    "n_relevant": 45,
    "relevant_idxs": [
     6,
