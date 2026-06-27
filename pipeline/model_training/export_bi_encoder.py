@@ -216,7 +216,7 @@ class BiEncoderExporter(BaseTrainer):
 
     # ----------------------------- quantize ------------------------------- #
     def _quantize(self) -> None:
-        """Dynamic INT8 (weight-only) quantization — same recipe as quantize_model.py.
+        """Dynamic INT8 (weight-only) quantization — same recipe as quantizer.py.
 
         Static QDQ was rejected for the CE (activation miscalibration); dynamic
         per-channel weight-only is the validated accuracy/size tradeoff here too.

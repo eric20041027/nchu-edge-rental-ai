@@ -1,5 +1,10 @@
 # Bi-encoder 意圖層 fallback — 離線覆蓋率天花板驗證 (P0 上線決策)
 
+> **2026-06-27 更新**:前端 no-op 骨架(`ENCODER_FALLBACK_ENABLED`、`initEncoderFallback`、
+> `encoderFallbackExpand`、狀態變數)已於架構精簡批次1移除(本決策 NO-GO、骨架長期未動)。
+> **要救此功能**:依本文檔「決策」段重建 —— 字面表擴列舉(便宜路徑)優先,或換各向同性編碼器;
+> 離線評估腳本 `pipeline/data_prep/eval_encoder_fallback_offline.py` 仍保留可重跑。
+
 **日期**: 2026-06-14
 **結論**: ❌ **NO-GO**(目前形式)。不投入 transformers.js / 不灌 205MB、不翻 `ENCODER_FALLBACK_ENABLED`。
 **重跑**: `python pipeline/data_prep/eval_encoder_fallback_offline.py [--sweep] [--dump-misroutes N]`

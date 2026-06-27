@@ -8,7 +8,6 @@
  * Sequential inference to avoid ONNX "Session already started" error.
  */
 // 註:主執行緒不直接用 transformers.js — 推論在 inference-worker.js / ner-worker.js(各自 import)。
-// encoder fallback 骨架啟用時於該處動態 import(見下方 initEncoderFallback 的 TODO),故此處不需頂層 import。
 
 // 階段② 反饋重排(CE 精排後的純後處理,可關)。spec: docs/spec/feedback-rerank.md
 import { readFeedbackLog, loadFeedbackScores, applyFeedbackRerank } from './feedback.js';
@@ -43,26 +42,6 @@ let biEncIdCounter  = 0;
 //   { dim, idxs:[704 個 property_data idx], vecs:Float32Array(704*768),
 //     byIdx:Map<property_data idx → row 起始 offset> }
 let propertyEmbeddings = null;
-
-// --- Bi-encoder intent fallback (SKELETON, default OFF) ----------------------
-// 字面意圖表 (expandQueryIntent) 只認列舉的口語講法;規則表沒有的講法 (例
-// 「黃金獵犬」「想養柯基」) 會字面零命中、整句不擴展。bi-encoder fallback 用
-// text2vec 編碼單句 query,與離線預算的 132 原型向量做 cosine,thr 以上 top-k
-// 路由到對應規則的擴展詞,接住這類漏接。
-//
-// 設計 (見 semantic_expansion_overhaul / open_todos P0):
-//   - 原型離線算好 (build_intent_prototypes.py → data/intent_prototypes.json),
-//     前端只編碼 query 一次,不在前端算 132 原型。
-//   - 原型與 query 編碼器「同源」才能比 cosine:同 model / mean-pool / L2 norm。
-//   - expandQueryIntent 維持同步;編碼器與原型 async 預載,未載入則 fallback skip
-//     (happy path 零影響)。
-//   - ⚠️ 預設關閉。上線需 (1) 產出 intent_prototypes.json (2) 接 transformers.js
-//     AutoModel 真正載入編碼器 (3) 翻開此旗標。骨架階段保留介接點不灌 205MB 模型。
-const ENCODER_FALLBACK_ENABLED = false;
-
-// 預載狀態 (initEncoderFallback 填入)。null = 未載入 → encoderFallbackExpand skip。
-let intentEncoder    = null;   // 同源 query 編碼器 (上線時 = transformers.js AutoModel)
-let intentPrototypes = null;   // { dim, thr, top_k, rules:{k:expansion}, vecs:{k:Float32Array} }
 
 // --- Source-aware boolean reliability (bool 空值≠False) ---------------------
 // 兩來源爬蟲抓取的欄位子集不同，部分 bool 欄在某來源「整欄崩塌」(≈0% true)，
@@ -159,8 +138,6 @@ async function loadPropertyEmbeddings(rawData) {
 
 // --- NLP Engine Initialization via Web Worker ---
 export async function initNLP(onProgress) {
-    // 背景預載 bi-encoder fallback (flag 關時為 no-op,不阻塞主初始化)。
-    initEncoderFallback();
     // 向量召回 bi-encoder 由 app.js 帶進度 callback 啟動 (見 initBiEncoder export);
     // 此處不再自行 init,避免無 callback 的 worker 搶先建立。
     if (!worker) {
@@ -921,84 +898,6 @@ function propHasFeature(propText, feature) {
 }
 
 // --- Semantic Query Expansion ---
-/**
- * 預載 bi-encoder fallback 的編碼器與原型向量 (async, 啟動時呼叫一次)。
- * flag 關閉時直接 return,不引入任何成本。骨架階段:結構完整、實際 model load
- * 與 prototypes fetch 標為 TODO,上線時補。
- */
-async function initEncoderFallback() {
-    if (!ENCODER_FALLBACK_ENABLED) return;
-    if (intentEncoder && intentPrototypes) return;  // 已載入
-    try {
-        // 1) 載入離線預算的原型向量 (build_intent_prototypes.py 產出)。
-        const resp = await fetch('assets/intent_prototypes.json');
-        if (!resp.ok) throw new Error(`prototypes HTTP ${resp.status}`);
-        const raw = await resp.json();
-        // 預轉 Float32Array,query 比對時零額外配置。
-        const vecs = {};
-        for (const [k, v] of Object.entries(raw.prototypes)) {
-            vecs[k] = Float32Array.from(v);
-        }
-        intentPrototypes = {
-            dim: raw.dim, thr: raw.thr, top_k: raw.top_k,
-            rules: raw.rules, vecs,
-        };
-
-        // 2) 載入同源 query 編碼器。必須與 build_intent_prototypes.py 同 model /
-        //    mean-pool / L2 norm,否則 cosine 無意義。
-        // TODO(上線): 接 transformers.js AutoModel。
-        //   const { AutoModel } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1');
-        //   const tok   = await AutoTokenizer.from_pretrained(raw.model);
-        //   const model = await AutoModel.from_pretrained(raw.model, { quantized: true });
-        //   intentEncoder = async (text) => { ...mean-pool over attention_mask → L2 norm... };
-        // 骨架階段不灌模型 → 維持 null,encoderFallbackExpand 會自動 skip。
-        console.info('[encoderFallback] prototypes 已載入;編碼器尚未接 (骨架階段)');
-    } catch (err) {
-        console.warn('[encoderFallback] 預載失敗,fallback 停用:', err);
-        intentEncoder = null;
-        intentPrototypes = null;
-    }
-}
-
-/**
- * 字面意圖表零命中時的 bi-encoder fallback (同步)。
- * 編碼 query → 與 132 原型 cosine → thr 以上取 top-k → 回傳要 append 的擴展詞字串
- * (空字串表示無命中)。編碼器/原型未預載時直接回 ''(skip),不阻塞 happy path。
- *
- * @param {string} query 已知字面表零命中的原始查詢
- * @returns {string} 以空白接合的擴展詞,或 '' 表示 fallback 也無命中
- */
-function encoderFallbackExpand(query) {
-    if (!ENCODER_FALLBACK_ENABLED) return '';
-    if (!intentEncoder || !intentPrototypes) return '';  // 未預載 → skip
-
-    // query 向量已 L2 normalize → 與同樣 normalize 的原型內積即 cosine。
-    const qv = intentEncoder(query);                 // 同源編碼器 (上線時填入)
-    const { thr, top_k, rules, vecs } = intentPrototypes;
-
-    const scored = [];
-    for (const [intent, pv] of Object.entries(vecs)) {
-        let dot = 0;
-        for (let i = 0; i < pv.length; i++) dot += qv[i] * pv[i];
-        if (dot >= thr) scored.push([intent, dot]);
-    }
-    if (scored.length === 0) return '';
-
-    scored.sort((a, b) => b[1] - a[1]);
-    const hits = scored.slice(0, top_k);
-    // 否定守衛:fallback 命中的 intent 若在 query 中被否定詞緊鄰修飾,略過
-    // (與字面層同邏輯,避免「不想養黃金獵犬」誤路由到可寵)。語意命中無確切
-    // 字串位置,故對該 intent 在 query 任一出現位置檢查;查無字串則視為語意命中保留。
-    const NEGATORS = '不沒無非免勿';
-    const expansions = [];
-    for (const [intent] of hits) {
-        const idx = query.indexOf(intent);
-        const negated = idx > 0 && NEGATORS.includes(query[idx - 1]);
-        if (!negated) expansions.push(rules[intent]);
-    }
-    return expansions.join(' ');
-}
-
 function expandQueryIntent(query) {
     let expanded = query;
     const intentMap = {
@@ -1125,13 +1024,6 @@ function expandQueryIntent(query) {
         }
     }
 
-    // 字面表零命中 (整輪沒 append 任何擴展) → 交 bi-encoder fallback 接住規則表
-    // 沒列舉的口語講法。flag 關 / 編碼器未預載時 encoderFallbackExpand 回 '',
-    // expanded 維持原值 → 對現有 happy path 零影響。
-    if (expanded === query) {
-        const fb = encoderFallbackExpand(query);
-        if (fb) expanded += " " + fb;
-    }
     return expanded;
 }
 
