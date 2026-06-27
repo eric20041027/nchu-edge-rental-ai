@@ -10,6 +10,7 @@
  */
 
 import { AutoTokenizer, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1';
+import { loadORT, streamingFetch, createSession } from './worker-shared.js';
 
 const MAX_LEN = 64;
 
@@ -24,9 +25,7 @@ async function init(origin, noCache = false) {
     try {
         const cacheMode = noCache ? 'no-store' : 'default';
         postMessage({ type: 'bienc_status', message: '載入向量編碼模組...' });
-
-        const ortModule = await import('https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.mjs');
-        ort = ortModule.default ?? ortModule;
+        ort = await loadORT();
 
         // 1. Transformers.js 設定 (與 inference-worker.js 同款,僅吃本地模型)
         env.allowRemoteModels = false;
@@ -40,32 +39,15 @@ async function init(origin, noCache = false) {
 
         // 3. 下載 + 載入量化模型 (streaming 進度回報)
         postMessage({ type: 'bienc_status', message: '載入向量編碼模型...' });
-        const modelRes = await fetch(origin + '/models/bi_encoder_dir/bi_encoder_quant.onnx', { cache: cacheMode });
-        if (!modelRes.ok) throw new Error(`bi-encoder model fetch failed: ${modelRes.status}`);
-        const contentLength = parseInt(modelRes.headers.get('Content-Length') || '0', 10);
-        const reader = modelRes.body.getReader();
-        const chunks = [];
-        let received = 0;
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            chunks.push(value);
-            received += value.byteLength;
-            if (contentLength > 0) {
-                postMessage({ type: 'bienc_progress', loaded: received, total: contentLength });
-            }
-        }
-        const modelBuffer = new Uint8Array(received);
-        let pos = 0;
-        for (const chunk of chunks) { modelBuffer.set(chunk, pos); pos += chunk.byteLength; }
+        const modelBuffer = await streamingFetch(
+            origin + '/models/bi_encoder_dir/bi_encoder_quant.onnx', cacheMode,
+            (loaded, total) => postMessage({ type: 'bienc_progress', loaded, total }),
+        );
 
         // 下載完成但 WASM session 編譯仍需數秒 → 通知 UI 進入「初始化中」,
         // 否則進度條卡在 100% 看似當掉。
         postMessage({ type: 'bienc_status', message: '初始化向量編碼 Session...', init: true });
-        session = await ort.InferenceSession.create(modelBuffer, {
-            executionProviders: ['wasm'],
-            graphOptimizationLevel: 'all',
-        });
+        session = await createSession(ort, modelBuffer);
 
         postMessage({ type: 'bienc_ready' });
     } catch (err) {
@@ -77,8 +59,7 @@ async function init(origin, noCache = false) {
 async function initFromBuffer(origin, modelBuffer) {
     try {
         postMessage({ type: 'bienc_status', message: '載入向量編碼模組...' });
-        const ortModule = await import('https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.mjs');
-        ort = ortModule.default ?? ortModule;
+        ort = await loadORT();
 
         env.allowRemoteModels = false;
         env.allowLocalModels = true;
@@ -89,10 +70,7 @@ async function initFromBuffer(origin, modelBuffer) {
         tokenizer = await AutoTokenizer.from_pretrained('models/bi_encoder_dir');
 
         postMessage({ type: 'bienc_status', message: '初始化向量編碼 Session...', init: true });
-        session = await ort.InferenceSession.create(modelBuffer, {
-            executionProviders: ['wasm'],
-            graphOptimizationLevel: 'all',
-        });
+        session = await createSession(ort, modelBuffer);
         postMessage({ type: 'bienc_ready' });
     } catch (err) {
         postMessage({ type: 'bienc_error', message: err.message });

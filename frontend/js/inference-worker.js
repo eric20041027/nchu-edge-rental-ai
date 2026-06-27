@@ -6,6 +6,7 @@
  */
 
 import { AutoTokenizer, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1';
+import { loadORT, createSession } from './worker-shared.js';
 
 // ONNX Runtime Web must be loaded via dynamic import inside the worker
 let ort = null;
@@ -20,8 +21,7 @@ const MAX_LENGTH = 128;
 async function init(localOrigin, noCache = false) {
     try {
         // Dynamically load ORT inside the worker context
-        const ortModule = await import('https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.mjs');
-        ort = ortModule.default ?? ortModule;
+        ort = await loadORT();
 
         // 1. Configure Transformers.js
         env.allowRemoteModels = false;
@@ -97,11 +97,7 @@ async function init(localOrigin, noCache = false) {
         postMessage({ type: 'status', message: '初始化 AI 模型...', init: true });
 
         // 2. Create Session
-        session = await ort.InferenceSession.create(loadedModelBuffer, {
-            executionProviders: ['wasm'],
-            graphOptimizationLevel: 'all',
-            sessionOptions: { numThreads: 4 }
-        });
+        session = await createSession(ort, loadedModelBuffer, { numThreads: 4 });
 
         postMessage({ type: 'ready' });
     } catch (err) {
@@ -275,8 +271,7 @@ function semanticExpandQuery(query) {
 // Buffer-based init: warm benchmark passes pre-fetched ArrayBuffer from main thread Cache Storage
 async function initFromBuffer(localOrigin, modelBuffer) {
     try {
-        const ortModule = await import('https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.mjs');
-        ort = ortModule.default ?? ortModule;
+        ort = await loadORT();
 
         env.allowRemoteModels = false;
         env.allowLocalModels = true;
@@ -285,11 +280,7 @@ async function initFromBuffer(localOrigin, modelBuffer) {
 
         tokenizer = await AutoTokenizer.from_pretrained('models/custom_onnx_model_dir');
 
-        session = await ort.InferenceSession.create(modelBuffer, {
-            executionProviders: ['wasm'],
-            graphOptimizationLevel: 'all',
-            sessionOptions: { numThreads: 4 }
-        });
+        session = await createSession(ort, modelBuffer, { numThreads: 4 });
         postMessage({ type: 'ready' });
     } catch (err) {
         postMessage({ type: 'error', message: err.message });
