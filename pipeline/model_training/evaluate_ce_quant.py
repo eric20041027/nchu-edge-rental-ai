@@ -8,13 +8,25 @@ import time
 import numpy as np
 from pathlib import Path
 from collections import defaultdict
-import onnxruntime as ort
-from transformers import BertTokenizerFast
+# onnxruntime / transformers imported lazily in evaluate()/main() so the module
+# (and match_prob) can be imported with only numpy — the CI test job has no torch
+# stack. See tests/test_evaluate_ce_quant.py.
 
 BASE_DIR  = Path(__file__).parent.resolve()
 MODEL_DIR = BASE_DIR / "../../frontend/models/custom_onnx_model_dir"
 DATA_PATH = BASE_DIR / "../../data/processed/recommendation_test.json"
 MAX_LENGTH = 128
+
+
+def match_prob(logits):
+    """MATCH-class softmax prob from [NOT_MATCH, MATCH] logits.
+
+    Mirrors frontend inference-worker.js: exp1 / (exp0 + exp1). Ranking by
+    this (not by the raw NOT_MATCH logit) is the whole point of the fix.
+    """
+    logits = np.asarray(logits, dtype=np.float64)
+    ex = np.exp(logits - np.max(logits))
+    return float(ex[1] / ex.sum())
 
 
 def ndcg_at_k(relevances, k=5):
@@ -29,6 +41,8 @@ def ndcg_at_k(relevances, k=5):
 
 
 def evaluate(model_path, tokenizer, queries_data, label):
+    import onnxruntime as ort
+
     path = Path(model_path)
     if not path.exists():
         print(f"\n  {label}: NOT FOUND — {path}")
@@ -61,9 +75,9 @@ def evaluate(model_path, tokenizer, queries_data, label):
                     "token_type_ids",
                     np.zeros_like(enc["input_ids"])
                 ).astype(np.int64),
-            })[0][0]  # scalar or (1,) logit
-            score = float(logits) if logits.ndim == 0 else float(logits[0])
-            scores.append(score)
+            })[0][0]  # (2,) = [NOT_MATCH, MATCH]
+            # Bug fix: was float(logits[0]) = NOT_MATCH, which ranked in reverse.
+            scores.append(match_prob(logits))
 
         # rank by model score, get relevance order
         ranked_idx = np.argsort(scores)[::-1]
@@ -83,6 +97,8 @@ def evaluate(model_path, tokenizer, queries_data, label):
 
 
 def main():
+    from transformers import BertTokenizerFast
+
     raw = json.load(open(DATA_PATH))
     queries_data = defaultdict(list)
     for item in raw:
