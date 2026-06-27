@@ -40,4 +40,4 @@ jobs:
         run: pip install -r requirements-ci.txt onnxruntime transformers
       - name: Vector recall A/B gate
         # eval_vector_vs_rulebased.py:verdict 非 GO → exit 2 → job fail。
-        run: python tests/eval_vector_vs_rulebased.py
+        run: python pipeline/evaluation/eval_vector_vs_rulebased.py
