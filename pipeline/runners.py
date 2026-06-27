@@ -22,6 +22,7 @@ def run_crawlers(config: CrawlerConfig) -> Dict[str, Any]:
     Returns:
         Dictionary with crawling results including total_properties count
     """
+    from .crawlers.crawler_591 import main as crawler_591_main
     from .crawlers.crawler_ddroom import main as ddroom_main
     from .crawlers.crawler_nchu import main as nchu_main
 
@@ -36,6 +37,12 @@ def run_crawlers(config: CrawlerConfig) -> Dict[str, Any]:
         asyncio.run(nchu_main())
     except Exception as e:
         logger.error("NCHU crawler failed: %s", e)
+
+    logger.info("Running 591 crawler...")
+    try:
+        asyncio.run(crawler_591_main())
+    except Exception as e:
+        logger.error("591 crawler failed: %s", e)
 
     # Count rows written
     total = 0
