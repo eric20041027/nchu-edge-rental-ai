@@ -182,6 +182,15 @@ def build(max_keyword: int) -> dict:
             "source": "recommendation_train.json",
             "join": "T0 fuzzy-join (token-set)",
             "join_match_rate": round(join_rate, 4),
+            # relevant_idxs 是對「重跑當下的 property_data.json」fuzzy-join 的 idx。
+            # 房源擴量後須重跑本 builder,relevant_idxs 才會對到新 idx(否則指錯房源)。
+            "joined_property_count": len(properties),
+            "caveat_new_listings": (
+                "GT 來源是 recommendation_train.json 的 query-property pair(舊房源)。"
+                "擴量新增的房源幾乎不在 train pair 內,故鮮少成為 relevant_idxs。"
+                "擴量後 recall 絕對值下降主要是『候選池變大、relevant 標的固定』的數學必然,"
+                "非品質退步。要公平評估新房源需人工/LLM 補標(stage4 第二輪)。"
+            ),
             "notes": (
                 "Semantic bucket = PROVEN recall blind spots: query carries a "
                 "colloquial trigger (data/semantic_rules.json `rules` key, "
