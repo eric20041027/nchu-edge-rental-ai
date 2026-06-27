@@ -25,7 +25,7 @@ import re
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 PROPERTY_DATA = ROOT / "frontend" / "assets" / "property_data.json"
 EMBEDDINGS = ROOT / "frontend" / "assets" / "property_embeddings.json"
 TRAIN_QUERIES = ROOT / "data" / "processed" / "generalization_queries.json"

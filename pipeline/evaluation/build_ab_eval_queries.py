@@ -63,7 +63,7 @@ from pathlib import Path
 
 import eval_rule_based_baseline as t0
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 SEMANTIC_RULES = ROOT / "data" / "semantic_rules.json"
 OUT = ROOT / "tests" / "fixtures" / "ab_eval_queries.json"
 JOIN_CACHE = ROOT / "tests" / ".rule_based_join_cache.json"

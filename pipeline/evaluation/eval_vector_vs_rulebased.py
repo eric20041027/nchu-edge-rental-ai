@@ -91,7 +91,7 @@ from eval_rule_based_baseline import (  # noqa: E402
     rule_based_recall,
 )
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 FIXTURE = ROOT / "tests" / "fixtures" / "ab_eval_queries.json"
 EMBEDDINGS = ROOT / "frontend" / "assets" / "property_embeddings.json"
 BI_ENCODER_DIR = ROOT / "frontend" / "models" / "bi_encoder_dir"

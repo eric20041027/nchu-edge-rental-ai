@@ -42,7 +42,7 @@ import re
 from functools import lru_cache
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 PROPERTIES = ROOT / "frontend" / "assets" / "property_data.json"
 TRAIN = ROOT / "data" / "processed" / "recommendation_train.json"
 
