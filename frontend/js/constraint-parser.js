@@ -143,7 +143,34 @@ export function parseConstraintsFromText(text) {
         requireWaterDispenser: (text.includes('飲水機')),
         requirePrivateWasher: (text.includes('獨洗') || text.includes('個人洗衣機')),
         requireGuard: (text.includes('代收') || text.includes('包裹') || text.includes('管理員') || text.includes('警衛')),
+        // 口語隱喻 → 結構化設施意圖。bi-encoder 對這些隱喻召回弱(text 欄缺線索/
+        // 容量牆,#99 實證 P@30 低);改由召回階段對命中房源做結構化 boost(union 保底)
+        // → P@30→1.0、零模型風險。值=該設施特徵的 property 欄位 key 或關鍵字。
+        facilityIntents: parseFacilityIntents(text),
         originalText: text
+    };
+}
+
+/**
+ * parseFacilityIntents — 口語隱喻 → 有區辨力的結構化設施特徵。
+ * 回傳該命中的 {欄位/關鍵字: 判定方式} 標記,供 inference 召回階段結構化 boost。
+ * 只收 #99 驗證『結構化能解、bi-encoder 弱』的設施(排除 95% 同質的陽台/電梯)。
+ */
+export function parseFacilityIntents(text) {
+    const has = (...kws) => kws.some(k => text.includes(k));
+    return {
+        // 飲水機(water_dispenser 欄位):提/買/裝/喝水
+        water_dispenser: has('飲水機', '提水', '買水', '裝水', '喝水', '扛水'),
+        // 機車位(has_parking 欄位):機車/停車/摩托/放車
+        has_parking: has('車位', '停車', '機車', '摩托', '放車'),
+        // 台電獨立電錶(is_taipower 欄位):電費貴/繳電費/台電
+        is_taipower: has('台電', '獨立電錶', '獨立電表', '電費', '繳電'),
+        // 曬衣場(ce_text 關鍵字):曬棉被/曬衣/曬太陽
+        dryingArea: has('曬衣', '曬被', '曬棉被', '曬太陽', '晾衣'),
+        // 可報稅(ce_text 關鍵字):報稅/扣抵/補助
+        taxDeductible: has('報稅', '扣抵', '補助', '補貼', '入籍'),
+        // 含水(ce_text 關鍵字):水費包/不另付水
+        waterIncluded: has('含水', '水費'),
     };
 }
 
