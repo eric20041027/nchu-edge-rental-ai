@@ -30,7 +30,7 @@ python -m pipeline.model_training.train_and_export_onnx
 - `saved_models/rbt6_teacher/` — Teacher checkpoint（永不被 student 覆蓋）
 - `saved_models/rbt3_finetuned/` — Student PyTorch checkpoint
 - `frontend/models/custom_onnx_model_dir/my_custom_model_quant.onnx` — Cross-Encoder 精排部署模型（現為 C 組房源富化模型，38.7 MB / 38,721,068 bytes；舊版曾備份為 `*.PREV-20260616.onnx`，已於 dead-weight 清理（收尾 B，PR #44）移除）
-- `frontend/models/bi_encoder_dir/bi_encoder_quant.onnx` — bi-encoder 向量召回部署模型（INT8，57.0 MB / 59,784,101 bytes）
+- `frontend/models/bi_encoder_dir/bi_encoder_quant.onnx` — bi-encoder 向量召回部署模型（INT8，38.2 MB / 38,214,155 bytes）
 
 ---
 
@@ -50,8 +50,8 @@ python -m pipeline.data_prep.build_property_embeddings
 ```
 
 輸出：
-- `frontend/models/bi_encoder_dir/bi_encoder_quant.onnx` — 召回部署模型（57.0 MB / 59,784,101 bytes）
-- `frontend/assets/property_embeddings.json` — 房源 embedding（704×768 float16，L2-norm）
+- `frontend/models/bi_encoder_dir/bi_encoder_quant.onnx` — 召回部署模型（38.2 MB / 38,214,155 bytes）
+- `frontend/assets/property_embeddings.json` — 房源 embedding（974×768 float16，L2-norm）
 
 向量召回 vs rule-based 的 A/B harness（go/no-go gate，T7 判定 GO）：
 
@@ -124,7 +124,7 @@ cd frontend && python -m http.server 8000
 │   ├── benchmark.html       # 效能測試工具
 │   ├── sw.js                # Service Worker
 │   ├── assets/
-│   │   └── property_embeddings.json  # 房源 embedding（704×768 float16，L2-norm）
+│   │   └── property_embeddings.json  # 房源 embedding（974×768 float16，L2-norm）
 │   └── js/
 │       ├── app.js           # 主應用邏輯
 │       ├── inference.js     # Cross-Encoder 推論介面
@@ -177,4 +177,4 @@ cd frontend && python -m http.server 8000
 
 v2.4–v2.8 退步根本原因：Teacher 路徑被 student 覆蓋，pre-trained rbt6 random head 作為 teacher → soft label 噪聲。
 
-> 上表為 **Cross-Encoder 精排**模型演進。另有 **bi-encoder 向量召回**模型（基底 `hfl/rbt6`，INT8，57.0 MB / 59,784,101 bytes），與精排為不同階段、評測指標亦不同（Recall@K / NDCG@5）。T7 A/B（判定 GO）：all Recall@30 0.057 → 0.412、semantic Recall@30 0.007 → 0.547。詳見 [MODEL_ARCHITECTURE.md](MODEL_ARCHITECTURE.md#向量召回-bi-encodervector-recall)。
+> 上表為 **Cross-Encoder 精排**模型演進。另有 **bi-encoder 向量召回**模型（基底 `hfl/rbt6`，INT8，38.2 MB / 38,214,155 bytes），與精排為不同階段、評測指標亦不同（Recall@K / NDCG@5）。T7 A/B（判定 GO）：all Recall@30 0.057 → 0.412、semantic Recall@30 0.007 → 0.547。詳見 [MODEL_ARCHITECTURE.md](MODEL_ARCHITECTURE.md#向量召回-bi-encodervector-recall)。

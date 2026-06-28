@@ -25,7 +25,7 @@ benchmark.html 本機量測(localhost,非真實網速):bi-encoder 冷載入 9107
 ## 為什麼需要 GPU / Colab
 
 - 本機無 torch/GPU,訓練跑不動;`build_property_embeddings` 在程式碼中明文標記為 Colab 段。
-- **換模型 = 房源向量全部作廢**:student 是新的向量空間,現役 704 房源向量(用舊 rbt6 編)
+- **換模型 = 房源向量全部作廢**:student 是新的向量空間,現役 974 房源向量(用舊 rbt6 編)
   與 student 產生的 query 向量不可比。**必須用 student 重編房源向量**,否則 cosine 召回失效。
 
 ## 前置
@@ -61,7 +61,7 @@ python -m pipeline.model_training.export_bi_encoder \
 # → frontend/models/bi_encoder_dir/bi_encoder.onnx + bi_encoder_quant.onnx(~38 MB)
 #   （pooling + L2-norm 已在圖內,與 student 同源）
 
-# 4. 用 student 重編 704 房源向量(關鍵!不可省)
+# 4. 用 student 重編 974 房源向量(關鍵!不可省)
 python -m pipeline.data_prep.build_property_embeddings \
     --saved-dir saved_models/rbt3_bi_encoder
 # → frontend/assets/property_embeddings.json（dim 仍 768，count 不變）

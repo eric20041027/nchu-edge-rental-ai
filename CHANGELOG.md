@@ -2,6 +2,23 @@
 
 ---
 
+## [2026.06.28] - 設施隱喻結構化 boost + 語意天花板實證(#97–#102)
+
+### 召回:設施隱喻結構化 boost(#102,零模型風險)
+
+- **口語設施隱喻走結構化過濾**:bi-encoder 對「不想提水→飲水機」「夏天怕電費→台電」「想曬棉被→曬衣場」召回弱(召回用 `text` 欄缺特徵線索 + encoder 容量)。`constraint-parser.js` 新增 `parseFacilityIntents` 解析口語隱喻 → 有區辨力設施特徵;`inference.js` 召回階段把命中房源 union 進候選(保底 `STRUCTURED_BOOST_MAX=12`,維持 Top-30)。
+- **bi-encoder 與房源向量皆不動,零模型風險**;kill-switch `STRUCTURED_BOOST_ENABLED` 可秒回退。
+- 6 個設施標靶 P@30 純向量(0.13–0.40)→ 結構化 boost **全部 →1.0**(含 bi-encoder 死路的台電)。瀏覽器 preview 親驗「不想提水」TOP1 即飲水機房源。
+
+### 語意理解天花板:實證診斷與評估工具(#97–#101)
+
+- **#97 修 `evaluate_ce_quant.py`**:原讀 `logits[0]`(NOT_MATCH)當分數 → 排序反向;改 MATCH softmax(與前端 inference-worker.js 對齊)。現役 CE NDCG@5 修正後 0.897。
+- **#98 語意天花板診斷**(`docs/intent/semantic-understanding-roadmap.md`):根因是**資料同質性**(95% 房源有陽台、88% 有電梯、80% 有窗)→ 12 個常見口語意圖只有 4 個有可區辨答案。非模型/encoder/評估集問題。
+- **#99 隱藏含義評估集**(`tests/fixtures/hidden_meaning_eval.json`):**Precision@30 為主防 Recall 虛降**(符合條件 >30 時 Recall@30 天花板被分母壓死);GT 全由 property_data 客觀欄位算、隨機基準對照。
+- **#100/#101 stage4 第三輪重訓**:補特徵進召回 `text` + 設施 pair。實證結論=**補 text/重訓都守不住 ab_eval 鐵則**(補 text 0.241、重訓 0.202,皆 <現役 0.26);拆元兇=**降採樣誤砍 50% ab_eval semantic GT 正樣本**。確認設施隱喻該走結構化(#102)非重訓。
+
+---
+
 ## [2026.06.22] - 向量檢索召回:bi-encoder 取代 rule-based(A/B GO)
 
 ### 召回架構升級(核心)
