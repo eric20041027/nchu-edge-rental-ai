@@ -58,7 +58,7 @@ pytest tests/ -v
 pipeline/model_training/      → bi-encoder 訓練腳本(沿用既有結構)
 pipeline/data_prep/           → build_property_embeddings.py(離線預算房源向量)
 frontend/assets/
-  property_data.json          → 現有房源資料(704 筆,含 ce_text/text)
+  property_data.json          → 現有房源資料(974 筆,含 ce_text/text)
   property_embeddings.json    → 【新】離線預算的房源 embedding(Float32 + meta)
 frontend/models/
   bi_encoder_dir/             → 【新】bi-encoder query 端 ONNX(量化)
@@ -129,7 +129,7 @@ function cosineTopK(queryVec, propVecs, k) {
 > **T0 Baseline(2026-06-22 量測,harness:`tests/eval_rule_based_baseline.py`):**
 > Recall@15 = 0.3846、Recall@30 = 0.4495、NDCG@5(召回階段)= 0.2469、首載 = 74.85 MB。
 > **重要 caveat:** Recall/NDCG 在 fuzzy-join 後的 query 集上量(訓練資料 property 為舊版 blob,
-> 與現行 704 筆 snapshot **join match-rate 僅 24.4%** —— 分佈 bimodal,2149 筆已不存在於現 snapshot、
+> 與現行 974 筆 snapshot **join match-rate 僅 24.4%** —— 分佈 bimodal,2149 筆已不存在於現 snapshot、
 > ~700 筆完美對上)。**絕對值偏低主因是 join 覆蓋稀疏 + 召回階段未含 CE;作為基準無妨,
 > 因 T7 向量 A/B 會用同一 harness、同一 join、同一慣例對比**(相對差才是判準)。
 > 召回 port 未含 NER 增強(瀏覽器專屬),為刻意離線省略,已記於 harness docstring。

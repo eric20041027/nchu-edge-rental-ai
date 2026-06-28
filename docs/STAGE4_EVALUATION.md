@@ -115,6 +115,28 @@ python3.12 -m venv /tmp/eval_venv
 **問題不在資料/評估,在 encoder 容量。破模板資料增強這條路到此實證為死路,勿再試。**
 唯一出路:換更大/各向同性 encoder(離開 edge,屬另一階段)。現役 rbt3 維持不動(ab_eval 0.26 最佳)。
 
+## 第三輪實證(2026-06-28,#100/#101)— 補 text 有效但守不住鐵則,設施改走結構化
+
+第三輪換了兩個 stage4 從沒試過的變數:① 把設施特徵線索補進**召回用的 `text` 欄**(根因:房源向量從 text 編碼,但飲水機/車位/報稅等線索只在 ce_text、text 裡 0% 有 → 模型召回看不到);② 降採樣模板化重複正樣本(最大設施骨架佔正樣本 31% → 3.7%)。Colab 重訓後本機用 artifacts 自帶向量複核(複現 Colab 數字,不盲信):
+
+| 配置(本機正式 harness 複核) | ab_eval all R@30 | semantic R@30 | #99 設施 P@30 |
+|---|---|---|---|
+| 現役 rbt3(baseline) | **0.260** | 0.459 | 弱 |
+| A 補 text(現役等價模型,torch 向量) | 0.241 | 0.438 | 0.353 |
+| B 補 text + 設施 pair(不降採樣) | 0.202 | 0.287 | 0.647 |
+
+**拆元兇(4 情境消融)**:退步 100% 來自**重訓**,補 text 系統性代價僅 −0.029(semantic)。
+元兇細拆=**降採樣誤砍 50% ab_eval semantic GT 正樣本**(模板骨架正好是 semantic query
+的答案房源)→ semantic 崩。補 text/重訓都守不住 ab_eval 0.26 鐵則,**設施 P@30 升 ≠ 整體進步**。
+
+## 結案後:設施隱喻走結構化 boost(#102,非重訓)
+
+既然補 text/重訓守不住鐵則,設施隱喻改由**召回階段結構化 boost**(`parseFacilityIntents`
+把口語隱喻→有區辨力設施特徵,命中房源 union 進候選,bi-encoder 不動)。本機驗證 6 設施標靶
+P@30 純向量(0.13–0.40)→ 結構化 boost **全部 →1.0**(含 bi-encoder 死路的台電 0.167→1.0)。
+ab_eval 不受影響(模型/向量皆不動)、零模型風險、kill-switch 可關。
+→ **最終結論:語意交 bi-encoder(不動)、結構交過濾,各取所長。** 詳見 `docs/intent/semantic-understanding-roadmap.md` 與 #102。
+
 ## 同源 caveat
 
 統一評估的 query 為手寫(非訓練同源,破 selection bias),但仍是少量人造樣本;

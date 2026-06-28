@@ -10,8 +10,8 @@
 
 - **三模型 edge 推論管線**:NER(條件抽取)→ bi-encoder(向量召回)→ Cross-Encoder(語意精排),三個微調中文 RoBERTa 模型全部 INT8 量化、在瀏覽器跑。
 - **向量召回(2026-06)**:召回階段由關鍵字 rule-based 升級為 bi-encoder 向量相似度。A/B 實測語意查詢 Recall@30 由 **0.007 → 0.547**,整體召回全面優於關鍵字。
-- **知識蒸餾**:6 層 rbt6 teacher → 3 層 rbt3 student,排序知識壓縮至 36.9 MB INT8。
-- **雙來源資料對齊**:租租通(559 筆)+ 興大官網(145 筆)欄位子集不同,經 crawler 補抓 + 三態 bool 判定 + 同義橋接消除系統性偏袒。
+- **知識蒸餾**:bi-encoder 與 Cross-Encoder 皆走 6 層 rbt6 teacher → 3 層 rbt3 student,各壓縮至 ~36 MB INT8(召回零損)。
+- **多來源資料對齊**:租租通(665 筆)+ 591 租屋(162 筆)+ 興大官網(147 筆)欄位子集不同,經 crawler 補抓 + 三態 bool 判定 + 同義橋接消除系統性偏袒。
 - **離線可用**:Cache API + Service Worker,首次載入後快取,後續秒開。
 - **可解釋**:每筆推薦附匹配理由與衝突提示。
 
@@ -23,11 +23,11 @@
 
 | 角色 | 模型 | Base | 層數 | 量化 | 大小 | 檔案 |
 |:---|:---|:---|:---:|:---|:---:|:---|
-| **召回** Recall | bi-encoder | hfl/rbt6 | 6 | INT8 dynamic | **57.0 MB**<br>(59,784,101 B) | `frontend/models/bi_encoder_dir/bi_encoder_quant.onnx` |
+| **召回** Recall | bi-encoder | hfl/rbt3 | 3 | INT8 dynamic | **36.4 MB**<br>(38,214,155 B) | `frontend/models/bi_encoder_dir/bi_encoder_quant.onnx` |
 | **精排** Re-rank | Cross-Encoder | hfl/rbt3 | 3 | INT8 per-channel | **36.9 MB**<br>(38,721,068 B) | `frontend/models/custom_onnx_model_dir/my_custom_model_quant.onnx` |
 | **抽取** NER | Token-classify | hfl/rbt3 | 3 | INT8 | **36.4 MB**<br>(38,206,711 B) | `frontend/models/ner_model_dir/ner_model_quant.onnx` |
 
-加上離線預算的房源向量 `frontend/assets/property_embeddings.json`(704×768 float16,4.3 MB)與房源資料 `property_data.json`(704 筆,含預計算通勤時間與 `ce_text` 富化文字)。
+加上離線預算的房源向量 `frontend/assets/property_embeddings.json`(974×768 float16,6.0 MB)與房源資料 `property_data.json`(974 筆,含預計算通勤時間與 `ce_text` 富化文字)。
 
 ---
 
@@ -52,9 +52,9 @@ graph TD
     EVAL --> H["my_custom_model_quant.onnx\n(rbt3 INT8, 36.9 MB)"]
     F --> BE1("train_bi_encoder.py\nrbt6 bi-encoder 對比學習")
     BE1 --> BE2("export_bi_encoder.py\nquery 編碼器 → ONNX + INT8")
-    BE1 --> BE3("build_property_embeddings.py\n704 房源向量 → float16 JSON")
-    BE2 --> BE_M["bi_encoder_quant.onnx\n(rbt6 INT8, 57 MB)"]
-    BE3 --> EMB["property_embeddings.json\n(704×768 float16)"]
+    BE1 --> BE3("build_property_embeddings.py\n974 房源向量 → float16 JSON")
+    BE2 --> BE_M["bi_encoder_quant.onnx\n(rbt3 INT8, 36.4 MB)"]
+    BE3 --> EMB["property_embeddings.json\n(974×768 float16)"]
 ```
 
 ### 2. 推論流程
@@ -95,7 +95,8 @@ graph TD
 **先硬約束過濾,再向量召回。** 這是 2026-06 的核心升級:
 
 1. **`filterHardExclusions`** — 硬約束一票否決:頂加/木板隔間/凶宅排除、預算硬篩、補助、社會住宅,以及**否定意圖**(`excludePet`「不要養寵物」→ 排除可養寵物房源)。兩條召回路徑都先跑這步,所以否定處理不會因召回方式改變而退化。
-2. **bi-encoder 向量召回(primary)** — query 經 bi-encoder ONNX 編碼 → mask-aware mean-pool → L2-normalize → 與離線預算的 704 房源向量做暴力 cosine → 取 Top-30(與硬約束允許集取交集,維持 cosine 序)。query 向量與房源向量**同源**(同 hfl/rbt6、同 pooling、同 normalize),內積即 cosine。
+2. **bi-encoder 向量召回(primary)** — query 經 bi-encoder ONNX 編碼 → mask-aware mean-pool → L2-normalize → 與離線預算的 974 房源向量做暴力 cosine → 取 Top-30(與硬約束允許集取交集,維持 cosine 序)。query 向量與房源向量**同源**(同 hfl/rbt6、同 pooling、同 normalize),內積即 cosine。
+3. **結構化設施 boost** — 口語設施隱喻(不想提水→飲水機、夏天怕電費→台電、想曬棉被→曬衣場)bi-encoder 召回弱(text 欄缺線索 + encoder 容量),由 `parseFacilityIntents` 解析意圖後,把命中該結構化特徵的房源 union 進候選(保底名額,維持 Top-30)。bi-encoder 不動、零模型風險,kill-switch `STRUCTURED_BOOST_ENABLED` 可關。設施標靶 P@30 純向量 → boost 全部 →1.0。
 3. **rule-based fallback** — 當 bi-encoder worker 尚未載入完成(首載期間)、query 編碼逾時(800 ms),或 kill-switch `VECTOR_RECALL_ENABLED=false` 時,回退到原本的關鍵字 `calculateRuleBasedScore`,避免零結果。
 
 召回 K=30(舊 rule-based 給 15 的 2 倍):向量召回快,多召回幾筆讓 CE 有更大挑選空間;CE 仍只跑 30 次,edge 端負擔可控。
@@ -126,7 +127,7 @@ graph TD
 - **訓練**:InfoNCE / MultipleNegativesRankingLoss(MNRL),`sim[i,j]=cos(q_i, cand_j)/T`、cross-entropy 取自身正樣本為 target,溫度 **0.05**。
 - **負樣本**:anchor = 有 label=1 房源的 query;positive = 該房源;in-batch negatives = 同批其他 anchor 的 positive;hard negatives = 同 query 的 `is_hard` 房源(deduped、capped 2×batch、批內共享)。
 - **匯出**:`dynamo=False`(legacy TorchScript tracer,權重內嵌單一 .onnx)、opset 15、Dynamic INT8。CP2 數值驗證:fp32 cosine(PyTorch, ONNX)=1.000、INT8=0.956。
-- **房源向量**:離線以 bi-encoder 批次編碼 704 房源 → `property_embeddings.json`(float16,dim 768,L2-norm)。
+- **房源向量**:離線以 bi-encoder 批次編碼 974 房源 → `property_embeddings.json`(float16,dim 768,L2-norm)。
 
 詳見 [向量檢索 spec](docs/spec/vector-retrieval.md)。
 
@@ -151,7 +152,7 @@ graph TD
 
 **判決:GO。** 向量召回不只補語意 blind-spot(怕熱→冷氣 這類關鍵字對不上的洞),連關鍵字控制組也贏 —— 整體召回全面優於 rule-based。rule-based 因此由「對等召回路徑」降級為 fallback 安全網。
 
-> 評估方法 caveat:基準查詢集的房源標註來自舊版訓練資料,與現行 704 筆 snapshot 經 token fuzzy-join(match-rate 24.4%,分佈 bimodal),故**絕對值偏低、相對 A/B 差才是判準**;harness 兩邊用同一 join / 同一指標慣例,確保公平。
+> 評估方法 caveat:基準查詢集的房源標註來自舊版訓練資料,與現行 974 筆 snapshot 經 token fuzzy-join(match-rate 偏低、分佈 bimodal),故**絕對值偏低、相對 A/B 差才是判準**;harness 兩邊用同一 join / 同一指標慣例,確保公平。現役獨立評估 baseline:ab_eval all R@30 = 0.26。
 
 ---
 
@@ -218,9 +219,9 @@ graph TD
 - **物件級切割**防洩漏;4 級相關性標記(0–3,另有 −1 sentinel 表「明確硬衝突的簡單負樣本」,訓練時與 0 同視為 label=0);查詢多樣化涵蓋單特徵/生活型態/角色情境/負向需求等策略。
 - **困難樣本挖掘**:基於 Jaccard 字符 n-gram 重疊,找「表面相似卻違反硬約束」的語意陷阱(禁養寵物、性別限制)作 hard negatives,`sample_weight ×2`。
 - **OSRM 通勤**:以 Open Source Routing Machine 計算步行/機車至中興大學的實際路網時間,預算進 `property_data.json`。
-- **雙來源欄位對齊**:`property_data.json` 共 704 筆(3 筆爬蟲空殼,前端 `initData` 過濾 → 有效 **701** 筆),以 `url` 區分租租通(dd-room,**559** 筆)/ 興大官網(nchu,**145** 筆)。興大 detail 頁有 6 個二級表格,原 crawler 只解析 3 個,漏掉「租金包含/安全管理/消防逃生」→ crawler 補抓 + `derive_nchu_features()` 衍生標籤後,興大特色項 avg **1.6 → 5.32**、`has_window` **0 → 70%**、`safety_level high` **0 → 94%**。
+- **多來源欄位對齊**:`property_data.json` 共 **974** 筆,以 `url` 區分租租通(dd-room,**665** 筆)/ 591 租屋(**162** 筆)/ 興大官網(nchu,**147** 筆)。興大 detail 頁有 6 個二級表格,原 crawler 只解析 3 個,漏掉「租金包含/安全管理/消防逃生」→ crawler 補抓 + `derive_nchu_features()` 衍生標籤後,興大特色項 avg **1.6 → 5.32**、`has_window` **0 → 70%**、`safety_level high` **0 → 94%**。
 - **三態 bool 判定**:崩塌欄(某來源整欄 ≈0% true)的 false 視為「未知」回退文字判斷,而非「明確無」,避免系統性誤殺。
-- **語意擴展層審查**:口語意圖規則的擴展詞逐一對 704 房源實據比對,剔除 0-backing 臆測詞、救援可橋接者(禁菸→無菸、採光→對外窗)。
+- **語意擴展層審查**:口語意圖規則的擴展詞逐一對房源實據比對,剔除 0-backing 臆測詞、救援可橋接者(禁菸→無菸、採光→對外窗)。
 
 詳見 [資料管道與標記設計](docs/DATA_PIPELINE.md)。
 
@@ -240,7 +241,7 @@ graph TD
 - heap 穩定 56.6 MB,無記憶體洩漏。
 - 每次查詢 30 候選 × 30 次 forward pass;rbt3 每 pass ~2.1G INT8 ops。
 
-> Cross-Encoder 載入數字為舊 57 MB 模型基準;production 已換 36.9 MB 富化 rbt3,首載應更快(尚未重測,保留舊值為歷史對照)。bi-encoder(57 MB)為向量召回新增的首載成本 —— 已是最優 INT8 量化(int4 反而更大),SW 快取後僅首次下載,接受為語意召回大勝的代價。
+> 上表 Cross-Encoder 載入數字為舊 57 MB 模型基準;production CE 已換 36.9 MB 富化 rbt3、bi-encoder 已蒸餾 rbt6→rbt3 至 **36.4 MB**(原 57 MB,#78),首載應更快(尚未重測,保留舊值為歷史對照)。bi-encoder 為向量召回新增的首載成本 —— 已是最優 INT8 量化(int4 反而更大),SW 快取後僅首次下載,接受為語意召回大勝的代價。
 
 詳見 [邊緣推論與前端效能](docs/EDGE_INFERENCE.md)。
 
@@ -271,7 +272,7 @@ python -m pipeline.model_training.train_and_export_onnx
 # bi-encoder 向量召回訓練 + 匯出 + 房源向量(GPU,Colab 可用 colab_train_bi_encoder.ipynb)
 python -m pipeline.model_training.train_bi_encoder --bf16 --tf32   # A100 純加速,不動訓練動態
 python -m pipeline.model_training.export_bi_encoder               # query 編碼器 → ONNX + INT8 + CP2 驗證
-python -m pipeline.data_prep.build_property_embeddings            # 704 房源 → property_embeddings.json
+python -m pipeline.data_prep.build_property_embeddings            # 974 房源 → property_embeddings.json
 
 # 向量 vs rule-based A/B(需 onnxruntime + transformers)
 python tests/eval_vector_vs_rulebased.py
@@ -339,7 +340,7 @@ python3 -m http.server 8080 --directory frontend
 
 - **使用者反饋微調**:利用 localStorage 累積的 👍/👎 反饋進行線上學習(中長期路線階段 ②)。
 - **向量索引擴展**:房源規模拓至萬筆以上時,瀏覽器端暴力 cosine 需改 ANN 索引(HNSW)或後端服務(現規模 ~千筆,暴力 cosine 即足夠)。
-- **bi-encoder 瘦身**:57 MB 首載成本,可探索 l2h128 蒸餾或與 CE 共享 base(目前 int8 已最優,int4 反而更大)。
+- **bi-encoder 瘦身**:已蒸餾 rbt6→rbt3(57→36.4 MB,#78,召回零損);可再探索 l2h128 蒸餾或與 CE 共享 base(目前 int8 已最優,int4 反而更大)。
 
 ---
 

@@ -82,7 +82,7 @@ $$R = \frac{\text{已滿足維度數}}{\text{已指定維度數}}$$
 
 ## 6. 雙來源欄位對齊（租租通 vs 興大）
 
-`property_data.json` 共 704 筆（其中 3 筆為爬蟲空殼：`address` 空 / `rent=0`，前端 `initData` 載入時過濾，有效 **701** 筆），無顯式 `source` 欄，以 `url` 區分：租租通（dd-room）**559 筆**、興大官網（nchu）**145 筆**。兩來源由不同 crawler 抓取不同欄位子集，造成排序系統性偏袒租租通。
+`property_data.json` 共 **974 筆**，無顯式 `source` 欄，以 `url` 區分：租租通（dd-room）**665 筆**、591 租屋 **162 筆**、興大官網（nchu）**147 筆**。各來源由不同 crawler 抓取不同欄位子集，經三態 bool 判定 + 同義橋接消除系統性偏袒。
 
 ### 根因：crawler 解析不完整（非缺資料）
 
@@ -96,7 +96,7 @@ $$R = \frac{\text{已滿足維度數}}{\text{已指定維度數}}$$
 
 ### 語意擴展層可驗證性審查
 
-105 條口語意圖規則的擴展詞，逐一以**前端真實比對邏輯**（`buildPropText` + bool 欄 + `PROP_SYNONYMS` + `electricity_billing`）對 704 房源比對命中數。**0 命中 = 無資料支撐的模型臆測**，分類處理：救援可橋接者、刪除真死 token 與整條失效 rule（規則數 132→105、unique token 122→75、0-backing 60→0）。
+105 條口語意圖規則的擴展詞，逐一以**前端真實比對邏輯**（`buildPropText` + bool 欄 + `PROP_SYNONYMS` + `electricity_billing`）對全體房源比對命中數。**0 命中 = 無資料支撐的模型臆測**，分類處理：救援可橋接者、刪除真死 token 與整條失效 rule（規則數 132→105、unique token 122→75、0-backing 60→0）。
 
 **實作 / 重跑**：`pipeline/data_prep/audit_expansion_tokens.py`
 
@@ -117,7 +117,7 @@ $$R = \frac{\text{已滿足維度數}}{\text{已指定維度數}}$$
 1. `pipeline/data_prep/augment_with_expansion_map.py` — 產生 `property_to_text_enriched`
    富化文字（全 notes + 全 furniture），供訓練與打分使用。
 2. `pipeline/data_prep/precompute_ce_text.py` — 將富化文字 **byte-exact** 預算進前端
-   `property_data.json` 的 `ce_text` 欄；以 **`address` + `rent` 為鍵**對齊房源（704/704），
+   `property_data.json` 的 `ce_text` 欄；以 **`address` + `rent` 為鍵**對齊房源（全對齊），
    確保前端 Cross-Encoder 推論所用文字與訓練文字完全一致。
 
 ---
@@ -156,10 +156,10 @@ bi-encoder 對比學習**直接複用** `data/processed/recommendation_train.jso
 
 ### 9.2 房源向量離線預算(新產物)
 
-`pipeline/data_prep/build_property_embeddings.py` 以訓好的 bi-encoder 把 704 筆房源編碼成靜態向量,供前端線上 cosine 召回:
+`pipeline/data_prep/build_property_embeddings.py` 以訓好的 bi-encoder 把 974 筆房源編碼成靜態向量,供前端線上 cosine 召回:
 
 - 輸入文字:房源 `text` 欄(與 bi-encoder 訓練時 `property` 對應一致;非 `ce_text` 富化文字 —— 後者較長且與 bi-encoder 訓練分佈不符)。
-- 輸出:`frontend/assets/property_embeddings.json`,704 × 768 **float16**(~4.3 MB),已 L2-normalize,內積即 cosine。
+- 輸出:`frontend/assets/property_embeddings.json`,974 × 768 **float16**(~6.0 MB),已 L2-normalize,內積即 cosine。
 - 同源保證:與前端 query 編碼器(`export_bi_encoder.py` 匯出的 ONNX)同 model / 同 mean-pool / 同 L2-norm,否則 cosine 無意義。
 
 ```bash

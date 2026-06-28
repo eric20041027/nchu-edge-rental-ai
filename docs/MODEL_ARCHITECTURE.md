@@ -178,7 +178,7 @@ $$\mathcal{L}_{\text{CE}}:\text{ label smoothing},\quad \varepsilon=0.05$$
 
 - 腳本：`pipeline/model_training/export_bi_encoder.py`，`dynamo=False`、opset 15、Dynamic INT8。
 - CP2 數值檢查（PyTorch vs ONNX 餘弦相似度）：fp32 = 1.000，int8 = 0.956。
-- 房源 embedding 離線預先計算 → `frontend/assets/property_embeddings.json`（704×768 float16，已 L2-norm），推論端只需編碼 query 即可比對。
+- 房源 embedding 離線預先計算 → `frontend/assets/property_embeddings.json`（974×768 float16，已 L2-norm），推論端只需編碼 query 即可比對。
 
 ### A/B 評測（T7，判定 GO）
 
