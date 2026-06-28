@@ -32,6 +32,12 @@ let nerReady    = false;
 // rule-based 不再是對等 A/B 分支,但仍當 worker 未就緒/編碼逾時時的 fallback(見下方)。
 const VECTOR_RECALL_ENABLED = true;
 
+// 設施隱喻結構化 boost kill-switch:翻 false 即停用,召回逐位元組回到純向量。
+// 口語隱喻(不想提水→飲水機、夏天怕電費→台電)bi-encoder 召回弱(#99 實證),
+// 改在向量召回後把命中該設施的房源 union 進候選(保底名額)→ P@30→1.0、零模型風險。
+const STRUCTURED_BOOST_ENABLED = true;
+const STRUCTURED_BOOST_MAX = 12;  // 結構化保底上限,避免淹沒 cosine 序與 CE 精排
+
 // 階段② kill-switch:翻 false 即停用回饋重排,排序逐位元組回到階段①。
 const FEEDBACK_RERANK_ENABLED = true;
 
@@ -265,6 +271,22 @@ async function scorePair(query, propertyText) {
             data: { query, propertyText, id }
         });
     });
+}
+
+// --- Structured Facility Boost ---
+// 房源是否命中某個被觸發的口語設施意圖。布林欄位走 boolFieldState 三態
+// (yes 命中;no/unknown 信任 ce_text 文字回退,因部分來源欄位崩塌);
+// 文字類(曬衣/報稅/含水)直接看 ce_text。與 #99 GT 的客觀 predicate 對齊。
+function propMatchesFacility(prop, intents) {
+    const ceText = String(prop.ce_text || prop.text || '');
+    if (intents.water_dispenser && boolFieldState(prop, 'water_dispenser') === 'yes') return true;
+    if (intents.has_parking &&
+        (boolFieldState(prop, 'has_parking') === 'yes' || ceText.includes('車位') || ceText.includes('停車'))) return true;
+    if (intents.is_taipower && boolFieldState(prop, 'is_taipower') === 'yes') return true;
+    if (intents.dryingArea && ceText.includes('曬衣')) return true;
+    if (intents.taxDeductible && ceText.includes('可報稅')) return true;
+    if (intents.waterIncluded && ceText.includes('含水')) return true;
+    return false;
 }
 
 // --- Hard Exclusion Filtering ---
@@ -792,6 +814,23 @@ export async function recommend(text, top_k = 20, onPartialResult = null) {
                     if (topCandidates.length >= 30) break;
                 }
                 console.log(`[vectorRecall] ${topCandidates.length} candidates via bi-encoder cosine`);
+
+                // 結構化 boost:口語設施意圖(不想提水→飲水機、夏天怕電費→台電…)
+                // bi-encoder 召回弱 → 把命中的 allowed 房源 union 進候選(保底,取代尾端
+                // 低分項),維持總數 30。零模型風險,kill-switch 可關。
+                const intents = constraints.facilityIntents;
+                const anyIntent = intents && Object.values(intents).some(Boolean);
+                if (STRUCTURED_BOOST_ENABLED && anyIntent) {
+                    const inSet = new Set(topCandidates.map(c => c.prop));
+                    const boosted = candidates.filter(p => !inSet.has(p) && propMatchesFacility(p, intents));
+                    const nBoost = Math.min(STRUCTURED_BOOST_MAX, boosted.length);
+                    if (nBoost > 0) {
+                        // 保底名額擠掉 cosine 序尾端最低分項,結構化命中者 rms=1.0(下游 boost)。
+                        topCandidates = topCandidates.slice(0, Math.max(0, 30 - nBoost));
+                        for (let i = 0; i < nBoost; i++) topCandidates.push({ prop: boosted[i], rms: 1.0 });
+                        console.log(`[structuredBoost] +${nBoost} facility-intent candidates`);
+                    }
+                }
             }
         }
 
